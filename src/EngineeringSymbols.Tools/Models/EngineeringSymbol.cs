@@ -14,7 +14,7 @@ public record EngineeringSymbol
 	public double Width { get; init; }
 
 	public double Height { get; init; }
-	public List<EngineeringSymbolConnector> Connectors { get; init; } = new List<EngineeringSymbolConnector>();
+	public List<EngineeringSymbolConnector> Connectors { get; init; } = new();
 
 	public override string ToString()
 	{

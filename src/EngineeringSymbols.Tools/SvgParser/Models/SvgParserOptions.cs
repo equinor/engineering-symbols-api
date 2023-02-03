@@ -1,17 +1,16 @@
-namespace EngineeringSymbols.Tools.SvgParser;
+namespace EngineeringSymbols.Tools.SvgParser.Models;
 
-public class SvgTransformOptions
+public class SvgParserOptions
 {
 	public string? SymbolId { get; set; }
-	public string SymbolName { get; set; } = string.Empty;
 
 	public bool RemoveAnnotations { get; set; } = true;
 
 	public string AnnotationsElementId { get; set; } = "annotations";
 
-	public bool IncludeSvgString = true;
+	public bool IncludeSvgString { get; set; } = true;
 
-	public bool IncludeRawSvgString = false;
+	public bool IncludeRawSvgString { get; set; }
 
 	public string StrokeColor { get; set; } = "#231f20";
 

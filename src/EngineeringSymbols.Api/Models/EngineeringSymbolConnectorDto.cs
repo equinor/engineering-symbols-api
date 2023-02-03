@@ -1,6 +1,7 @@
-namespace EngineeringSymbols.Tools.Models;
+using EngineeringSymbols.Tools.Models;
+namespace EngineeringSymbols.Api.Models;
 
-public record EngineeringSymbolConnector
+public class EngineeringSymbolConnectorDto
 {
 	public string Id { get; set; }
 
@@ -8,9 +9,5 @@ public record EngineeringSymbolConnector
 	/// Position relative to top-left corner.
 	/// </summary>
 	public Point RelativePosition { get; set; } = new();
-
-	/// <summary>
-	/// Direction in degrees 0-360 where 0 degrees is vertical up (12 o' clock).
-	/// </summary>
 	public int Direction { get; set; }
 }

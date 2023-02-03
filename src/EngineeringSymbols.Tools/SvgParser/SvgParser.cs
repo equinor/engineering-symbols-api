@@ -1,65 +1,84 @@
 ﻿using System.Xml.Linq;
-using EngineeringSymbols.Tools.Models;
 
 namespace EngineeringSymbols.Tools.SvgParser;
 
 public static class SvgParser
 {
-	public static EngineeringSymbol FromString(string svgString, Action<SvgTransformOptions>? options = null)
+	public static Result<EngineeringSymbol> FromString(string svgString, Action<SvgParserOptions>? options = null)
 	{
-		throw new NotImplementedException();
+		return new Result<EngineeringSymbol>(new NotImplementedException());
 	}
-
-	public static EngineeringSymbol FromFile(string filepath, Action<SvgTransformOptions>? options = null)
+	
+	public static Result<SvgParserResult> FromFile(string filepath, Action<SvgParserOptions>? options = null)
 	{
-		var mergedOptions = new SvgTransformOptions();
-		options?.Invoke(mergedOptions);
-
-		XElement rootSvgElement;
-
-		string filePath;
-
-		try
-		{
-			filePath = Path.GetFullPath(filepath);
-			rootSvgElement = XElement.Load(filePath);
-		}
-		catch (Exception e)
-		{
-			throw new Exception($"Failed to load SVG file");
-		}
-
-		if (rootSvgElement.Name.LocalName != "svg")
-			throw new Exception("Top level SVG element not found");
-
-		mergedOptions.SymbolId ??= Helpers.GetSymbolId(Path.GetFileName(filePath));
-
-		return rootSvgElement.ToEngineeringSymbol(mergedOptions);
+		return ParseSvgFlow(LoadRootXElementFromFile(filepath), options);
 	}
-
-	public static EngineeringSymbol ToEngineeringSymbol(this XElement xmlElement, SvgTransformOptions options)
+	
+	private static Result<SvgParserResult> ParseSvgFlow(Func<SvgParserContext, Try<SvgParserContext>> xElementLoader, Action<SvgParserOptions>? options = null)
 	{
-		var transformationData = new TransformationData
-		{
-			SymbolData = new SymbolData(),
-			Options = options,
-		};
-
-		var rawSvgString = options.IncludeRawSvgString ? xmlElement.ToString() : null;
-
-		xmlElement.ApplySvgTransformations(transformationData);
-
-		return new EngineeringSymbol
-		{
-			Id = options.SymbolId!,
-			SvgString = options.IncludeSvgString ? xmlElement.ToString() : null,
-			SvgStringRaw = rawSvgString,
-			GeometryString = string.Join("", transformationData.SymbolData.PathData),
-			Width = transformationData.SymbolData.Width,
-			Height = transformationData.SymbolData.Height,
-			Connectors = transformationData.SymbolData.Connectors,
-		};
+		return CreateSvgParserContext(options)
+			.Bind(xElementLoader)
+			.Bind(ValidateRootElement)
+			.Bind(ParseSvgData)
+			.Map(ctx => ctx.ToSvgParserResult())
+			.Try();
 	}
+	
+	private static Try<SvgParserContext> CreateSvgParserContext(Action<SvgParserOptions>? options = null)
+	{
+		return Try(() =>
+		{
+			var mergedOptions = new SvgParserOptions();
+			options?.Invoke(mergedOptions);
+			return new SvgParserContext { Options = mergedOptions};
+		});
+	}
+	
+	private static Func<SvgParserContext, Try<SvgParserContext>> LoadRootXElementFromFile(string filePath)
+	{
+		return (SvgParserContext ctx) => Try(() =>
+		{
+			var fullPathResult = Try(() => Path.GetFullPath(filePath)).Try();
 
+			if (!fullPathResult.IsSuccess)
+			{
+				throw new SvgParseErrorException("Invalid file path");
+			}
 
+			var fullPath = fullPathResult.ToString();
+			
+			return Try(() => XElement.Load(fullPath))
+					.Map(el =>
+					{
+						ctx.SvgRootElement = el;
+						return ctx;
+					})
+					.IfFail(e => throw new SvgParseErrorException("Failed to load SVG from file"));
+		});
+	}
+	
+	private static Try<SvgParserContext> ValidateRootElement(SvgParserContext ctx)
+	{
+		return Try(() =>
+		{
+			if (ctx.SvgRootElement == null  || ctx.SvgRootElement.Name.LocalName != "svg")
+				throw new SvgParseErrorException("Invalid SVG content");
+			
+			return ctx;
+		});
+	}
+	
+	private static Try<SvgParserContext> ParseSvgData(SvgParserContext ctx)
+	{
+		return Try(() =>
+		{
+			//ctx.ExtractedData.Id = ctx.Options.SymbolId ?? Helpers.GetSymbolId(Path.GetFileName(filePath));
+			
+			// Store input SVG before transforming it
+			if (ctx.Options.IncludeRawSvgString)
+				ctx.ExtractedData.RawSvgInputString = ctx.SvgRootElement.ToString();
+			
+			return SvgCrawler.ExtractDataAndTransformElement(ctx.SvgRootElement, ctx);
+		});
+	}
 }
