@@ -44,12 +44,12 @@ internal static class SvgCrawler
 		if (!double.TryParse(element.Attribute("height")?.Value, NumberStyles.Any, CultureInfo.InvariantCulture,
 			    out var heightParsed))
 		{
-			ctx.AddParseError("SVG 'height' is missing or invalid");
+			ctx.AddParseError(SvgParseCategory.Dimensions,"SVG 'height' is missing or invalid");
 		}
 		
 		if (heightParsed % 24 != 0)
 		{
-			ctx.AddParseError($"SVG 'height' is not a multiple of 24");
+			ctx.AddParseError(SvgParseCategory.Dimensions,$"SVG 'height' is not a multiple of 24");
 		}
 
 		ctx.ExtractedData.Height = heightParsed;
@@ -58,12 +58,12 @@ internal static class SvgCrawler
 		if (!double.TryParse(element.Attribute("width")?.Value, NumberStyles.Any, CultureInfo.InvariantCulture,
 			    out var widthParsed))
 		{
-			ctx.AddParseError("SVG 'width' is missing or invalid");
+			ctx.AddParseError(SvgParseCategory.Dimensions,"SVG 'width' is missing or invalid");
 		}
 
 		if (widthParsed % 24 != 0)
 		{
-			ctx.AddParseError($"SVG 'width' is not a multiple of 24");
+			ctx.AddParseError(SvgParseCategory.Dimensions,$"SVG 'width' is not a multiple of 24");
 		}
 		
 		ctx.ExtractedData.Width  = widthParsed;
@@ -74,7 +74,7 @@ internal static class SvgCrawler
 
 		if (viewBox == null)
 		{
-			ctx.AddParseError($"Could not find viewBox attribute in <svg> element: {element}");
+			ctx.AddParseError(SvgParseCategory.Dimensions,$"Could not find viewBox attribute in <svg> element: {element}");
 		}
 		else
 		{
@@ -85,15 +85,15 @@ internal static class SvgCrawler
 
 			if (viewBoxElements.Contains(-1d))
 			{
-				ctx.AddParseError($"Could not parse viewBox attribute value in <svg> element");
+				ctx.AddParseError(SvgParseCategory.Dimensions,$"Could not parse viewBox attribute value in <svg> element");
 			} else if (viewBoxElements.Count != 4)
 			{
-				ctx.AddParseError($"Could not parse viewBox attribute value in <svg> element");
+				ctx.AddParseError(SvgParseCategory.Dimensions,$"Could not parse viewBox attribute value in <svg> element");
 			}
 			else if(viewBoxElements[0] != 0 || viewBoxElements[1] != 0 || viewBoxElements[2] != widthParsed ||
 			        viewBoxElements[3] != heightParsed)
 			{
-				ctx.AddParseError($"viewBox attribute value error in <svg> element. Expected '0 0 {widthParsed} {heightParsed}', but got '{viewBoxElements[0]} {viewBoxElements[1]} {viewBoxElements[2]} {viewBoxElements[3]}.'");
+				ctx.AddParseError(SvgParseCategory.Dimensions,$"viewBox attribute value error in <svg> element. Expected '0 0 {widthParsed} {heightParsed}', but got '{viewBoxElements[0]} {viewBoxElements[1]} {viewBoxElements[2]} {viewBoxElements[3]}.'");
 			}
 		}
 		
@@ -184,7 +184,7 @@ internal static class SvgCrawler
 			.ToList();
 
 		if (duplicates is {Count: > 0})
-			ctx.AddParseError($"Duplicate connector id's found: {string.Join(",", duplicates)}");
+			ctx.AddParseError(SvgParseCategory.Connector,$"Duplicate connector id's found: {string.Join(",", duplicates)}");
 		
 		if (ctx.Options.RemoveAnnotations)
 			annotationsElement.Remove();
@@ -202,11 +202,11 @@ internal static class SvgCrawler
 			    out var direction))
 		{
 			if (direction is < 0 or > 360)
-				ctx.AddParseError($"Invalid connector direction '{direction}'. Accepted value: 0 <= DIR <= 360. Element: {element}");
+				ctx.AddParseError(SvgParseCategory.Connector,$"Invalid connector direction '{direction}'. Accepted value: 0 <= DIR <= 360. Element: {element}");
 		}
 		else
 		{
-			ctx.AddParseError($"Could not parse connector direction from element: {element}");
+			ctx.AddParseError(SvgParseCategory.Connector,$"Could not parse connector direction from element: {element}");
 			direction = -1;
 		}
 		
@@ -216,7 +216,7 @@ internal static class SvgCrawler
 		if (!double.TryParse(cx?.Value, NumberStyles.Any, CultureInfo.InvariantCulture,
 			    out var xParsed))
 		{
-			ctx.AddParseError($"Could not parse x-coordinate from: {element}");
+			ctx.AddParseError(SvgParseCategory.Connector,$"Could not parse x-coordinate from: {element}");
 			xParsed = -1d;
 		}
 		
@@ -226,7 +226,7 @@ internal static class SvgCrawler
 		if (!double.TryParse(cy?.Value, NumberStyles.Any, CultureInfo.InvariantCulture,
 			    out var yParsed))
 		{
-			ctx.AddParseError($"Could not parse y-coordinate from: {element}");
+			ctx.AddParseError(SvgParseCategory.Connector,$"Could not parse y-coordinate from: {element}");
 			yParsed = -1d;
 		}
 		
@@ -234,7 +234,7 @@ internal static class SvgCrawler
 
 		if (string.IsNullOrEmpty(id))
 		{
-			ctx.AddParseError($"Could not parse connector Id from: {element}");
+			ctx.AddParseError(SvgParseCategory.Connector,$"Could not parse connector Id from: {element}");
 		}
 		
 		ctx.ExtractedData.Connectors.Add(new EngineeringSymbolConnector

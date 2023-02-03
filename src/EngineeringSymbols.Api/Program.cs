@@ -24,32 +24,56 @@ app.UseHttpsRedirection();
 
 var symbols = app.MapGroup("/symbols");
 
-symbols.MapGet("/", GetAllSymbols)
-			.WithName("GetSymbolsList")
-			.WithOpenApi();
+//symbols.MapGet("/", GetAllSymbols)
+//			.WithName("GetSymbolsList")
+//			.WithOpenApi();
 
 
-symbols.MapGet("/detailed", GetAllSymbols);
-symbols.MapGet("/{id}", GetAllSymbols);
-symbols.MapPost("/", GetAllSymbols);
-symbols.MapPut("/{id}", GetAllSymbols);
-symbols.MapDelete("/{id}", GetAllSymbols);
+//symbols.MapGet("/detailed", GetAllSymbols);
+//symbols.MapGet("/{id}", GetAllSymbols);
+symbols.MapPost("/", Upload);
+//symbols.MapPut("/{id}", GetAllSymbols);
+//symbols.MapDelete("/{id}", GetAllSymbols);
 
 app.Run();
 
 
-static async Task<IResult> GetAllSymbols(string db)
+static async Task<IResult> Upload(IFormFile file)
 {
-	return TypedResults.Ok("Yes");
-}
+	var length = file.Length;
+	if (length <= 0)
+		return TypedResults.Problem("No");
 
-var opts = (SvgParserOptions opt) =>
-{
-	opt.FillColor = "";
-	opt.RemoveAnnotations = true;
-	opt.StrokeColor = "sd";
-	opt.AnnotationsElementId = "sdsd";
-	opt.ConnectorFillColor = "sdsd";
-	opt.IncludeSvgString = true;
-	opt.IncludeRawSvgString = false;
-};
+	await using var fileStream = file.OpenReadStream();
+	var bytes = new byte[length];
+	var a = fileStream.Read(bytes, 0, (int)file.Length);
+
+	var svgString = System.Text.Encoding.UTF8.GetString(bytes);
+
+	return SvgParser.FromString(svgString, opt =>
+		{ opt.IncludeSvgString = false; })
+		.Match<IResult>(result =>
+		{
+			if (result.IsSuccess && result.EngineeringSymbol != null)
+			{
+				return TypedResults.Ok(result.EngineeringSymbol);
+			}
+
+			return TypedResults.ValidationProblem(
+				result.ParseErrors.Fold(
+					new Dictionary<string, string[]>(), (map, pair) =>
+					{
+						map.Add(pair.Key, pair.Value.ToArray());
+						return map;
+					}));
+		},
+		failure =>
+		{
+			if (failure is SvgParseErrorException exception)
+			{
+				return TypedResults.Problem(exception.Message, statusCode: StatusCodes.Status400BadRequest);
+			}
+
+			return TypedResults.Problem(failure.Message, statusCode: StatusCodes.Status500InternalServerError);
+		});
+}

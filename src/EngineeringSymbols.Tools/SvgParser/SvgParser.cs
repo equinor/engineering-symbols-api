@@ -4,9 +4,9 @@ namespace EngineeringSymbols.Tools.SvgParser;
 
 public static class SvgParser
 {
-	public static Result<EngineeringSymbol> FromString(string svgString, Action<SvgParserOptions>? options = null)
+	public static Result<SvgParserResult> FromString(string svgString, Action<SvgParserOptions>? options = null)
 	{
-		return new Result<EngineeringSymbol>(new NotImplementedException());
+		return ParseSvgFlow(LoadRootXElementFromString(svgString), options);
 	}
 	
 	public static Result<SvgParserResult> FromFile(string filepath, Action<SvgParserOptions>? options = null)
@@ -31,6 +31,20 @@ public static class SvgParser
 			var mergedOptions = new SvgParserOptions();
 			options?.Invoke(mergedOptions);
 			return new SvgParserContext { Options = mergedOptions};
+		});
+	}
+	
+	private static Func<SvgParserContext, Try<SvgParserContext>> LoadRootXElementFromString(string svgString)
+	{
+		return (SvgParserContext ctx) => Try(() =>
+		{
+			return Try(() => XElement.Parse(svgString))
+				.Map(el =>
+				{
+					ctx.SvgRootElement = el;
+					return ctx;
+				})
+				.IfFail(e => throw new SvgParseErrorException("Failed to load SVG from string"));
 		});
 	}
 	

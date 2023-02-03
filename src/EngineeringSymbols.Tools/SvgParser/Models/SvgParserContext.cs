@@ -2,12 +2,19 @@ using System.Xml.Linq;
 
 namespace EngineeringSymbols.Tools.SvgParser.Models;
 
+public enum SvgParseCategory
+{
+    Dimensions,
+    Connector,
+    
+}
+
 internal class SvgParserContext
 {
     public SvgParserOptions Options { get; set; }
     
     public bool HasParseErrors => ParseErrors.Count == 0;
-    public List<string> ParseErrors { get; } = new();
+    private Dictionary<string, List<string>> ParseErrors { get; } = new();
 
     public ExtractedSvgData ExtractedData { get; } = new();
 	
@@ -28,9 +35,17 @@ internal class SvgParserContext
             }, ParseErrors);
     }
 
-    public void AddParseError(string errorMessage)
+    public void AddParseError(SvgParseCategory category, string errorMessage)
     {
-        ParseErrors.Add(errorMessage);
+        var key = Enum.GetName(typeof(SvgParseCategory), category) + " - " + ExtractedData.Id;
+
+        if (ParseErrors.ContainsKey(key))
+        {
+            ParseErrors[key].Add(errorMessage);
+        }
+        else
+        {
+            ParseErrors.Add(key, new List<string> {errorMessage});
+        }
     }
-	
 }
