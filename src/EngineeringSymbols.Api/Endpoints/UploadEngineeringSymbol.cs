@@ -12,7 +12,7 @@ public static class UploadEngineeringSymbol
             .Bind(Save(symbolService))
             .Match(
                 Succ: ctx => TypedResults.Ok(ctx.EngineeringSymbolDto),
-                Fail: OnFailure);
+                Fail: Common.OnFailure);
     
     private static TryAsync<UploadContext> CreateUploadContext(IFormFile file) => 
         TryAsync(() =>
@@ -34,7 +34,7 @@ public static class UploadEngineeringSymbol
             if (length is <= 0 or > maxSize * 1024)
                 throw new ValidationException($"File size is 0 or greater than {maxSize} KiB");
 
-            var fileContent = await ReadFileContentToString(ctx.File);
+            var fileContent = await Common.ReadFileContentToString(ctx.File);
             
             return ctx with { FileContent = fileContent };
         });
@@ -78,42 +78,6 @@ public static class UploadEngineeringSymbol
                     Some: dto => ctx with { EngineeringSymbolDto = dto },
                     None: () => throw new ValidationException("Failed to read file contents")));
             
-
-    private static async Task<string> ReadFileContentToString(IFormFile file)
-    {
-        string result;
-        
-        try
-        {
-            await using var fileStream = file.OpenReadStream();
-            var bytes = new byte[file.Length];
-            var a = await fileStream.ReadAsync(bytes, 0, (int)file.Length);
-            result = System.Text.Encoding.UTF8.GetString(bytes);
-        }
-        catch (Exception _)
-        {
-            // TODO: log ex here?
-            throw new ValidationException("Failed to read file contents");
-        }
-
-        return result;
-    }
-    
-    private static IResult OnFailure(Exception ex)
-    {
-        if (ex is ValidationException validationException)
-        {
-            return TypedResults.ValidationProblem(validationException.Errors, validationException.Message, title: "SVG Validation Error");
-        }
-        
-        if (ex is SvgParseException svgParseException)
-        {
-            return TypedResults.Problem(svgParseException.Message, title: "SVG File Error",statusCode: StatusCodes.Status400BadRequest);
-        }
-
-        // TODO: Log 'ex'
-        return TypedResults.Problem("Unexpected error", statusCode: StatusCodes.Status500InternalServerError);
-    }
     
     private record UploadContext(IFormFile File)
     {
