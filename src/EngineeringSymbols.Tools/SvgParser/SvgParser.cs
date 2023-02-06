@@ -42,7 +42,6 @@ public static class SvgParser
 				{ 
 					ctx.SvgRootElement = el; 
 					return ctx;
-					
 				})
 				.IfFail(_ => throw new SvgParseException("Failed to load SVG from string"));
 		

@@ -10,5 +10,5 @@ public interface IEngineeringSymbolService
 
 	//Task<EngineeringSymbolDto> GetSymbol(string id);
 	
-	Task<EngineeringSymbolDto> SaveSymbol(EngineeringSymbolDto dto);
+	Task<Option<EngineeringSymbolDto>> SaveSymbolAsync(EngineeringSymbolDto dto);
 }

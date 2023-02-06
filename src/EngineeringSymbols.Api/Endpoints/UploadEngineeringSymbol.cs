@@ -1,6 +1,3 @@
-using EngineeringSymbols.Api.Models;
-using EngineeringSymbols.Api.Services;
-using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser;
 using EngineeringSymbols.Tools.SvgParser.Models;
 
@@ -66,22 +63,21 @@ public static class UploadEngineeringSymbol
                         
                         if (result.EngineeringSymbol == null)
                         {
-                            throw new ValidationException("");
+                            throw new ValidationException("SVG parse error");
                         }
                     
                         return Task.FromResult(ctx with { EngineeringSymbolDto = result.EngineeringSymbol.ToDto() }); 
                     }, 
-                    Fail: ex => throw ex)
-            );
+                    Fail: ex => throw ex));
   
     
     private static Func<UploadContext, TryAsync<UploadContext>> Save(IEngineeringSymbolService symbolService) => 
         ctx => TryAsync(
-            async () => 
-            { 
-                await symbolService.SaveSymbol(ctx.EngineeringSymbolDto); 
-                return ctx with { };
-            });
+            async () => await symbolService.SaveSymbolAsync(ctx.EngineeringSymbolDto)
+                .Match(
+                    Some: dto => ctx with { EngineeringSymbolDto = dto },
+                    None: () => throw new ValidationException("Failed to read file contents")));
+            
 
     private static async Task<string> ReadFileContentToString(IFormFile file)
     {
@@ -118,13 +114,12 @@ public static class UploadEngineeringSymbol
         // TODO: Log 'ex'
         return TypedResults.Problem("Unexpected error", statusCode: StatusCodes.Status500InternalServerError);
     }
-}
-
-public record UploadContext(IFormFile File)
-{
-    public string FileId { get; init; }
-    public string FileContent { get; init; }
-    public EngineeringSymbolDto EngineeringSymbolDto { get; init; }
     
-    public string SymbolCreatedUrl { get; init; } 
+    private record UploadContext(IFormFile File)
+    {
+        public string FileId { get; init; }
+        public string FileContent { get; init; }
+        public EngineeringSymbolDto EngineeringSymbolDto { get; init; }
+        public string CreatedUri { get; init; } 
+    }
 }

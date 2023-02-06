@@ -1,7 +1,3 @@
-using EngineeringSymbols.Api.Services;
-using EngineeringSymbols.Tools.SvgParser;
-using EngineeringSymbols.Tools.SvgParser.Models;
-
 namespace EngineeringSymbols.Api.Infrastructure;
 
 public static class Main

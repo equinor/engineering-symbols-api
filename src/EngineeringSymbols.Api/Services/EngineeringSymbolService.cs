@@ -9,11 +9,10 @@ public class EngineeringSymbolService : IEngineeringSymbolService
         
     }
     
-    public async Task<EngineeringSymbolDto> SaveSymbol(EngineeringSymbolDto dto)
+    public async Task<Option<EngineeringSymbolDto>> SaveSymbolAsync(EngineeringSymbolDto dto)
     {
-        
         Console.WriteLine($"Save symbol {dto.Id}!");
 
-        return dto with {};
+        return Optional(dto with { });
     }
 }
