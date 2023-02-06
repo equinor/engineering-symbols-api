@@ -8,7 +8,7 @@ namespace EngineeringSymbols.Api.Endpoints;
 
 public static class UploadEngineeringSymbol
 {
-    public static async Task<IResult> Endpoint(IFormFile file, IEngineeringSymbolService symbolService) => 
+    public static async Task<IResult> Endpoint(IFormFile file, IEngineeringSymbolService symbolService) =>
         await CreateUploadContext(file)
             .Bind(ReadFileToString)
             .Bind(ParseSvgString)
@@ -42,8 +42,8 @@ public static class UploadEngineeringSymbol
             return ctx with { FileContent = fileContent };
         });
 
-    private static TryAsync<UploadContext> ParseSvgString(UploadContext ctx) 
-        => TryAsync(() =>
+    private static TryAsync<UploadContext> ParseSvgString(UploadContext ctx) =>
+        TryAsync(() => 
             SvgParser.FromString(
                     ctx.FileContent, 
                     opt => 
@@ -75,12 +75,13 @@ public static class UploadEngineeringSymbol
             );
   
     
-    private static Func<UploadContext, TryAsync<UploadContext>> Save(IEngineeringSymbolService symbolService) 
-        => ctx => TryAsync(async () =>
-        {
-            await symbolService.SaveSymbol(ctx.EngineeringSymbolDto);
-            return ctx with { };
-        });
+    private static Func<UploadContext, TryAsync<UploadContext>> Save(IEngineeringSymbolService symbolService) => 
+        ctx => TryAsync(
+            async () => 
+            { 
+                await symbolService.SaveSymbol(ctx.EngineeringSymbolDto); 
+                return ctx with { };
+            });
 
     private static async Task<string> ReadFileContentToString(IFormFile file)
     {
