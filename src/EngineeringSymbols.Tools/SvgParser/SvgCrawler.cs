@@ -37,6 +37,7 @@ internal static class SvgCrawler
 	/// 
 	/// </summary>
 	/// <param name="element"></param>
+	/// <param name="ctx"></param>
 	private static void TransformSvgElement(this XElement element, SvgParserContext ctx)
 	{
 		// Extract SVG height

@@ -30,10 +30,10 @@ public class SvgParserTests
         Assert.False(result.IsSuccess);
 
         Assert.True(result.Match(
-            _ => false,
-            failure =>
+            Succ: _ => false,
+            Fail: failure =>
         {
-            Assert.True(failure is SvgParseErrorException);
+            Assert.True(failure is SvgParseException);
             output.WriteLine($"Exception message: {failure.Message}");
             return true;
         }));
@@ -51,7 +51,7 @@ public class SvgParserTests
             _ => false,
             failure =>
             {
-                Assert.True(failure is SvgParseErrorException);
+                Assert.True(failure is SvgParseException);
                 output.WriteLine($"Exception message: {failure.Message}");
                 return true;
             }));
@@ -73,7 +73,7 @@ public class SvgParserTests
             },
             failure =>
             {
-                Assert.True(failure is SvgParseErrorException);
+                Assert.True(failure is SvgParseException);
                 output.WriteLine($"Exception message: {failure.Message}");
                 return true;
             }));
