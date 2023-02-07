@@ -4,11 +4,11 @@ namespace EngineeringSymbols.Api.Services;
 
 public interface IEngineeringSymbolService
 {
-	//Task<List<string>> GetSymbols();
+	TryAsync<List<string>> GetSymbolsAsync();
 
 	//Task<List<EngineeringSymbolDto>> GetSymbolsDetailed();
 
-	//Task<EngineeringSymbolDto> GetSymbol(string id);
+	TryAsync<EngineeringSymbolDto> GetSymbolAsync(string id);
 	
-	Task<Option<EngineeringSymbolDto>> SaveSymbolAsync(EngineeringSymbolDto dto);
+	TryAsync<EngineeringSymbolDto> SaveSymbolAsync(EngineeringSymbolDto dto);
 }

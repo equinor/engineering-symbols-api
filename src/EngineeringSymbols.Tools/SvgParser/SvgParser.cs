@@ -34,6 +34,27 @@ public static class SvgParser
 		};
 	}
 	
+	private static Func<SvgParserContext, Try<SvgParserContext>> LoadRootXElementFromString2(string svgString)
+	{
+		return (SvgParserContext ctx) => Try(() =>
+		{
+			XElement el;
+
+			try
+			{
+				el = XElement.Parse(svgString);
+			}
+			catch
+			{
+				throw new SvgParseException("Failed to load SVG from string");
+			}
+			
+			ctx.SvgRootElement = el; 
+			
+			return ctx;
+		});
+	}
+	
 	private static Func<SvgParserContext, Try<SvgParserContext>> LoadRootXElementFromString(string svgString)
 	{
 		return (SvgParserContext ctx) => () => 
@@ -44,7 +65,6 @@ public static class SvgParser
 					return ctx;
 				})
 				.IfFail(_ => throw new SvgParseException("Failed to load SVG from string"));
-		
 	}
 	
 	private static Func<SvgParserContext, Try<SvgParserContext>> LoadRootXElementFromFile(string filePath)

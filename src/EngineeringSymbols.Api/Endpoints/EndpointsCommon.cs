@@ -7,20 +7,18 @@ namespace EngineeringSymbols.Api.Endpoints;
 /// </summary>
 public static class Common
 {
-    public static IResult OnFailure(Exception ex)
+    public static IResult OnFailure(Exception exception)
     {
-        if (ex is ValidationException validationException)
-        {
-            return TypedResults.ValidationProblem(validationException.Errors, validationException.Message, title: "Validation Error");
-        }
-        
-        if (ex is SvgParseException svgParseException)
-        {
-            return TypedResults.Problem(svgParseException.Message, title: "SVG File Error",statusCode: StatusCodes.Status400BadRequest);
-        }
-
-        // TODO: Log 'ex'
-        return TypedResults.Problem("Unexpected error", statusCode: StatusCodes.Status500InternalServerError);
+        // TODO: Log stuff
+        return exception.Match<IResult>()
+            .With<ValidationException>(ex =>
+                TypedResults.ValidationProblem(ex.Errors, ex.Message, title: "Validation Error"))
+            .With<SvgParseException>(ex =>
+                TypedResults.Problem(ex.Message, title: "SVG Parse Error", statusCode: StatusCodes.Status400BadRequest))
+            .With<RepositoryException>(ex => 
+                TypedResults.Problem(ex.Message, title: "DB Error", statusCode: StatusCodes.Status400BadRequest))
+            .Otherwise(_ =>
+                TypedResults.Problem("Unexpected error", statusCode: StatusCodes.Status500InternalServerError));
     }
     
     public static async Task<string> ReadFileContentToString(IFormFile file)

@@ -5,7 +5,7 @@ namespace EngineeringSymbols.Api.Endpoints;
 
 public static class UploadEngineeringSymbol
 {
-    public static async Task<IResult> Endpoint(IFormFile file, IEngineeringSymbolService symbolService) =>
+    public static async Task<IResult> UploadAsync(IFormFile file, IEngineeringSymbolService symbolService) =>
         await CreateUploadContext(file)
             .Bind(ReadFileToString)
             .Bind(ParseSvgString)
@@ -41,24 +41,18 @@ public static class UploadEngineeringSymbol
 
     private static TryAsync<UploadContext> ParseSvgString(UploadContext ctx) =>
         TryAsync(() => 
-            SvgParser.FromString(
-                    ctx.FileContent, 
-                    opt => 
-                    { 
-                        opt.IncludeSvgString = false; 
-                        opt.SymbolId = ctx.FileId; 
-                    })
+            SvgParser.FromString(ctx.FileContent, opt => 
+                { 
+                    opt.IncludeSvgString = false; 
+                    opt.SymbolId = ctx.FileId;
+                })
                 .Match(
                     Succ: result => 
                     { 
                         if (result.ParseErrors.Count > 0)
                         {
-                            throw new ValidationException(result.ParseErrors.Fold(
-                                new Dictionary<string, string[]>(), (map, pair) =>
-                                {
-                                    map.Add(pair.Key, pair.Value.ToArray());
-                                    return map;
-                                }));
+                            throw new ValidationException(
+                                result.ParseErrors.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray()));
                         }
                         
                         if (result.EngineeringSymbol == null)
@@ -69,16 +63,15 @@ public static class UploadEngineeringSymbol
                         return Task.FromResult(ctx with { EngineeringSymbolDto = result.EngineeringSymbol.ToDto() }); 
                     }, 
                     Fail: ex => throw ex));
-  
-    
-    private static Func<UploadContext, TryAsync<UploadContext>> Save(IEngineeringSymbolService symbolService) => 
-        ctx => TryAsync(
-            async () => await symbolService.SaveSymbolAsync(ctx.EngineeringSymbolDto)
-                .Match(
-                    Some: dto => ctx with { EngineeringSymbolDto = dto },
-                    None: () => throw new ValidationException("Failed to read file contents")));
-            
-    
+
+
+    private static Func<UploadContext, TryAsync<UploadContext>> Save(IEngineeringSymbolService symbolService) =>
+        ctx => symbolService.SaveSymbolAsync(ctx.EngineeringSymbolDto)
+                .Map(dto => ctx with { EngineeringSymbolDto = dto });
+
+ 
+
+
     private record UploadContext(IFormFile File)
     {
         public string FileId { get; init; }

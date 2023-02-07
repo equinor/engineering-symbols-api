@@ -1,3 +1,5 @@
+using EngineeringSymbols.Api.Repositories;
+
 namespace EngineeringSymbols.Api.Infrastructure;
 
 public static class Main
@@ -10,6 +12,7 @@ public static class Main
         builder.Services.AddSwaggerGen();
         
         builder.Services.AddTransient<IEngineeringSymbolService, EngineeringSymbolService>();
+        builder.Services.AddSingleton<IEngineeringSymbolRepository, InMemoryTestRepository>();
         
         // Construct WebApplication
         var app = builder.Build();

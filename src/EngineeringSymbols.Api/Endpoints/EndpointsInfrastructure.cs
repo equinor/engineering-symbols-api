@@ -6,7 +6,9 @@ public static class EndpointsInfrastructure
     {
         var symbols = app.MapGroup("/symbols");
         
-        symbols.MapPost("/", UploadEngineeringSymbol.Endpoint);
+        symbols.MapGet("/", GetEngineeringSymbols.GetAllAsync);
+        symbols.MapGet("/{id}", GetEngineeringSymbols.GetByIdAsync);
+        symbols.MapPost("/", UploadEngineeringSymbol.UploadAsync);
 
         return app;
     }
