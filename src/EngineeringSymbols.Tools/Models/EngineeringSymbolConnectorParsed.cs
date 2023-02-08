@@ -1,12 +1,7 @@
 namespace EngineeringSymbols.Tools.Models;
 
 
-public record EngineeringSymbolConnector2(string Id, Point RelativePosition, int Direction)
-{
-	public Point RelativePosition { get; init; } = new();
-}
-
-public record EngineeringSymbolConnector
+public record EngineeringSymbolConnectorParsed
 {
 	public string Id { get; init; }
 

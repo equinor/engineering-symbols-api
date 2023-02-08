@@ -238,7 +238,7 @@ internal static class SvgCrawler
 			ctx.AddParseError(SvgParseCategory.Connector,$"Could not parse connector Id from: {element}");
 		}
 		
-		ctx.ExtractedData.Connectors.Add(new EngineeringSymbolConnector
+		ctx.ExtractedData.Connectors.Add(new EngineeringSymbolConnectorParsed
 		{
 			Id = id,
 			Direction = direction,

@@ -15,12 +15,32 @@ public static class Common
                 TypedResults.ValidationProblem(ex.Errors, ex.Message, title: "Validation Error"))
             .With<SvgParseException>(ex =>
                 TypedResults.Problem(ex.Message, title: "SVG Parse Error", statusCode: StatusCodes.Status400BadRequest))
-            .With<RepositoryException>(ex => 
-                TypedResults.Problem(ex.Message, title: "DB Error", statusCode: StatusCodes.Status400BadRequest))
+            .With<RepositoryException>(OnRepositoryException)
             .Otherwise(_ =>
                 TypedResults.Problem("Unexpected error", statusCode: StatusCodes.Status500InternalServerError));
     }
-    
+
+    private static IResult OnRepositoryException(RepositoryException ex)
+    {
+        switch (ex.RepositoryOperationError)
+        {
+            case RepositoryOperationError.EntityNotFound:
+                return TypedResults.NotFound();
+            case RepositoryOperationError.EntityAlreadyExists:
+                return TypedResults.UnprocessableEntity();
+            case RepositoryOperationError.Unknown:
+            default:
+                return TypedResults.BadRequest();
+        }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    /// <exception cref="ValidationException"></exception>
     public static async Task<string> ReadFileContentToString(IFormFile file)
     {
         string result;

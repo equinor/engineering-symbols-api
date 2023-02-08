@@ -71,9 +71,14 @@ public static class SvgParser
 	{
 		return (SvgParserContext ctx) => () =>
 			filePath.Apply(path => Try(() => Path.GetFullPath(path)))
-				.Bind(fullPath => Try(() => XElement.Load(fullPath)))
+				.Bind(fullPath => Try(() =>
+				{
+					ctx.ExtractedData.Filename = Path.GetFileName(fullPath);
+					return XElement.Load(fullPath);
+				}))
 				.Map(el =>
 				{
+					
 					ctx.SvgRootElement = el;
 					return ctx;
 				})
@@ -100,7 +105,7 @@ public static class SvgParser
 			// Store input SVG before transforming it
 			if (ctx.Options.IncludeRawSvgString)
 				ctx.ExtractedData.RawSvgInputString = ctx.SvgRootElement.ToString();
-			
+
 			return SvgCrawler.ExtractDataAndTransformElement(ctx.SvgRootElement, ctx);
 		};
 	}

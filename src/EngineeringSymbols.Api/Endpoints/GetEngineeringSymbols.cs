@@ -12,6 +12,7 @@ public static class GetEngineeringSymbols
     
     public static async Task<IResult> GetByIdAsync(string id, IEngineeringSymbolService symbolService) => 
         await symbolService.GetSymbolAsync(id)
+            .Map(symbol => symbol.ToResponseDto())
             .Match(
                 Succ: TypedResults.Ok,
                 Fail: Common.OnFailure);

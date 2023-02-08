@@ -86,7 +86,7 @@ public class SvgParserTests
     {
         var fileParses = SvgParser.FromFile(filePath).Match(result =>
         {
-            var symbol = result.EngineeringSymbol;
+            var symbol = result.EngineeringSymbolParsed;
             Assert.NotNull(symbol);
             if (result.IsSuccess)
             {
@@ -116,7 +116,7 @@ public class SvgParserTests
                 output.WriteLine("Parse Errors:");
                 OutputAsJson(result.ParseErrors);
                 output.WriteLine("Connectors:");
-                OutputAsJson(result.EngineeringSymbol.Connectors);
+                OutputAsJson(result.EngineeringSymbolParsed.Connectors);
                 return result.IsSuccess;
             },
             failure =>
@@ -127,17 +127,17 @@ public class SvgParserTests
             }));
     }
     
-    public static void AssertValidEngineeringSymbol(EngineeringSymbol symbol)
+    public static void AssertValidEngineeringSymbol(EngineeringSymbolParsed symbolParsed)
     {
         //Assert.NotNull(symbol.Id);
-        Assert.True(symbol.Height % 24 == 0);
-        Assert.True(symbol.Width % 24 == 0);
+        Assert.True(symbolParsed.Height % 24 == 0);
+        Assert.True(symbolParsed.Width % 24 == 0);
         // Both strings cant be null at the same time
-        Assert.True(symbol.GeometryString != null && symbol.SvgString != null);
+        Assert.True(symbolParsed.GeometryString != null && symbolParsed.SvgString != null);
         
-        Assert.NotNull(symbol.Connectors);
+        Assert.NotNull(symbolParsed.Connectors);
         
-        foreach (var c in symbol.Connectors)
+        foreach (var c in symbolParsed.Connectors)
         {
             Assert.NotNull(c.Id);
             Assert.True(c.Id.Length > 0);

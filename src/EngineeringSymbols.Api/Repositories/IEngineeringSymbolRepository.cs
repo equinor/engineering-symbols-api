@@ -1,8 +1,10 @@
+using EngineeringSymbols.Api.Entities;
+
 namespace EngineeringSymbols.Api.Repositories;
 
 public interface IEngineeringSymbolRepository
 {
-    TryAsync<List<string>> GetAllEngineeringSymbols();
-    TryAsync<EngineeringSymbolDto> GetEngineeringSymbolByIdAsync(string id);
-    TryAsync<EngineeringSymbolDto> InsertEngineeringSymbolAsync(EngineeringSymbolDto symbol);
+    TryAsync<IEnumerable<string>> GetAllEngineeringSymbolsAsync();
+    TryAsync<EngineeringSymbol> GetEngineeringSymbolByIdAsync(string id);
+    TryAsync<EngineeringSymbol> InsertEngineeringSymbolAsync(EngineeringSymbolCreateDto createDto);
 }

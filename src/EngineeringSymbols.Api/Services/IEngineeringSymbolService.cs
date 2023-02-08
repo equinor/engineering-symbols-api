@@ -1,14 +1,14 @@
+using EngineeringSymbols.Api.Entities;
 using EngineeringSymbols.Api.Models;
+using EngineeringSymbols.Tools.Models;
 
 namespace EngineeringSymbols.Api.Services;
 
 public interface IEngineeringSymbolService
 {
-	TryAsync<List<string>> GetSymbolsAsync();
-
-	//Task<List<EngineeringSymbolDto>> GetSymbolsDetailed();
-
-	TryAsync<EngineeringSymbolDto> GetSymbolAsync(string id);
+	TryAsync<IEnumerable<string>> GetSymbolsAsync();
 	
-	TryAsync<EngineeringSymbolDto> SaveSymbolAsync(EngineeringSymbolDto dto);
+	TryAsync<EngineeringSymbol> GetSymbolAsync(string id);
+	
+	TryAsync<EngineeringSymbol> CreateSymbolAsync(EngineeringSymbolCreateDto createDto);
 }

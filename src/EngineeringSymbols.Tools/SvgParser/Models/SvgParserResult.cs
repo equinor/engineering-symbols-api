@@ -2,14 +2,14 @@ namespace EngineeringSymbols.Tools.SvgParser.Models;
 
 public record SvgParserResult
 {
-    public EngineeringSymbol? EngineeringSymbol { get; }
+    public EngineeringSymbolParsed? EngineeringSymbolParsed { get; }
     
-    public bool IsSuccess => ParseErrors.Count == 0 && EngineeringSymbol != null;
+    public bool IsSuccess => ParseErrors.Count == 0 && EngineeringSymbolParsed != null;
     public Dictionary<string, List<string>> ParseErrors { get; } = new();
 
-    public SvgParserResult(EngineeringSymbol symbol)
+    public SvgParserResult(EngineeringSymbolParsed symbolParsed)
     {
-	    EngineeringSymbol = symbol;
+	    EngineeringSymbolParsed = symbolParsed;
     }
     
     public SvgParserResult(Dictionary<string, List<string>> parseErrors)
@@ -17,9 +17,9 @@ public record SvgParserResult
 	    ParseErrors = parseErrors;
     }
     
-    public SvgParserResult(EngineeringSymbol symbol, Dictionary<string, List<string>> parseErrors)
+    public SvgParserResult(EngineeringSymbolParsed symbolParsed, Dictionary<string, List<string>> parseErrors)
     {
-	    EngineeringSymbol = symbol;
+	    EngineeringSymbolParsed = symbolParsed;
 	    ParseErrors = parseErrors;
     }
 	

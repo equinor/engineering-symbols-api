@@ -23,11 +23,10 @@ internal class SvgParserContext
     public SvgParserResult ToSvgParserResult()
     {
         return new SvgParserResult(
-            new EngineeringSymbol
+            new EngineeringSymbolParsed
             {
-                Id = ExtractedData.Id,
+                Filename = ExtractedData.Filename,
                 SvgString = Options.IncludeSvgString ? SvgRootElement.ToString() : null,
-                SvgStringRaw = ExtractedData.RawSvgInputString,
                 GeometryString = string.Join("", ExtractedData.PathData),
                 Width = ExtractedData.Width,
                 Height = ExtractedData.Height,
@@ -37,7 +36,8 @@ internal class SvgParserContext
 
     public void AddParseError(SvgParseCategory category, string errorMessage)
     {
-        var key = Enum.GetName(typeof(SvgParseCategory), category) + " - " + ExtractedData.Id;
+        var symId = ExtractedData.Filename != null ? " - " + ExtractedData.Filename : string.Empty;
+        var key = Enum.GetName(typeof(SvgParseCategory), category) + symId;
 
         if (ParseErrors.ContainsKey(key))
         {
