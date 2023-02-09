@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using EngineeringSymbols.Api.Repositories;
+using EngineeringSymbols.Api.Repositories.Fuseki;
 
 namespace EngineeringSymbols.Api.Infrastructure;
 
@@ -13,13 +14,20 @@ public static class Main
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         
+        builder.Services.AddHttpClient<IFusekiService, FusekiService>();
+        
         builder.Services.ConfigureHttpJsonOptions(options =>
         {
             //options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         });
         
         builder.Services.AddTransient<IEngineeringSymbolService, EngineeringSymbolService>();
-        builder.Services.AddSingleton<IEngineeringSymbolRepository, InMemoryTestRepository>();
+
+        
+        builder.Services.AddSingleton<IEngineeringSymbolRepository, FusekiRepository>();
+        //builder.Services.AddSingleton<IEngineeringSymbolRepository, InMemoryTestRepository>();
+        
+        
         
         // Construct WebApplication
         var app = builder.Build();

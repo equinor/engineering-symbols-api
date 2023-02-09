@@ -1,31 +1,34 @@
+using System.Security.Claims;
+using System.Security.Principal;
 using EngineeringSymbols.Api.Entities;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser;
 using EngineeringSymbols.Tools.SvgParser.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EngineeringSymbols.Api.Endpoints;
 
 public static class UploadEngineeringSymbol
 {
-    public static async Task<IResult> UploadAsync(HttpContext httpContext, IFormFile file, IEngineeringSymbolService symbolService) =>
-        await CreateUploadContext(httpContext, file)
+    public static async Task<IResult> UploadAsync(ClaimsPrincipal user, [FromForm] IFormFile file, [FromServices] IEngineeringSymbolService symbolService) =>
+        await CreateUploadContext(user, file)
             .Bind(ReadFileToString)
             .Bind(ParseSvgString)
             .Bind(Save(symbolService))
             .Match(
-                Succ: ctx => TypedResults.Created(ctx.CreatedUri, ctx.EngineeringSymbolCompleteDto),
+                Succ: ctx => TypedResults.Created("TODO: ctx.CreatedUri", ctx.EngineeringSymbolCompleteDto),
                 Fail: Common.OnFailure);
     
-    private static TryAsync<UploadContext> CreateUploadContext(HttpContext httpContext, IFormFile file) => 
+    private static TryAsync<UploadContext> CreateUploadContext(IPrincipal user, IFormFile file) => 
         TryAsync(() =>
         {
             var fileId = file.FileName;
-            var user = httpContext.User.Identity?.Name ?? "Maverick";
+            var userId = user.Identity?.Name ?? "Maverick";
             
             if(!fileId.Split(".").Apply(s => s.Length > 0 && s.Last().ToLower() == "svg"))
                 throw new ValidationException("Only SVG files are supported");
             
-            return Task.FromResult(new UploadContext(file, user) {FileId = fileId});
+            return Task.FromResult(new UploadContext(file, userId) {FileId = fileId});
         });
     
     private static TryAsync<UploadContext> ReadFileToString(UploadContext ctx) => 
@@ -64,7 +67,7 @@ public static class UploadEngineeringSymbol
                             EngineeringSymbolCreateDto = result.EngineeringSymbolParsed.ToCreateDto(ctx.User)
                         }); 
                     }, 
-                    Fail: ex => throw ex));
+                    Fail: exception => throw exception));
 
 
     private static Func<UploadContext, TryAsync<UploadContext>> Save(IEngineeringSymbolService symbolService) =>
