@@ -1,0 +1,35 @@
+@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix symbol:    <http://rdf.engineering-symbols.no/lib/symbols/> .
+@prefix connector: <http://rdf.engineering-symbols.no/lib/connectors/> .
+@prefix prop:      <http://rdf.engineering-symbols.no/props/> .
+
+connector:wmamB9okLblO_C_3
+        prop:direction  "270" ;
+        prop:hasName    "3" ;
+        prop:positionX  "24.001" ;
+        prop:positionY  "9" .
+
+connector:wmamB9okLblO_C_2
+        prop:direction  "270" ;
+        prop:hasName    "2" ;
+        prop:positionX  "5.5" ;
+        prop:positionY  "28.5" .
+
+connector:wmamB9okLblO_C_1
+        prop:direction  "90" ;
+        prop:hasName    "1" ;
+        prop:positionX  "42.5" ;
+        prop:positionY  "28.5" .
+
+symbol:wmamB9okLblO  rdf:type   <http://rdf.engineering-symbols.no/types/symbol> ;
+        rdfs:label              "wmamB9okLblO" ;
+        prop:dateCreated        "2023-02-10T20:54:28.2639010+00:00" ;
+        prop:dateUpdated        "0001-01-01T00:00:00.0000000+00:00" ;
+        prop:hasConnector       connector:wmamB9okLblO_C_3 , connector:wmamB9okLblO_C_1 , connector:wmamB9okLblO_C_2 ;
+        prop:hasGeometry        "M23.6667 27.8333L14 8.49999H34L24.3333 27.8333L43 18.5V38.5L24 29L5 38.5V18.5L23.6667 27.8333ZM32.382 9.49999L15.618 9.49999L24 26.2639L32.382 9.49999ZM25.2361 28.5L42 36.882V20.118L25.2361 28.5ZM22.7639 28.5L6 20.118V36.882L22.7639 28.5Z" ;
+        prop:hasSourceFilename  "" ;
+        prop:hasSvgBase64       "PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBmaWxsPSIjMjMxZjIwIj4KICA8IS0tIFRISVMgRklMRSBTSE9VTEQgQkUgVkFMSUQgLS0+CiAgPGcgaWQ9IlBWMDAzQiI+CiAgICA8cGF0aCBpZD0iU3ltYm9sIiBkPSJNMjMuNjY2NyAyNy44MzMzTDE0IDguNDk5OTlIMzRMMjQuMzMzMyAyNy44MzMzTDQzIDE4LjVWMzguNUwyNCAyOUw1IDM4LjVWMTguNUwyMy42NjY3IDI3LjgzMzNaTTMyLjM4MiA5LjQ5OTk5TDE1LjYxOCA5LjQ5OTk5TDI0IDI2LjI2MzlMMzIuMzgyIDkuNDk5OTlaTTI1LjIzNjEgMjguNUw0MiAzNi44ODJWMjAuMTE4TDI1LjIzNjEgMjguNVpNMjIuNzYzOSAyOC41TDYgMjAuMTE4VjM2Ljg4MkwyMi43NjM5IDI4LjVaIiAvPgogIDwvZz4KPC9zdmc+" ;
+        prop:height             "48" ;
+        prop:owner              "Maverick" ;
+        prop:width              "48" .
