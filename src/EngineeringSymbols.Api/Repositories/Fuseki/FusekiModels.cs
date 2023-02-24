@@ -22,3 +22,10 @@ public class FusekiSelectResponse
     public FusekiHead Head { get; set; } = new();
     public FusekiResult Results { get; set; } = new();
 }
+
+public class FusekiAskResponse
+{
+    public FusekiHead Head { get; set; } = new();
+    public bool Boolean { get; set; }
+}
+

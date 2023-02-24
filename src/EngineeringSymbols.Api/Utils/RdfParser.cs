@@ -2,8 +2,6 @@ using System.Globalization;
 using EngineeringSymbols.Api.Entities;
 using EngineeringSymbols.Api.Repositories.Fuseki;
 using EngineeringSymbols.Tools.Models;
-using LanguageExt.Pretty;
-using LanguageExt.TypeClasses;
 using VDS.RDF;
 using VDS.RDF.Parsing;
 using INode = VDS.RDF.INode;
@@ -28,14 +26,17 @@ public static class RdfParser
 
         // Get symbol subject Iri
         var symbolSubjectV = graph.GetSymbolSubjectNode();
-        var sIri = symbolSubjectV.Map(node => node.Uri.AbsoluteUri).IfFail(() => null!);
+        
+        var sIri = symbolSubjectV.Map(node => node.Uri.AbsoluteUri).ToOption().IfNoneUnsafe(() => null);
         
         if(sIri == null)
             return Fail<Error, EngineeringSymbol>(Error.New("Symbol Subject node is missing"));
-
+        
         var idV = ValidateId(sIri);
         
-        var labelV = graph.GetStringLiteral(sIri, ESProp.HasLabelIri);
+        //var labelV = graph.GetStringLiteral(sIri, ESProp.HasLabelIri);
+        
+        var keyV = graph.GetStringLiteral(sIri, ESProp.HasEngSymKeyIri);
         
         var dateCreatedV = graph.GetDateTimeOffsetLiteral(sIri, ESProp.HasDateCreatedIri);
         var dateUpdatedV = graph.GetDateTimeOffsetLiteral(sIri, ESProp.HasDateUpdatedIri);
@@ -52,9 +53,9 @@ public static class RdfParser
         var heightV = graph.GetDoubleLiteral(sIri, ESProp.HasHeightIri);
         
         var connectorsIris = graph.GetObjectNodes(sIri, ESProp.HasConnectorIri)
-            .Map(nodes => nodes.Fold(new List<UriNode>{}, (uriNodes, node) =>
+            .Map(nodes => nodes.Fold(new List<UriNode>(), (uriNodes, node) =>
                 {
-                    var uriNode = GetUriNode(node).IfNone(() => null!);
+                    var uriNode = GetUriNode(node).IfNoneUnsafe(() => null);
                     if(uriNode != null)
                         uriNodes.Add(uriNode);
                     return uriNodes;
@@ -62,19 +63,15 @@ public static class RdfParser
             .Match(nodes => nodes, _ => new List<UriNode>{})
             .Select(node => node.Uri.AbsoluteUri)
             .ToList();
-
-
-
+        
         var connectorsV = graph.GetConnectors(connectorsIris);
         
-  
-        
-        return (idV, labelV, dateCreatedV, dateUpdatedV, ownerV, filenameV, svgB64V, geometryV, widthV, heightV, connectorsV).Apply(
-            (id, label, dateCreated, dateUpdated, owner, filename, svgB64, geometry, width, height, connectors) =>
+        return (idV, keyV, dateCreatedV, dateUpdatedV, ownerV, filenameV, svgB64V, geometryV, widthV, heightV, connectorsV).Apply(
+            (id, key, dateCreated, dateUpdated, owner, filename, svgB64, geometry, width, height, connectors) =>
                 new EngineeringSymbol
                 {
                     Id = id,
-                    Name = label,
+                    Key = key,
                     DateTimeCreated = dateCreated,
                     DateTimeUpdated = dateUpdated,
                     Owner = owner,
@@ -108,8 +105,8 @@ public static class RdfParser
     {
         var id = symbolSubjectIri.Split("/").Last();
 
-        return id.Length == 12
-            ? Success<Error, string>(id)
+        return Guid.TryParse(id, out var idParsed)
+            ? Success<Error, string>(idParsed.ToString())
             : Fail<Error, string>(Error.New("Invalid Symbol Id"));
     }
     
@@ -117,7 +114,7 @@ public static class RdfParser
     {
         var result = new List<EngineeringSymbolConnector> { };
 
-        var err = new Seq<Error>() { };
+        var err = new Seq<Error>();
         
         foreach (var cIri in cIris)
         {
@@ -171,7 +168,8 @@ public static class RdfParser
     
     public static Validation<Error, T> GetObjectValue<T>(this Graph graph, string subject, string predicate, Func<INode, Option<T>> objectNodeParser)
     {
-        return GetObjectNode(graph, subject, predicate).Bind(node => objectNodeParser(node)
+        return GetObjectNode(graph, subject, predicate)
+            .Bind(node => objectNodeParser(node)
                 .Map(Success<Error, T>)
                 .IfNone(Fail<Error, T>(new Error($"Failed to parse {typeof(T)} from node {node}"))));
     }

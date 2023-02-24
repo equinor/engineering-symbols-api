@@ -34,12 +34,12 @@ public class FusekiService : IFusekiService
         return response;
     }
     
-    public async Task<HttpResponseMessage> UpdateAsync(string update)
+    public async Task<HttpResponseMessage> UpdateAsync(string updateQuery)
     {
         var response =  await _httpClient.PostAsync("/engineering-symbols-dev/update", 
             new FormUrlEncodedContent(new KeyValuePair<string, string>[]
             {
-                new("update", update)
+                new("update", updateQuery)
             }));
 
         return response;

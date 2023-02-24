@@ -1,7 +1,6 @@
 using EngineeringSymbols.Api.Entities;
-using EngineeringSymbols.Api.Models;
 using EngineeringSymbols.Api.Repositories;
-using EngineeringSymbols.Tools.Models;
+using EngineeringSymbols.Api.Validation;
 
 namespace EngineeringSymbols.Api.Services;
 
@@ -14,19 +13,33 @@ public class EngineeringSymbolService : IEngineeringSymbolService
         _Repo = repo;
     }
 
-    public TryAsync<IEnumerable<string>> GetSymbolsAsync()
+    public TryAsync<IEnumerable<EngineeringSymbolListItemResponseDto>> GetSymbolsAsync()
     {
         return _Repo.GetAllEngineeringSymbolsAsync();
     }
 
-    public TryAsync<EngineeringSymbol> GetSymbolAsync(string id)
+    public TryAsync<EngineeringSymbol> GetSymbolByIdOrKeyAsync(string idOrKey)
     {
-        return _Repo.GetEngineeringSymbolByIdAsync(id);
+        return _Repo.GetEngineeringSymbolAsync(idOrKey);
     }
-
-    public TryAsync<EngineeringSymbol> CreateSymbolAsync(EngineeringSymbolCreateDto createDto)
+    
+    public TryAsync<string> CreateSymbolAsync(EngineeringSymbolCreateDto createDto)
     {
-        Console.WriteLine($"Save symbol {createDto.Name ?? "?"}!");
+        Console.WriteLine($"Save symbol {createDto.Key ?? "?"}!");
         return _Repo.InsertEngineeringSymbolAsync(createDto);
     }
+
+    public TryAsync<bool> UpdateSymbolAsync(string id, EngineeringSymbolUpdateDto updateDto) =>
+        async () =>
+        {
+            var idParsed = EngineeringSymbolValidation.ParseEngineeringSymbolId(id);
+            return await _Repo.UpdateEngineeringSymbolAsync(idParsed.ToString(), updateDto).Try();
+        };
+
+    public TryAsync<bool> DeleteSymbolAsync(string id) =>
+        async () =>
+        {
+            var idParsed = EngineeringSymbolValidation.ParseEngineeringSymbolId(id);
+            return await _Repo.DeleteEngineeringSymbolAsync(idParsed.ToString()).Try();
+        };
 }

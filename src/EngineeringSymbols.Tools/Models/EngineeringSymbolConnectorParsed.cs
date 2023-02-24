@@ -3,15 +3,15 @@ namespace EngineeringSymbols.Tools.Models;
 
 public record EngineeringSymbolConnectorParsed
 {
-	public string Id { get; init; }
+	public required string Id { get; init; }
 
 	/// <summary>
 	/// Position relative to top-left corner.
 	/// </summary>
-	public Point RelativePosition { get; init; } = new();
+	public required Point RelativePosition { get; init; }
 
 	/// <summary>
 	/// Direction in degrees 0-360 where 0 degrees is vertical up (12 o' clock).
 	/// </summary>
-	public int Direction { get; init; }
+	public required int Direction { get; init; }
 }

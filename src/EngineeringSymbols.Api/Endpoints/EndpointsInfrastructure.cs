@@ -10,20 +10,23 @@ public static class EndpointsInfrastructure
         var symbols = app.MapGroup("/symbols");
 
         symbols.MapGet("/", GetEngineeringSymbols.GetAllAsync)
-            .WithTags("GetEngineeringSymbols")
+            .WithTags("Anonymous")
             .WithName("GetAllIds")
             .WithDescription("Get all Engineering Symbols (list of Id's)")
-            .Produces<List<string>>();
+            .Produces<List<EngineeringSymbolListItemResponseDto>>();
         
-        symbols.MapGet("/{id}", GetEngineeringSymbols.GetByIdAsync)
-            .WithTags("GetEngineeringSymbols")
+        symbols.MapGet("/{idOrKey}", GetEngineeringSymbols.GetByIdOrKeyAsync)
+            .WithTags("Anonymous")
             .Produces<EngineeringSymbolResponseDto>();
 
-        symbols.MapPost("/", UploadEngineeringSymbol.UploadAsync);
-            //.WithTags("Create");
-            //.Produces<EngineeringSymbolCompleteResponseDto>(StatusCodes.Status201Created);
+        symbols.MapPost("/", UploadEngineeringSymbol.UploadAsync)
+            .WithTags("Authenticated");
         
-        //symbols.WithOpenApi();
+        symbols.MapPatch("/{id}", UpdateEngineeringSymbol.UpdateSingleAsync)
+            .WithTags("Authenticated");
+        
+        symbols.MapDelete("/{id}", DeleteEngineeringSymbols.DeleteSingleAsync)
+            .WithTags("Authenticated");
 
         if (app.Environment.IsDevelopment())
         {

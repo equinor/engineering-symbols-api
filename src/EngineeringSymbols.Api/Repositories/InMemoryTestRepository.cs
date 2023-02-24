@@ -11,18 +11,18 @@ public class InMemoryTestRepository : IEngineeringSymbolRepository
     }
     private List<EngineeringSymbol> InMemoryRepo { get; } = new();
 
-    public TryAsync<IEnumerable<string>> GetAllEngineeringSymbolsAsync() => 
+    public TryAsync<IEnumerable<EngineeringSymbolListItemResponseDto>> GetAllEngineeringSymbolsAsync() => 
         async () =>
         {
             await Task.Delay(100);
-            return InMemoryRepo.Select(dto => dto.Id).ToList();
+            return InMemoryRepo.Select(dto => new EngineeringSymbolListItemResponseDto {Id = dto.Id, Key = dto.Key}).ToList();
         };
     
-    public TryAsync<EngineeringSymbol> GetEngineeringSymbolByIdAsync(string id) =>
+    public TryAsync<EngineeringSymbol> GetEngineeringSymbolAsync(string idOrKey) =>
         async () =>
         {
             await Task.Delay(100);
-            var symbol = InMemoryRepo.Find(dto => dto.Id == id);
+            var symbol = InMemoryRepo.Find(dto => dto.Id == idOrKey);
 
             if (symbol == null)
                 throw new RepositoryException(RepositoryOperationError.EntityNotFound);
@@ -30,7 +30,12 @@ public class InMemoryTestRepository : IEngineeringSymbolRepository
             return symbol;
         };
 
-    public TryAsync<EngineeringSymbol> InsertEngineeringSymbolAsync(EngineeringSymbolCreateDto createDto) =>
+    public TryAsync<EngineeringSymbol> GetEngineeringSymbolByKeyAsync(string key)
+    {
+        throw new NotImplementedException();
+    }
+
+    public TryAsync<string> InsertEngineeringSymbolAsync(EngineeringSymbolCreateDto createDto) =>
         async () =>
         {
             await Task.Delay(100);
@@ -46,7 +51,7 @@ public class InMemoryTestRepository : IEngineeringSymbolRepository
             var newSymbol = new EngineeringSymbol
             {
                 Id = id,
-                Name = createDto.Name,
+                Key = createDto.Key,
                 DateTimeCreated = DateTimeOffset.UtcNow,
                 DateTimeUpdated = DateTimeOffset.MinValue,
                 Filename = createDto.Filename,
@@ -60,8 +65,28 @@ public class InMemoryTestRepository : IEngineeringSymbolRepository
             
             InMemoryRepo.Add(newSymbol);
 
-            return newSymbol;
+            return id;
         };
+
+    public TryAsync<bool> UpdateEngineeringSymbolAsync(string id, EngineeringSymbolUpdateDto updateDto)
+    {
+        throw new NotImplementedException();
+    }
+
+    public TryAsync<bool> UpdateEngineeringSymbolAsync(EngineeringSymbolUpdateDto updateDto)
+    {
+        throw new NotImplementedException();
+    }
+
+    public TryAsync<bool> DeleteEngineeringSymbolAsync(string id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public TryAsync<EngineeringSymbol> UpdateEngineeringSymbolAsync(EngineeringSymbolCreateDto createDto)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public static class RepoUtils

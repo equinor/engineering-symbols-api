@@ -21,6 +21,9 @@ internal static class SvgCrawler
 			case "svg":
 				element.TransformSvgElement(ctx);
 				break;
+			case "metadata":
+				element.TransformMetadataElement(ctx);
+				break;
 			case "g":
 				element.TransformGElement(ctx);
 				break;
@@ -107,6 +110,25 @@ internal static class SvgCrawler
 		element.SetAttributeValue("fill", ctx.Options.FillColor);
 	}
 
+	private static void TransformMetadataElement(this XElement element, SvgParserContext ctx)
+	{
+		element.RemoveStyling();
+
+		var els = element.Elements();
+
+		foreach (var v in els)
+		{
+			if(v.Name.NamespaceName != "http://rdf.equinor.com/ontology/engineering-symbol/props/") continue;
+			
+			switch (v.Name.LocalName)
+			{
+				case "key":
+					ctx.ExtractedData.Key = v.Value;
+					break;
+			}
+		}
+	}
+	
 	private static void TransformGElement(this XElement element, SvgParserContext ctx)
 	{
 		element.RemoveStyling();

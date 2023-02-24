@@ -1,22 +1,19 @@
 using System.Security.Claims;
 using System.Security.Principal;
-using EngineeringSymbols.Api.Entities;
-using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser;
-using EngineeringSymbols.Tools.SvgParser.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EngineeringSymbols.Api.Endpoints;
 
 public static class UploadEngineeringSymbol
 {
-    public static async Task<IResult> UploadAsync(ClaimsPrincipal user, [FromForm] IFormFile file, [FromServices] IEngineeringSymbolService symbolService) =>
-        await CreateUploadContext(user, file)
+    public static async Task<IResult> UploadAsync(ClaimsPrincipal user, [FromForm] IFormFile svgFile, [FromServices] IEngineeringSymbolService symbolService) =>
+        await CreateUploadContext(user, svgFile)
             .Bind(ReadFileToString)
             .Bind(ParseSvgString)
             .Bind(Save(symbolService))
             .Match(
-                Succ: ctx => TypedResults.Created("TODO: ctx.CreatedUri", ctx.EngineeringSymbolCompleteDto),
+                Succ: ctx => TypedResults.Created(ctx.CreatedUri),
                 Fail: Common.OnFailure);
     
     private static TryAsync<UploadContext> CreateUploadContext(IPrincipal user, IFormFile file) => 
@@ -49,8 +46,7 @@ public static class UploadEngineeringSymbol
         TryAsync(() =>
             SvgParser.FromString(ctx.FileContent, opt =>
                 {
-                    opt.IncludeSvgString = true;
-                    opt.UseSymbolId = ctx.FileId;
+                    opt.RemoveAnnotations = true;
                 })
                 .Match(
                     Succ: result => 
@@ -64,7 +60,7 @@ public static class UploadEngineeringSymbol
                         
                         return Task.FromResult(ctx with
                         {
-                            EngineeringSymbolCreateDto = result.EngineeringSymbolParsed.ToCreateDto(ctx.User)
+                            EngineeringSymbolCreateDto = result.EngineeringSymbolParsed.ToCreateDto(ctx.User, ctx.FileId)
                         }); 
                     }, 
                     Fail: exception => throw exception));
@@ -72,11 +68,7 @@ public static class UploadEngineeringSymbol
 
     private static Func<UploadContext, TryAsync<UploadContext>> Save(IEngineeringSymbolService symbolService) =>
         ctx => symbolService.CreateSymbolAsync(ctx.EngineeringSymbolCreateDto)
-                .Map(symbol => ctx with
-                {
-                    EngineeringSymbolCompleteDto = symbol.ToCompleteResponseDto(),
-                    CreatedUri = symbol.Id
-                });
+                .Map(symbolId => ctx with {CreatedUri = symbolId} );
 
     
     private record UploadContext(IFormFile File, string User)
@@ -84,7 +76,6 @@ public static class UploadEngineeringSymbol
         public string FileId { get; init; }
         public string FileContent { get; init; }
         public EngineeringSymbolCreateDto EngineeringSymbolCreateDto { get; init; }
-        public EngineeringSymbolCompleteResponseDto EngineeringSymbolCompleteDto { get; init; }
         public string CreatedUri { get; init; } 
     }
 }

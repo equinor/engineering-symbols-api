@@ -41,5 +41,24 @@ public class TurtleParserTest
             
             Assert.True(result.IsSuccess);
         }
+        
+        [Fact]
+        public void FailsOnInvalidFile()
+        {
+            var path = Path.GetFullPath("./SvgTestFiles/Symbol1_error.ttl");
+
+            var turtle = File.ReadAllText(path);
+
+            var result = RdfParser.TurtleToEngineeringSymbol(turtle);
+            
+            result.IfFail(seq =>
+            {
+                var errors = seq.ToList();
+                output.WriteLine($"{errors.Count} parse errors:");
+                errors.ForEach(error => output.WriteLine(error.Value));
+            });
+            
+            Assert.True(result.IsFail);
+        }
     }
 }

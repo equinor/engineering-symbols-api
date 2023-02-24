@@ -7,13 +7,29 @@ namespace EngineeringSymbols.Api.Models;
 /// </summary>
 public record EngineeringSymbolCreateDto
 {
-    public string Name { get; init; }
-    public string Owner { get; init; }
-    public string Filename { get; init; }
-    public string SvgString { get; init; }
-    public string GeometryString { get; init; }
-    public double Width { get; init; }
-    public double Height { get; init; }
+    public required string Key { get; init; }
+    public required string Owner { get; init; }
+    public required string Filename { get; init; }
+    public required string SvgString { get; init; }
+    public required string GeometryString { get; init; }
+    public required double Width { get; init; }
+    public required double Height { get; init; }
     public List<EngineeringSymbolConnector> Connectors { get; init; } = new();
 }
 
+public record EngineeringSymbolUpdateDto
+{
+    public string? Key { get; init; }
+    public string? Owner { get; init; }
+    public string? Description { get; init; }
+}
+
+
+public static class Test
+{
+    public static void Test2()
+    {
+
+
+    }
+}
