@@ -25,7 +25,7 @@ public class FusekiService : IFusekiService
         _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.ParseAdd(acc);
         
-        var response =  await _httpClient.PostAsync("/engineering-symbols-dev/sparql", 
+        var response =  await _httpClient.PostAsync("sparql", 
             new FormUrlEncodedContent(new KeyValuePair<string, string>[]
             {
                 new("query", sparqlQuery)
@@ -36,7 +36,7 @@ public class FusekiService : IFusekiService
     
     public async Task<HttpResponseMessage> UpdateAsync(string updateQuery)
     {
-        var response =  await _httpClient.PostAsync("/engineering-symbols-dev/update", 
+        var response =  await _httpClient.PostAsync("update", 
             new FormUrlEncodedContent(new KeyValuePair<string, string>[]
             {
                 new("update", updateQuery)

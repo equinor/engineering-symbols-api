@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using EngineeringSymbols.Tools.Constants;
 
 namespace EngineeringSymbols.Api.Repositories.Fuseki;
 
@@ -18,6 +19,64 @@ public static class SparqlQueries
                     """;
 
 
+    public static string GetAllSymbolsDistinctQuery()
+    {
+        // Inlclude date: SELECT ?symbolGraph ?key ?latestDateCreated WHERE ...
+        return $$"""
+                {{RdfConst.EngSymPrefix}}
+                {{RdfConst.SymbolPrefix}}
+
+                SELECT ?symbolGraph ?key
+                WHERE {
+                    GRAPH ?symbolGraph { 
+                        ?s1 {{ESProp.HasEngSymKeyIriPrefix}} ?key .
+                        ?s1 {{ESProp.HasDateCreatedIriPrefix}} ?latestDateCreated . 
+                    }
+                  
+                    {
+                        SELECT ?key (MAX(?dc) AS ?latestDateCreated) 
+                        WHERE {
+                            GRAPH ?g { 
+                                ?s2 {{ESProp.HasEngSymKeyIriPrefix}} ?key .
+                                ?s2 {{ESProp.HasDateCreatedIriPrefix}} ?dc .
+                            }
+                        }
+                        GROUP BY ?key
+                    }
+                }
+                """;
+    }
+    
+    public static string GetAllSymbolsDistinctQuery2()
+    {
+        return $$"""
+                {{RdfConst.XsdPrefix}}
+                {{RdfConst.EngSymPrefix}}
+                {{RdfConst.SymbolPrefix}}
+
+                SELECT ?symbolGraph ?key ?numVersions
+                WHERE {
+                    GRAPH ?symbolGraph { 
+                        ?s1 {{ESProp.HasEngSymKeyIriPrefix}} ?key .
+                        ?s1 {{ESProp.HasDateCreatedIriPrefix}} ?latestDateCreated . 
+                    }
+                  
+                    {
+                        SELECT ?key (MAX(?dc) AS ?latestDateCreated) (COUNT(?g) AS ?numVersions)
+                        WHERE {
+                            GRAPH ?g { 
+                                ?s2 {{ESProp.HasEngSymKeyIriPrefix}} ?key .
+                                ?s2 {{ESProp.HasDateCreatedIriPrefix}} ?dc .
+                            }
+                        }
+                        GROUP BY ?key
+                    }
+                }
+                """;
+    }
+    
+
+    
     public static string SymbolExistByIdQuery(string id)
     {
         return $$"""
@@ -43,6 +102,7 @@ public static class SparqlQueries
     public static string GetEngineeringSymbolByIdQuery(string id)
     {
         return $$"""
+                {{RdfConst.XsdPrefix}}
                 {{RdfConst.SymbolPrefix}}
                 {{RdfConst.EngSymPrefix}}
 
@@ -60,6 +120,7 @@ public static class SparqlQueries
     public static string GetEngineeringSymbolByKeyQuery(string key)
     {
         return $$"""
+                {{RdfConst.XsdPrefix}}
                 {{RdfConst.RdfsPrefix}}
                 {{RdfConst.SymbolPrefix}}
                 {{RdfConst.EngSymPrefix}}
@@ -116,8 +177,8 @@ public static class SparqlQueries
                     GRAPH {{sub}} {
                         {{sub}} {{ESProp.HasEngSymKeyIriPrefix}} "{{createDto.Key ?? symbolId}}" .
                         {{sub}} {{ESProp.IsTypeIriPrefix}} <{{RdfConst.SymbolTypeIri}}> .
-                        {{sub}} {{ESProp.HasDateCreatedIriPrefix}} "{{DateTimeOffset.UtcNow:O}}" .
-                        {{sub}} {{ESProp.HasDateUpdatedIriPrefix}} "{{DateTimeOffset.MinValue:O}}" .
+                        {{sub}} {{ESProp.HasDateCreatedIriPrefix}} "{{DateTimeOffset.UtcNow:O}}"^^xsd:dateTime .
+                        {{sub}} {{ESProp.HasDateUpdatedIriPrefix}} "{{DateTimeOffset.MinValue:O}}"^^xsd:dateTime .
                         {{sub}} {{ESProp.HasGeometryIriPrefix}} "{{createDto.GeometryString}}" .
                         {{sub}} {{ESProp.HasSvgBase64IriPrefix}} "{{svgStrBase64}}" .
                         {{sub}} {{ESProp.HasWidthIriPrefix}} "{{createDto.Width.ToString(nfi)}}" .
@@ -166,11 +227,21 @@ public static class SparqlQueries
                                                         """));
 
         var insertTriples = string.Join(Environment.NewLine,
-            triples.Select(kvp => $"""
-                                                            {symbolGraph} {kvp.Key} "{kvp.Value}" .
-                                                        """));
+            triples.Select(kvp =>
+            {
+                var unit = kvp.Key switch
+                {
+                    ESProp.HasDateUpdatedIriPrefix => "^^xsd:dateTime",
+                    _ => ""
+                };
+                
+                return $"""
+                            {symbolGraph} {kvp.Key} "{kvp.Value}"{unit} .
+                        """;
+            }));
         
         return $$"""
+                {{RdfConst.XsdPrefix}}
                 {{RdfConst.EngSymPrefix}}
                 {{RdfConst.SymbolPrefix}}
 

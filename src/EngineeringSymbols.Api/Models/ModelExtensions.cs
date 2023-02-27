@@ -1,4 +1,4 @@
-using EngineeringSymbols.Api.Entities;
+using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 
 namespace EngineeringSymbols.Api.Models;

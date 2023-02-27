@@ -1,3 +1,4 @@
+using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser.Models;
 
 namespace EngineeringSymbols.Api.Endpoints;

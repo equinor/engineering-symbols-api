@@ -1,6 +1,6 @@
-using EngineeringSymbols.Api.Entities;
 using EngineeringSymbols.Api.Repositories;
-using EngineeringSymbols.Api.Validation;
+using EngineeringSymbols.Tools.Entities;
+using EngineeringSymbols.Tools.Validation;
 
 namespace EngineeringSymbols.Api.Services;
 
@@ -15,7 +15,12 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 
     public TryAsync<IEnumerable<EngineeringSymbolListItemResponseDto>> GetSymbolsAsync()
     {
-        return _Repo.GetAllEngineeringSymbolsAsync();
+        return _Repo.GetAllEngineeringSymbolsIncludeAllVersionsAsync();
+    }
+
+    public TryAsync<IEnumerable<EngineeringSymbolListLatestItemResponseDto>> GetSymbolsLatestAsync()
+    {
+            return _Repo.GetAllEngineeringSymbolsAsync();
     }
 
     public TryAsync<EngineeringSymbol> GetSymbolByIdOrKeyAsync(string idOrKey)

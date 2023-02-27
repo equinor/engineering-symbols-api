@@ -1,4 +1,4 @@
-namespace EngineeringSymbols.Api.Models;
+namespace EngineeringSymbols.Tools.Models;
 
 public class ValidationError : NewType<ValidationError, string>
 {
@@ -8,7 +8,7 @@ public class ValidationError : NewType<ValidationError, string>
     {
     }
     
-    public ValidationError(string e, string category) : base(e)
+    public ValidationError(string category, string e) : base(e)
     {
         Category = category;
     }

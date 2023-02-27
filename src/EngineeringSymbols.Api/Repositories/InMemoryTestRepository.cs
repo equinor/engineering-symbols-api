@@ -1,4 +1,4 @@
-using EngineeringSymbols.Api.Entities;
+using EngineeringSymbols.Tools.Entities;
 
 namespace EngineeringSymbols.Api.Repositories;
 
@@ -11,13 +11,18 @@ public class InMemoryTestRepository : IEngineeringSymbolRepository
     }
     private List<EngineeringSymbol> InMemoryRepo { get; } = new();
 
-    public TryAsync<IEnumerable<EngineeringSymbolListItemResponseDto>> GetAllEngineeringSymbolsAsync() => 
+    public TryAsync<IEnumerable<EngineeringSymbolListItemResponseDto>> GetAllEngineeringSymbolsIncludeAllVersionsAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    TryAsync<IEnumerable<EngineeringSymbolListLatestItemResponseDto>> IEngineeringSymbolRepository.GetAllEngineeringSymbolsAsync() => 
         async () =>
-        {
-            await Task.Delay(100);
-            return InMemoryRepo.Select(dto => new EngineeringSymbolListItemResponseDto {Id = dto.Id, Key = dto.Key}).ToList();
-        };
-    
+          {
+              await Task.Delay(100);
+              return InMemoryRepo.Select(dto => new EngineeringSymbolListLatestItemResponseDto {IdLatestVersion = dto.Id, Key = dto.Key, Versions = 1}).ToList();
+          };
+
     public TryAsync<EngineeringSymbol> GetEngineeringSymbolAsync(string idOrKey) =>
         async () =>
         {

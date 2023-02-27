@@ -1,4 +1,4 @@
-namespace EngineeringSymbols.Api.Validation;
+namespace EngineeringSymbols.Tools.Validation;
 
 public static class EngineeringSymbolValidation
 {

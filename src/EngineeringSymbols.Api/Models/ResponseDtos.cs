@@ -1,4 +1,4 @@
-using EngineeringSymbols.Api.Entities;
+using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 
 namespace EngineeringSymbols.Api.Models;
@@ -19,6 +19,13 @@ public record EngineeringSymbolResponseDto
 /// </summary>
 public record EngineeringSymbolCompleteResponseDto : EngineeringSymbol { }
 
+
+public class EngineeringSymbolListLatestItemResponseDto
+{
+    public required string Key { get; set; }
+    public required string IdLatestVersion { get; set; }
+    public required int Versions { get; set; }
+}
 
 public class EngineeringSymbolListItemResponseDto
 {

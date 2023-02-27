@@ -1,4 +1,5 @@
-using EngineeringSymbols.Api.Validation;
+using EngineeringSymbols.Tools.Models;
+using EngineeringSymbols.Tools.Validation;
 using Microsoft.AspNetCore.Mvc;
 namespace EngineeringSymbols.Api.Endpoints;
 

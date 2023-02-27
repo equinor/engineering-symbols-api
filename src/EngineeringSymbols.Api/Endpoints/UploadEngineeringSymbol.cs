@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Security.Principal;
+using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,6 +1,6 @@
 using System.Globalization;
-using EngineeringSymbols.Api.Entities;
-using EngineeringSymbols.Api.Repositories.Fuseki;
+using EngineeringSymbols.Tools.Constants;
+using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 using VDS.RDF;
 using VDS.RDF.Parsing;

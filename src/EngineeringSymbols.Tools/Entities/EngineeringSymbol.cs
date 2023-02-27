@@ -1,6 +1,4 @@
-using EngineeringSymbols.Tools.Models;
-
-namespace EngineeringSymbols.Api.Entities;
+namespace EngineeringSymbols.Tools.Entities;
 
 public record EngineeringSymbol
 {
