@@ -19,6 +19,11 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
             var httpResponse = await _fuseki.QueryAsync(query, "text/csv");
 
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                throw new RepositoryException("Repository query failed");
+            }
+            
             var stringContent = await httpResponse.Content.ReadAsStringAsync();
 
             var symbolArray = stringContent
@@ -44,6 +49,11 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
             var httpResponse = await _fuseki.QueryAsync(query, "text/csv");
 
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                throw new RepositoryException("Repository query failed");
+            }
+            
             var stringContent = await httpResponse.Content.ReadAsStringAsync();
 
             var symbolArray = stringContent
