@@ -4,9 +4,8 @@ namespace EngineeringSymbols.Api.Infrastructure.Auth;
 
 public class FallbackSafeguardHandler : AuthorizationHandler<FallbackSafeguardRequirement>
 {
-
     /// <summary>
-    /// Safeguard handler which trigges when we have not explicitly added
+    /// Safeguard handler which triggers when we have not explicitly added
     /// [Authorize] or [AllowAnonymous].
     /// Always denies access.
     /// </summary>

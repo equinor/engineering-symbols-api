@@ -8,6 +8,6 @@ public class AzureAdConfig
     public string ClientId { get; set; } = string.Empty;
     public string ClientSecret { get; set; } = string.Empty;
     public string CallbackPath { get; set; } = string.Empty;
-    public Uri AuthorizationUrl => new($"{Instance}/{TenantId}/oauth2/v2.0/authorize");
-    public Uri TokenUrl => new($"{Instance}/{TenantId}/oauth2/v2.0/token");
+    public Uri AuthorizationUrl => new($"{Instance}{TenantId}/oauth2/v2.0/authorize");
+    public Uri TokenUrl => new($"{Instance}{TenantId}/oauth2/v2.0/token");
 }

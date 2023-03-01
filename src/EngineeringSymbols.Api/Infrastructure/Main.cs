@@ -3,9 +3,7 @@ using System.Text.Json.Serialization;
 using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Api.Repositories.Fuseki;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web;
-
 
 namespace EngineeringSymbols.Api.Infrastructure;
 
@@ -20,7 +18,7 @@ public static class Main
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"))
             .EnableTokenAcquisitionToCallDownstreamApi()
-            .AddDownstreamWebApi("fuseki", options =>
+            .AddDownstreamApi("fuseki", options =>
             {
                 var fusekiServer = builder.Configuration.GetFusekiSettings();
                 options.BaseUrl = fusekiServer.BaseUrl;
@@ -31,7 +29,7 @@ public static class Main
         builder.Services.AddFallbackAuthorization();
         
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.AddCustomSwagger();
         
         
         builder.Services.ConfigureHttpJsonOptions(options =>
@@ -51,7 +49,7 @@ public static class Main
         // Construct WebApplication
         var app = builder.Build();
 
-        app.ServeSwaggerAppInDevelopment();
+        app.ServeSwaggerApp(builder.Configuration);
         
         app.UseHttpsRedirection();
         

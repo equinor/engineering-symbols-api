@@ -5,13 +5,13 @@ using Azure.Security.KeyVault.Secrets;
 namespace EngineeringSymbols.Api.Infrastructure;
 
 public static class ConfigurationExtensions{
-    public static C AddKeyVault<C>(this C config)
-        where C: IConfiguration, IConfigurationBuilder
+    public static TConfig AddKeyVault<TConfig>(this TConfig config)
+        where TConfig: IConfiguration, IConfigurationBuilder
     {
         var keyVaultName = config["KeyVaultName"];
         if (string.IsNullOrEmpty(keyVaultName))
         {
-            throw new Exception("keyVaultName not set in configuration, see readme");
+            throw new Exception("'KeyVaultName' not set in configuration, see readme");
         }
         var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
         var credentials = new DefaultAzureCredential();

@@ -1,5 +1,6 @@
 using EngineeringSymbols.Api.Repositories.Fuseki;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Web;
 
 namespace EngineeringSymbols.Api.Endpoints;
 
@@ -13,20 +14,26 @@ public static class EndpointsInfrastructure
             .WithTags("Anonymous")
             .WithName("GetAllIds")
             .WithDescription("Get all Engineering Symbols (list of Id's)")
-            .Produces<List<EngineeringSymbolListItemResponseDto>>();
+            .Produces<List<EngineeringSymbolListItemResponseDto>>()
+            .AllowAnonymous();
         
         symbols.MapGet("/{idOrKey}", GetEngineeringSymbols.GetByIdOrKeyAsync)
             .WithTags("Anonymous")
-            .Produces<EngineeringSymbolResponseDto>();
+            .Produces<EngineeringSymbolResponseDto>()
+            .AllowAnonymous();
 
         symbols.MapPost("/", UploadEngineeringSymbol.UploadAsync)
-            .WithTags("Authenticated");
-        
+            .WithTags("Authenticated")
+            .RequireScope();
+
         symbols.MapPatch("/{id}", UpdateEngineeringSymbol.UpdateSingleAsync)
-            .WithTags("Authenticated");
+            .WithTags("Authenticated")
+            .RequireAuthorization();
+            
         
         symbols.MapDelete("/{id}", DeleteEngineeringSymbols.DeleteSingleAsync)
-            .WithTags("Authenticated");
+            .WithTags("Authenticated")
+            .RequireAuthorization();
 
         if (app.Environment.IsDevelopment())
         {
