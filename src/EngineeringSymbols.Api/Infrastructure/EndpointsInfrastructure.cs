@@ -1,8 +1,9 @@
+using EngineeringSymbols.Api.Endpoints;
+using EngineeringSymbols.Api.Infrastructure.Auth;
 using EngineeringSymbols.Api.Repositories.Fuseki;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Web;
 
-namespace EngineeringSymbols.Api.Endpoints;
+namespace EngineeringSymbols.Api.Infrastructure;
 
 public static class EndpointsInfrastructure
 {
@@ -28,12 +29,12 @@ public static class EndpointsInfrastructure
 
         symbols.MapPatch("/{id}", UpdateEngineeringSymbol.UpdateSingleAsync)
             .WithTags("Authenticated")
-            .RequireAuthorization();
-            
-        
+            .RequireAuthorization(Roles.Contributor);
+
+
         symbols.MapDelete("/{id}", DeleteEngineeringSymbols.DeleteSingleAsync)
             .WithTags("Authenticated")
-            .RequireAuthorization();
+            .RequireAuthorization(Roles.Admin);
 
         if (app.Environment.IsDevelopment())
         {
@@ -45,7 +46,6 @@ public static class EndpointsInfrastructure
                 .Accepts<string>("application/sparql-query; charset=UTF-8")
                 .Produces<string>(contentType: "text/plain");
         }
-
         
         return app;
     }

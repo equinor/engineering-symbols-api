@@ -4,7 +4,7 @@ namespace EngineeringSymbols.Api.Infrastructure;
 
 public static class WebApplicationExtensions
 {
-    public static IApplicationBuilder ServeSwaggerApp(this WebApplication app, IConfiguration config)
+    public static IApplicationBuilder UseSwaggerAndServeSwaggerApp(this WebApplication app, IConfiguration config)
     {
         //if (!app.Environment.IsDevelopment()) return app;
         
