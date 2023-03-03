@@ -31,8 +31,8 @@ jobs:
       - name: Azure Login
         uses: Azure/login@v1.4.6
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID_GH_ACTIONS_SP }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-id: ${{ vars.AZURE_CLIENT_ID_GH_ACTIONS_SP }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
           allow-no-subscriptions: true
 
       - name: Setup Azure Resources
@@ -46,7 +46,7 @@ jobs:
         with:
           files: "**/appsettings.json"
         env:
-          AzureAd.ClientId: ${{ secrets.AZURE_CLIENT_ID_API }}
+          AzureAd.ClientId: ${{ vars.AZURE_CLIENT_ID_API }}
           #KeyVaultName: "${{ inputs.env }}-engsym-vault"
           #ServiceBus.Topic: ${{ secrets.SERVICE_BUS_TOPIC }}
           ENV: ${{ inputs.env }}
