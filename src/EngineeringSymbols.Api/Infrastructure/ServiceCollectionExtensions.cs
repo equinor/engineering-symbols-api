@@ -59,10 +59,7 @@ public static class ServiceCollectionExtensions
         services.AddSwaggerGen(options =>
         {
             options.SwaggerDoc("v1", new OpenApiInfo { Title = "Engineering Symbols", Version = "v1" });
-            
-            //var xmlPath = Path.Combine(AppContext.BaseDirectory, "Api.xml");
-            //options.IncludeXmlComments(xmlPath);
-            
+
             options.AddSecurityDefinition(SecuritySchemeType.OAuth2.ToString(), new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.OAuth2,
