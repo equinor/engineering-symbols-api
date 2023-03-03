@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     name: Build
-    uses: ./build.yml@main
+    uses: ./.github/workflows/build.yml
 
   deploy-dev:
     name: "🚀 Dev"
@@ -18,7 +18,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    uses: ./deploy.yml@main
+    uses: ./.github/workflows/deploy.yml
     with:
       ENV: dev
       ARTIFACT: ${{ needs.build.outputs.artifact-name }}
