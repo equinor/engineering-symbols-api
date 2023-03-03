@@ -16,11 +16,13 @@ public static class EndpointsInfrastructure
             .WithName("GetAllIds")
             .WithDescription("Get all Engineering Symbols (list of Id's)")
             .Produces<List<EngineeringSymbolListItemResponseDto>>()
+            .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
         
         symbols.MapGet("/{idOrKey}", GetEngineeringSymbols.GetByIdOrKeyAsync)
             .WithTags("Anonymous")
             .Produces<EngineeringSymbolResponseDto>()
+            .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
 
         symbols.MapPost("/", UploadEngineeringSymbol.UploadAsync)

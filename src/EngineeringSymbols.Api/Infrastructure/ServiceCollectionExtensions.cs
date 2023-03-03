@@ -1,7 +1,9 @@
+using System.Threading.RateLimiting;
 using EngineeringSymbols.Api.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -133,6 +135,22 @@ public static class ServiceCollectionExtensions
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                 ));
+
+        return services;
+    }
+    
+    public static IServiceCollection AddRateLimiterFixed(this IServiceCollection services, IConfiguration config, IWebHostEnvironment env)
+    {
+        // https://learn.microsoft.com/en-us/aspnet/core/performance/rate-limit?view=aspnetcore-7.0
+        // PermitLimit to 4 and the time Window to 12. A maximum of 4 requests per each 12-second window are allowed.
+        services.AddRateLimiter(rlOptions => rlOptions
+            .AddFixedWindowLimiter(policyName: RateLimiterPolicy.Fixed, options =>
+            {
+                options.PermitLimit = 4;
+                options.Window = TimeSpan.FromSeconds(12);
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                options.QueueLimit = 2;
+            }));
 
         return services;
     }
