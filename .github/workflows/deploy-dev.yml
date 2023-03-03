@@ -1,10 +1,10 @@
 name: 🎡 Deploy - DEV
 on:
   push:
-    tags-ignore:
-      - "v[0-9]+.[0-9]+.[0-9]+"
     branches:
       - main
+    tags-ignore:
+      - "v[0-9]+.[0-9]+.[0-9]+"
   workflow_dispatch:
 
 jobs:
@@ -20,12 +20,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/deploy.yml
     with:
-      ENV: dev
-      ARTIFACT: ${{ needs.build.outputs.artifact-name }}
-      SKU: "B1"
+      env: dev
+      artifact: ${{ needs.build.outputs.artifact-name }}
+      sku: "B1"
       build-id: "dev"
-    secrets:
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      API_CLIENT_ID: ${{ secrets.API_CLIENT_ID }}
-      #FUNC_PUBLISH_PROFILE: ${{ secrets.FUNC_PUBLISH_PROFILE }}

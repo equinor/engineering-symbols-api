@@ -14,15 +14,6 @@ on:
       sku:
         required: true
         type: string
-    secrets:
-      AZURE_CLIENT_ID:
-        required: true
-      AZURE_TENANT_ID:
-        required: true
-      API_CLIENT_ID:
-        required: true
-      #FUNC_PUBLISH_PROFILE:
-      #  required: true
 
 concurrency: ${{ inputs.env }}
 
@@ -30,7 +21,6 @@ jobs:
   Deploy:
     environment: ${{ inputs.env }}
     runs-on: ubuntu-latest
-
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v3
@@ -40,7 +30,7 @@ jobs:
       - name: Azure Login
         uses: Azure/login@v1.4.6
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID_GH_ACTIONS_SP }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           allow-no-subscriptions: true
 
@@ -55,9 +45,9 @@ jobs:
         with:
           files: "**/appsettings.json"
         env:
-          AzureAd.ClientId: ${{ secrets.API_CLIENT_ID }}
+          AzureAd.ClientId: ${{ secrets.AZURE_CLIENT_ID_API }}
           #KeyVaultName: "${{ inputs.env }}-engsym-vault"
-          ServiceBus.Topic: ${{ secrets.SERVICE_BUS_TOPIC }}
+          #ServiceBus.Topic: ${{ secrets.SERVICE_BUS_TOPIC }}
           ENV: ${{ inputs.env }}
 
       - name: Deploy API
