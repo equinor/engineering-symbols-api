@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     name: Build
-    uses: equinor/engineering-symbols-api.github/workflows/build.yml@main
+    uses: ./build.yml@main
 
   deploy-dev:
     name: "🚀 Dev"
@@ -18,7 +18,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    uses: equinor/engineering-symbols-api/.github/workflows/deploy.yml@main
+    uses: ./deploy.yml@main
     with:
       ENV: dev
       ARTIFACT: ${{ needs.build.outputs.artifact-name }}
