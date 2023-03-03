@@ -4,18 +4,25 @@ on:
     branches:
       - main
 jobs:
-  release_please:
+  hello:
     name: 🔖 Release Please
     runs-on: ubuntu-latest
     steps:
-      - name: Create Release
-        id: release
-        uses: google-github-actions/release-please-action@v3
-        with:
-          release-type: simple
-          package-name: engineering-symbols-api
-    outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
+      - name: Hello
+        run: echo "Hello dude!"
+
+  #release_please:
+  #  name: 🔖 Release Please
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - name: Create Release
+  #      id: release
+  #      uses: google-github-actions/release-please-action@v3
+  #      with:
+  #        release-type: simple
+  #        package-name: engineering-symbols-api
+  #  outputs:
+  #    release_created: ${{ steps.release.outputs.release_created }}
 
   #build:
   #  name: '🛠️ Build'
