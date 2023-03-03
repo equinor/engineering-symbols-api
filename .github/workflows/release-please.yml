@@ -1,0 +1,46 @@
+name: 🎉 Release Please
+on:
+  push:
+    branches:
+      - main
+jobs:
+  #release_please:
+  #  name: 🔖 Release Please
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - name: Create Release
+  #      id: release
+  #      uses: google-github-actions/release-please-action@v3
+  #      with:
+  #        release-type: simple
+  #        package-name:
+  #        changelog-types: >
+  #          [{"type":"feat","section":"Features","hidden":false},
+  #          {"type":"fix","section":"Bug Fixes","hidden":false},
+  #          {"type":"docs","section":"Documentation","hidden":false},
+  #          {"type":"chore", "section":"Other","hidden":false},
+  #          {"type":"test", "section":"Other","hidden":false},
+  #          {"type":"ci", "section":"CI/CD","hidden":false},
+  #          {"type":"perf", "section":"Optimalization","hidden":false},
+  #          {"type":"refactor", "section":"Other","hidden":false}]
+  #  outputs:
+  #    release_created: ${{ steps.release.outputs.release_created }}
+
+  #build:
+  #  name: '🛠️ Build'
+  #  if: ${{ needs.release_please.outputs.release_created }}
+  #  needs: [release_please]
+  #  uses: equinor/spine-splinter/.github/workflows/build.yml@main
+
+  #deploy-prod:
+  #  name: "🚀 Prod"
+  #  needs: [build]
+  #  permissions:
+  #    id-token: write
+  #    contents: read
+  #  uses: equinor/spine-splinter/.github/workflows/deploy.yml@main
+  #  with:
+  #    env: prod
+  #    ARTIFACT: ${{ needs.build.outputs.artifact-name }}
+  #    SKU: 'B1'
+  #    BUILDID: ${{ github.sha }} # TODO use version from release please
