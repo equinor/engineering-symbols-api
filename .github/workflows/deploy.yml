@@ -1,0 +1,58 @@
+name: "🚀 Deploy"
+on:
+  workflow_call:
+    inputs:
+      artifact:
+        required: true
+        type: string
+      env:
+        required: true
+        type: string
+      build-id:
+        required: true
+        type: string
+      sku:
+        required: true
+        type: string
+
+concurrency: ${{ inputs.env }}
+
+jobs:
+  Deploy:
+    if: ${{ contains(fromJSON('["dev", "prod"]'), inputs.env) }}
+    environment: ${{ inputs.env }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact }}
+
+      - name: Azure Login
+        uses: Azure/login@v1.4.6
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID_GH_ACTIONS_SP }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Setup Azure Resources
+        working-directory: azure
+        run: |
+          chmod +x runMainBicep.sh
+          ./runMainBicep.sh -e ${{ inputs.env }} -b ${{ inputs.build-id }}
+
+      - name: Inject ENV specific settings into appsettings.json
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: "**/appsettings.json"
+        env:
+          AzureAd.ClientId: ${{ secrets.AZURE_CLIENT_ID_API }}
+          #KeyVaultName: "${{ inputs.env }}-engsym-vault"
+          #ServiceBus.Topic: ${{ secrets.SERVICE_BUS_TOPIC }}
+          ENV: ${{ inputs.env }}
+
+      - name: Deploy API
+        uses: Azure/webapps-deploy@v2.2.5
+        with:
+          app-name: "${{ inputs.env }}-engineering-symbols-api"
+          package: api/

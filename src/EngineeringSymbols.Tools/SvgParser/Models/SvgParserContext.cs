@@ -4,29 +4,33 @@ namespace EngineeringSymbols.Tools.SvgParser.Models;
 
 public enum SvgParseCategory
 {
+    Key,
     Dimensions,
     Connector,
-    
 }
 
 internal class SvgParserContext
 {
-    public SvgParserOptions Options { get; set; }
+    public required SvgParserOptions Options { get; init; }
     
-    public bool HasParseErrors => ParseErrors.Count == 0;
     private Dictionary<string, List<string>> ParseErrors { get; } = new();
 
     public ExtractedSvgData ExtractedData { get; } = new();
 	
-    public XElement SvgRootElement { get; set; }
+    public XElement? SvgRootElement { get; set; }
 	
     public SvgParserResult ToSvgParserResult()
     {
+        if (SvgRootElement == null)
+        {
+            throw new SvgParseException("SvgRootElement was null");
+        }
         return new SvgParserResult(
             new EngineeringSymbolParsed
             {
+                Key = ExtractedData.Key,
                 Filename = ExtractedData.Filename,
-                SvgString = Options.IncludeSvgString ? SvgRootElement.ToString() : null,
+                SvgString = SvgRootElement.ToString(),
                 GeometryString = string.Join("", ExtractedData.PathData),
                 Width = ExtractedData.Width,
                 Height = ExtractedData.Height,
@@ -39,9 +43,9 @@ internal class SvgParserContext
         var symId = ExtractedData.Filename != null ? " - " + ExtractedData.Filename : string.Empty;
         var key = Enum.GetName(typeof(SvgParseCategory), category) + symId;
 
-        if (ParseErrors.ContainsKey(key))
+        if (ParseErrors.TryGetValue(key, out var errorList))
         {
-            ParseErrors[key].Add(errorMessage);
+            errorList.Add(errorMessage);
         }
         else
         {

@@ -1,0 +1,37 @@
+@prefix es:     <https://rdf.equinor.com/ontology/engineering-symbol/v1#> .
+@prefix symbol: <https://rdf.equinor.com/engineering-symbols/> .
+
+symbol:ce15b592-943a-4f06-a2f9-7b36d20687c8_C_3
+        a             es:Connector ;
+        es:direction  "270" ;
+        es:hasName    "3" ;
+        es:positionX  "24.001" ;
+        es:positionY  "9" .
+
+symbol:ce15b592-943a-4f06-a2f9-7b36d20687c8_C_2
+        a             es:Connector ;
+        es:direction  "270" ;
+        es:hasName    "2" ;
+        es:positionX  "5.5" ;
+        es:positionY  "28.5" .
+
+symbol:ce15b592-943a-4f06-a2f9-7b36d20687c8_C_1
+        a             es:Connector ;
+        es:direction  "90" ;
+        es:hasName    "1" ;
+        es:positionX  "42.5" ;
+        es:positionY  "28.5" .
+
+symbol:ce15b592-943a-4f06-a2f9-7b36d20687c8
+        a                     es:Symbol ;
+        es:dateCreated        "2023-02-21T13:34:59.3164400+00:00" ;
+        es:dateUpdated        "2023-02-23T13:40:38.9378180+00:00" ;
+        es:hasConnector       symbol:ce15b592-943a-4f06-a2f9-7b36d20687c8_C_1 , symbol:ce15b592-943a-4f06-a2f9-7b36d20687c8_C_2 , symbol:ce15b592-943a-4f06-a2f9-7b36d20687c8_C_3 ;
+        es:hasDescription     "Hmm" ;
+        es:hasGeometry        "M23.6667 27.8333L14 8.49999H34L24.3333 27.8333L43 18.5V38.5L24 29L5 38.5V18.5L23.6667 27.8333ZM32.382 9.49999L15.618 9.49999L24 26.2639L32.382 9.49999ZM25.2361 28.5L42 36.882V20.118L25.2361 28.5ZM22.7639 28.5L6 20.118V36.882L22.7639 28.5Z" ;
+        es:hasSourceFilename  "" ;
+        es:hasSvgBase64       "PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBmaWxsPSIjMjMxZjIwIj4KICA8IS0tIFRISVMgRklMRSBTSE9VTEQgQkUgVkFMSUQgLS0+CiAgPG1ldGFkYXRhIHhtbG5zOmVzcHJvcD0iaHR0cDovL3JkZi5lcXVpbm9yLmNvbS9vbnRvbG9neS9lbmdpbmVlcmluZy1zeW1ib2wvcHJvcHMvIj4KICAgIDxlc3Byb3A6a2V5PlBWMDAzQjwvZXNwcm9wOmtleT4KICA8L21ldGFkYXRhPgogIDxnIGlkPSJQVjAwM0IiPgogICAgPHBhdGggaWQ9IlN5bWJvbCIgZD0iTTIzLjY2NjcgMjcuODMzM0wxNCA4LjQ5OTk5SDM0TDI0LjMzMzMgMjcuODMzM0w0MyAxOC41VjM4LjVMMjQgMjlMNSAzOC41VjE4LjVMMjMuNjY2NyAyNy44MzMzWk0zMi4zODIgOS40OTk5OUwxNS42MTggOS40OTk5OUwyNCAyNi4yNjM5TDMyLjM4MiA5LjQ5OTk5Wk0yNS4yMzYxIDI4LjVMNDIgMzYuODgyVjIwLjExOEwyNS4yMzYxIDI4LjVaTTIyLjc2MzkgMjguNUw2IDIwLjExOFYzNi44ODJMMjIuNzYzOSAyOC41WiIgLz4KICA8L2c+Cjwvc3ZnPg==" ;
+        es:height             "48" ;
+        es:key                "BAMM" ;
+        es:owner              "Pierre" ;
+        es:width              "48" .

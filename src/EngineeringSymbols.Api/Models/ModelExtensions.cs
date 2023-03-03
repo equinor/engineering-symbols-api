@@ -1,16 +1,16 @@
-using EngineeringSymbols.Api.Entities;
+using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 
 namespace EngineeringSymbols.Api.Models;
 
 public static class ModelExtensions
 {
-    public static EngineeringSymbolCreateDto ToCreateDto(this EngineeringSymbolParsed sym, string userId)
+    public static EngineeringSymbolCreateDto ToCreateDto(this EngineeringSymbolParsed sym, string userId, string? filename = null)
     {
         return new EngineeringSymbolCreateDto
         {
-            Name = sym.Filename,
-            Filename = sym.Filename,
+            Key = sym.Key,
+            Filename = filename ?? sym.Filename ?? "<Unknown>",
             Owner = userId,
             Width = sym.Width,
             Height = sym.Height,
@@ -36,7 +36,7 @@ public static class ModelExtensions
         {
             Id = symbol.Id,
             Filename = symbol.Filename,
-            Name = symbol.Name,
+            Key = symbol.Key,
             DateTimeCreated = symbol.DateTimeCreated,
             DateTimeUpdated = symbol.DateTimeUpdated,
             Owner = symbol.Owner,
@@ -53,7 +53,7 @@ public static class ModelExtensions
         return new EngineeringSymbolResponseDto
         {
             Id = symbol.Id,
-            Name = symbol.Name,
+            Key = symbol.Key,
             Width = symbol.Width,
             Height = symbol.Height,
             GeometryString = symbol.GeometryString,

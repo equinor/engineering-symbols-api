@@ -5,43 +5,45 @@ namespace EngineeringSymbols.Api.Services;
 
 public class FusekiService : IFusekiService
 {
-    private readonly HttpClient _httpClient;
+	private readonly HttpClient _httpClient;
 
-    public FusekiService(HttpClient httpClient, IConfiguration config)
-    {
-        var fusekiServer = config.GetSection("FusekiServer").Value;
-        if (fusekiServer == null)
-            throw new Exception("FusekiServer is missing from appsettings.json");
-        
-        _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri(fusekiServer);
-        _httpClient.DefaultRequestHeaders.Accept.Clear();
-        _httpClient.DefaultRequestHeaders.Accept.ParseAdd("application/sparql-results+json");
-    }
+	public FusekiService(HttpClient httpClient, IConfiguration config)
+	{
+		var fusekiServers = config.GetSection("FusekiServers").Get<List<FusekiServerSettings>>();
+		
+		if (fusekiServers == null || fusekiServers.Count == 0)
+			throw new Exception("'FusekiServers' is missing or empty in appsettings.json");
 
-    public async Task<HttpResponseMessage> QueryAsync(string sparqlQuery, string? accept)
-    {
-        var acc = accept ?? "application/sparql-results+json; charset=utf-8";
-        _httpClient.DefaultRequestHeaders.Accept.Clear();
-        _httpClient.DefaultRequestHeaders.Accept.ParseAdd(acc);
-        
-        var response =  await _httpClient.PostAsync("/engineering-symbols-dev/sparql", 
-            new FormUrlEncodedContent(new KeyValuePair<string, string>[]
-            {
-                new("query", sparqlQuery)
-            }));
+		_httpClient = httpClient;
+		_httpClient.BaseAddress = new Uri(fusekiServers[0].BaseUrl);
+		_httpClient.DefaultRequestHeaders.Accept.Clear();
+	}
 
-        return response;
-    }
-    
-    public async Task<HttpResponseMessage> UpdateAsync(string update)
-    {
-        var response =  await _httpClient.PostAsync("/engineering-symbols-dev/update", 
-            new FormUrlEncodedContent(new KeyValuePair<string, string>[]
-            {
-                new("update", update)
-            }));
+	public async Task<HttpResponseMessage> QueryAsync(string sparqlQuery, string? accept)
+	{
+		var request = new HttpRequestMessage(HttpMethod.Post, new Uri("query", UriKind.Relative))
+		{
+			Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+			{
+				new("query", sparqlQuery)
+			}),
+			Headers = { Accept = { new MediaTypeWithQualityHeaderValue(accept ?? "application/sparql-results+json") }}
+		};
+		
+		return await _httpClient.SendAsync(request);
+	}
 
-        return response;
-    }
+	public async Task<HttpResponseMessage> UpdateAsync(string updateQuery, string? accept)
+	{
+		var request = new HttpRequestMessage(HttpMethod.Post, new Uri("update", UriKind.Relative))
+		{
+			Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+			{
+				new("update", updateQuery)
+			}),
+			Headers = { Accept = { new MediaTypeWithQualityHeaderValue(accept ?? "application/sparql-results+json") }}
+		};
+
+		return await _httpClient.SendAsync(request);
+	}
 }

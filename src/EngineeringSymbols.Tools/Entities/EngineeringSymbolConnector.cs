@@ -1,0 +1,3 @@
+namespace EngineeringSymbols.Tools.Entities;
+
+public record EngineeringSymbolConnector : EngineeringSymbolConnectorParsed;

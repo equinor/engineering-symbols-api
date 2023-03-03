@@ -92,7 +92,9 @@ public class SvgParserTests
             {
                 AssertValidEngineeringSymbol(symbol);
             }
+            output.WriteLine($"Parse errors:");
             OutputAsJson(result.ParseErrors);
+            output.WriteLine($"Symbol:");
             OutputAsJson(symbol);
             OutputAsJson(result.IsSuccess);
             return result.IsSuccess;
@@ -135,6 +137,7 @@ public class SvgParserTests
         // Both strings cant be null at the same time
         Assert.True(symbolParsed.GeometryString != null && symbolParsed.SvgString != null);
         
+        Assert.NotNull(symbolParsed.Key);
         Assert.NotNull(symbolParsed.Connectors);
         
         foreach (var c in symbolParsed.Connectors)

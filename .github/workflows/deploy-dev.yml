@@ -1,0 +1,26 @@
+name: 🎡 Deploy - DEV
+on:
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yml
+
+  deploy-dev:
+    name: "🚀 Dev"
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
+    uses: ./.github/workflows/deploy.yml
+    with:
+      env: dev
+      artifact: ${{ needs.build.outputs.artifact-name }}
+      sku: "B1"
+      build-id: "dev"

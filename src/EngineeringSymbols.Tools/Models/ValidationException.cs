@@ -1,4 +1,4 @@
-namespace EngineeringSymbols.Api.Models;
+namespace EngineeringSymbols.Tools.Models;
 
 public class ValidationException : Exception
 {

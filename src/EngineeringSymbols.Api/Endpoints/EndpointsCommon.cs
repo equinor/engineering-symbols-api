@@ -1,3 +1,4 @@
+using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser.Models;
 
 namespace EngineeringSymbols.Api.Endpoints;
@@ -30,7 +31,7 @@ public static class Common
                 return TypedResults.UnprocessableEntity();
             case RepositoryOperationError.Unknown:
             default:
-                return TypedResults.BadRequest();
+                return TypedResults.BadRequest(ex.Message);
         }
     }
 

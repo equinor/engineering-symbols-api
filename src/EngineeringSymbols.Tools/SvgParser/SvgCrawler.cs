@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Xml.Linq;
+using EngineeringSymbols.Tools.Validation;
 
 namespace EngineeringSymbols.Tools.SvgParser;
 
@@ -20,6 +21,9 @@ internal static class SvgCrawler
 		{
 			case "svg":
 				element.TransformSvgElement(ctx);
+				break;
+			case "metadata":
+				element.TransformMetadataElement(ctx);
 				break;
 			case "g":
 				element.TransformGElement(ctx);
@@ -107,6 +111,41 @@ internal static class SvgCrawler
 		element.SetAttributeValue("fill", ctx.Options.FillColor);
 	}
 
+	private static void TransformMetadataElement(this XElement element, SvgParserContext ctx)
+	{
+		element.RemoveStyling();
+
+		var metadata = element.Elements();
+
+		foreach (var el in metadata)
+		{
+			// Assume that all versions has the "key" property
+			if(el.Name.NamespaceName != "http://rdf.equinor.com/ontology/engineering-symbol/v1#") continue;
+
+			switch (el.Name.LocalName)
+			{
+				case "key":
+					ExtractMetadataKey(el.Value, ctx);
+					break;
+			}
+		}
+	}
+	
+	private static void ExtractMetadataKey(string key, SvgParserContext ctx)
+	{
+		var keyV = EngineeringSymbolValidation.ValidateKey(key);
+
+		keyV.Match(
+			Succ: keyOk => { ctx.ExtractedData.Key = keyOk;},
+			Fail: seq =>
+			{
+				foreach (var validationError in seq)
+				{
+					ctx.AddParseError(SvgParseCategory.Key, validationError.Value);
+				}
+			});
+	}
+	
 	private static void TransformGElement(this XElement element, SvgParserContext ctx)
 	{
 		element.RemoveStyling();

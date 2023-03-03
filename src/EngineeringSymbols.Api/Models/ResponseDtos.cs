@@ -1,16 +1,16 @@
-using EngineeringSymbols.Api.Entities;
+using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 
 namespace EngineeringSymbols.Api.Models;
 
 public record EngineeringSymbolResponseDto
 {
-    public string Id { get; init; }
-    public string Name { get; init; }
-    public string SvgString { get; init; }
-    public string GeometryString { get; init; }
-    public double Width { get; init; }
-    public double Height { get; init; }
+    public required string Id { get; init; }
+    public required string Key { get; init; }
+    public required string SvgString { get; init; }
+    public required string GeometryString { get; init; }
+    public required double Width { get; init; }
+    public required double Height { get; init; }
     public List<EngineeringSymbolConnector> Connectors { get; init; } = new();
 }
 
@@ -18,3 +18,17 @@ public record EngineeringSymbolResponseDto
 /// Full representation as in DB
 /// </summary>
 public record EngineeringSymbolCompleteResponseDto : EngineeringSymbol { }
+
+
+public class EngineeringSymbolListLatestItemResponseDto
+{
+    public required string Key { get; set; }
+    public required string IdLatestVersion { get; set; }
+    public required int Versions { get; set; }
+}
+
+public class EngineeringSymbolListItemResponseDto
+{
+    public required string Id { get; set; }
+    public required string Key { get; set; }
+}
