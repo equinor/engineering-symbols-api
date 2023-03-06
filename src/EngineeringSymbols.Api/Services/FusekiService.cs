@@ -21,7 +21,7 @@ public class FusekiService : IFusekiService
 
 	public async Task<HttpResponseMessage> QueryAsync(string sparqlQuery, string? accept)
 	{
-		var request = new HttpRequestMessage(HttpMethod.Post, new Uri("query", UriKind.Relative))
+		var request = new HttpRequestMessage(HttpMethod.Post, new Uri("ds/query", UriKind.Relative))
 		{
 			Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
 			{
@@ -35,7 +35,7 @@ public class FusekiService : IFusekiService
 
 	public async Task<HttpResponseMessage> UpdateAsync(string updateQuery, string? accept)
 	{
-		var request = new HttpRequestMessage(HttpMethod.Post, new Uri("update", UriKind.Relative))
+		var request = new HttpRequestMessage(HttpMethod.Post, new Uri("ds/update", UriKind.Relative))
 		{
 			Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
 			{

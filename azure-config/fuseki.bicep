@@ -8,6 +8,9 @@ param buildId string
 param sku string
 param tenantId string = '3aa4a235-b6e2-48d5-9195-7fcf05b459b0'
 param location string = resourceGroup().location
+param backendSubnetId string
+param vnetName string
+param privateDnsZoneId string
 
 var resourceTags = {
   Product: 'Engineering Symbols ${name} fuseki'
@@ -25,6 +28,10 @@ var shortResourcePrefix = '${environmentTag}${shortProductName}${name}fuseki'
 var longResourcePrefix = '${environmentTag}-${shortProductName}-${name}-fuseki'
 
 var fileShareName = 'fusekifileshare'
+
+var privateEndpointName = '${longResourcePrefix}-privateEndpoint'
+
+var pvtEndpointDnsGroupName = '${privateEndpointName}/mydnsgroupname'
 
 resource AcrPullIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
   name: 'acr-pull-identity'
@@ -104,6 +111,11 @@ resource Fuseki 'Microsoft.Web/sites@2021-03-01' = {
   ]
 }
 
+/*
+    NOTE: No auth on fuseki because its on a virtual network (not exposed to the internett)
+*/
+
+/*
 resource FusekiAuthSettings 'Microsoft.Web/sites/config@2021-03-01' = {
   name: 'authsettingsV2'
   kind: 'string'
@@ -123,4 +135,51 @@ resource FusekiAuthSettings 'Microsoft.Web/sites/config@2021-03-01' = {
       }
     }
   }
+}
+
+*/
+
+resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing = {
+  name: vnetName
+}
+
+resource privateEndpoint 'Microsoft.Network/privateEndpoints@2021-05-01' = {
+  name: privateEndpointName
+  location: location
+  properties: {
+    subnet: {
+      id: backendSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: privateEndpointName
+        properties: {
+          privateLinkServiceId: Fuseki.id
+          groupIds: [
+            'sites'
+          ]
+        }
+      }
+    ]
+  }
+  dependsOn: [
+    vnet
+  ]
+}
+
+resource pvtEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2022-07-01' = {
+  name: pvtEndpointDnsGroupName
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'config1'
+        properties: {
+          privateDnsZoneId: privateDnsZoneId
+        }
+      }
+    ]
+  }
+  dependsOn: [
+    privateEndpoint
+  ]
 }

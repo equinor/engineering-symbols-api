@@ -29,10 +29,79 @@ var resourceTags = {
 }
 
 var shortProductName = 'engsym'
-var shortResourcePrefix = '${environmentTag}${shortProductName}'
-var longResourcePrefix = '${environmentTag}-engineering-symbols'
+var shortResourcePrefix = '${environmentTag}${shortProductName}' // devengsym
+var longResourcePrefix = '${environmentTag}-engineering-symbols' // dev-engineering-symbols
 
 var vaultName = '${environmentTag}-${shortProductName}-vault'
+
+var vnetName = '${longResourcePrefix}-vnet'
+var vnetAddressPrefix = '10.0.0.0/16'
+
+var frontendSubnetPrefix = '10.0.1.0/24'
+var frontendSubnetName = 'frontendSubnet'
+
+var backendSubnetPrefix = '10.0.2.0/24'
+var backendSubnetName = 'backendSubnet'
+
+var privateDnsZoneName = 'privatelink.azurewebsites.net'
+
+resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' = {
+  name: vnetName
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        vnetAddressPrefix
+      ]
+    }
+    subnets: [
+      {
+        name: frontendSubnetName
+        properties: {
+          addressPrefix: frontendSubnetPrefix
+          privateEndpointNetworkPolicies: 'Disabled'
+          delegations: [
+            {
+              name: 'Microsoft.Web.serverFarms'
+              properties: {
+                serviceName: 'Microsoft.Web/serverFarms'
+              }
+              type: 'Microsoft.Network/virtualNetworks/subnets/delegations'
+            }
+          ]
+        }
+      }
+      {
+        name: backendSubnetName
+        properties: {
+          addressPrefix: backendSubnetPrefix
+          privateEndpointNetworkPolicies: 'Disabled'
+        }
+      }
+    ]
+  }
+}
+
+resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: privateDnsZoneName
+  location: 'global'
+  properties: {}
+  dependsOn: [
+    vnet
+  ]
+}
+
+resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  parent: privateDnsZone
+  name: '${privateDnsZoneName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnet.id
+    }
+  }
+}
 
 resource StorageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: '${shortResourcePrefix}storage'
@@ -125,8 +194,12 @@ resource Api 'Microsoft.Web/sites@2021-03-01' = {
           }
         ], flatten(fusekiSettings))
     }
+    virtualNetworkSubnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, frontendSubnetName)
   }
-  dependsOn: []
+
+  dependsOn: [
+    vnet
+  ]
 }
 
 resource KeyVault 'Microsoft.KeyVault/vaults@2021-10-01' = {
@@ -197,5 +270,11 @@ module fuskis './fuseki.bicep' = [for parameter in fusekiParameters: {
     fusekiConfig: parameter.fusekiConfig
     location: parameter.location
     sku: parameter.sku
+    backendSubnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, backendSubnetName)
+    vnetName: vnetName
+    privateDnsZoneId: privateDnsZone.id
   }
+  dependsOn: [
+    vnet
+  ]
 }]
