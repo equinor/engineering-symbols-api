@@ -31,8 +31,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddRoleBasedAuthorization(this IServiceCollection services)
     {
         services.AddAuthorizationBuilder()
-            .AddPolicy(Roles.Admin, policy => policy.RequireRole(Roles.Admin))
-            .AddPolicy(Roles.Contributor, policy => policy.RequireRole(Roles.Admin, Roles.Contributor));;
+            .AddPolicy(Policy.OnlyAdmins, policy => policy.RequireRole(Role.Admin))
+            .AddPolicy(Policy.ContributorOrAdmin, policy => policy.RequireRole(Role.Admin, Role.Contributor));;
         
         return services;
     }

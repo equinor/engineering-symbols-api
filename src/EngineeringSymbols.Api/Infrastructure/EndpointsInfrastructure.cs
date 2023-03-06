@@ -27,16 +27,15 @@ public static class EndpointsInfrastructure
 
         symbols.MapPost("/", UploadEngineeringSymbol.UploadAsync)
             .WithTags("Authenticated")
-            .RequireScope();
+            .RequireAuthorization(Policy.ContributorOrAdmin);
 
         symbols.MapPatch("/{id}", UpdateEngineeringSymbol.UpdateSingleAsync)
             .WithTags("Authenticated")
-            .RequireAuthorization(Roles.Contributor);
-
-
+            .RequireAuthorization(Policy.ContributorOrAdmin);
+        
         symbols.MapDelete("/{id}", DeleteEngineeringSymbols.DeleteSingleAsync)
             .WithTags("Authenticated")
-            .RequireAuthorization(Roles.Admin);
+            .RequireAuthorization(Policy.OnlyAdmins);
 
         if (app.Environment.IsDevelopment())
         {

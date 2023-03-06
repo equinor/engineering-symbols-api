@@ -8,7 +8,6 @@ param fusekiInputParameters array = [
     name: 'main'
     env: [
       'dev', 'ci', 'prod' ]
-    clientId: env == 'prod' ? '2ff9de24-0dba-46e0-9dc1-096cc69ef0c6' : '2ff9de24-0dba-46e0-9dc1-096cc69ef0c6' // TODO add proper prod client id
     fusekiConfig: 'persisted_no_reasoner_config.ttl'
     location: resourceGroup().location
     sku: env == 'prod' ? 'P1V2' : 'B1'
@@ -148,7 +147,6 @@ resource AppServicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
     {
       "Name": "Dugtrio",
       "BaseUrl": "https://dev-dugtrio-fuseki.azurewebsites.net",
-      "Scopes": "2ff9de24-0dba-46e0-9dc1-096cc69ef0c6/.default"
     },
     ...
   ]
@@ -158,9 +156,6 @@ var fusekiSettings = [for i in range(0, length(fusekiParameters)): [
   {
     name: 'FusekiServers__${i}__BaseUrl'
     value: 'https://${environmentTag}-${shortProductName}-${fusekiParameters[i].name}-fuseki.azurewebsites.net'
-  }, {
-    name: 'FusekiServers__${i}__Scopes'
-    value: '${fusekiParameters[i].clientId}/.default'
   }, {
     name: 'FusekiServers__${i}__Name'
     value: '${fusekiParameters[i].name}'
@@ -259,12 +254,11 @@ resource KeyVault 'Microsoft.KeyVault/vaults@2021-10-01' = {
 }
 
 module fuskis './fuseki.bicep' = [for parameter in fusekiParameters: {
-  name: '${environmentTag}-engineering-symbols-${parameter.name}-fuseki'
+  name: '${longResourcePrefix}-${parameter.name}-fuseki'
   params: {
     buildId: buildId
     env: env
     environmentTag: environmentTag
-    clientId: parameter.clientId
     name: parameter.name
     shortProductName: shortProductName
     fusekiConfig: parameter.fusekiConfig

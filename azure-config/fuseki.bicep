@@ -1,12 +1,10 @@
 param name string
 param shortProductName string
 param env string
-param clientId string
 param environmentTag string
 param fusekiConfig string
 param buildId string
 param sku string
-param tenantId string = '3aa4a235-b6e2-48d5-9195-7fcf05b459b0'
 param location string = resourceGroup().location
 param backendSubnetId string
 param vnetName string
