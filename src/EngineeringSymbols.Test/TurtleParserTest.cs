@@ -1,7 +1,7 @@
 using System.Text.Json;
-using EngineeringSymbols.Api.Utils;
 using EngineeringSymbols.Tools.SvgParser;
 using EngineeringSymbols.Tools.SvgParser.Models;
+using EngineeringSymbols.Tools.Validation;
 using LanguageExt.Pretty;
 using Xunit.Abstractions;
 

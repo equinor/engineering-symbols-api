@@ -1,13 +1,12 @@
 using System.Globalization;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
-using EngineeringSymbols.Tools.Models;
 using VDS.RDF;
 using VDS.RDF.Parsing;
 using INode = VDS.RDF.INode;
 using NodeType = VDS.RDF.NodeType;
 
-namespace EngineeringSymbols.Api.Utils;
+namespace EngineeringSymbols.Tools.Validation;
 
 public static class RdfParser
 {
