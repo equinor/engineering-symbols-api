@@ -19,7 +19,7 @@ concurrency: ${{ inputs.env }}
 
 jobs:
   Deploy:
-    if: ${{ contains(fromJSON('["dev", "prod"]'), inputs.env) && !contains(github.event.head_commit.message, '[skip ci]') }}
+    if: ${{ contains(fromJSON('["dev", "prod"]'), inputs.env) }}
     environment: ${{ inputs.env }}
     runs-on: ubuntu-latest
     steps:
