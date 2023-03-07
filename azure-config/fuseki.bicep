@@ -9,6 +9,7 @@ param location string = resourceGroup().location
 param backendSubnetId string
 param vnetName string
 param privateDnsZoneId string
+param storagePrivateDnsZoneId string
 
 var resourceTags = {
   Product: 'Engineering Symbols ${name} fuseki'
@@ -27,17 +28,23 @@ var longResourcePrefix = '${environmentTag}-${shortProductName}-${name}-fuseki'
 
 var fileShareName = 'fusekifileshare'
 
-var privateEndpointName = '${longResourcePrefix}-privateEndpoint'
+var fusekiSubnetName = '${longResourcePrefix}-subnet'
 
-var pvtEndpointDnsGroupName = '${privateEndpointName}/mydnsgroupname'
+var fusekiPrivateEndpointName = '${longResourcePrefix}-privateEndpoint'
 
-resource AcrPullIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
-  name: 'acr-pull-identity'
-  scope: resourceGroup('spine-acr')
+var pvtEndpointDnsGroupName = '${fusekiPrivateEndpointName}/default'
+
+var storageAccountName = '${shortResourcePrefix}store'
+
+var storageAccountPrivateEndpointName = '${storageAccountName}-privateEndpoint'
+var storageAccountPrivateEndpointDnsGroupName = '${storageAccountPrivateEndpointName}/default'
+
+resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing = {
+  name: vnetName
 }
 
 resource FusekiStorageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
-  name: '${shortResourcePrefix}store'
+  name: storageAccountName
   location: location
   tags: resourceTags
   kind: 'StorageV2'
@@ -46,11 +53,53 @@ resource FusekiStorageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   }
   properties: {
     accessTier: 'Hot'
+    publicNetworkAccess: 'Disabled'
   }
 }
 
 resource FusekiFileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-08-01' = {
   name: '${FusekiStorageAccount.name}/default/${fileShareName}'
+}
+
+resource FusekiStorageAccountPrivateEndpoint 'Microsoft.Network/privateEndpoints@2021-05-01' = {
+  name: storageAccountPrivateEndpointName
+  location: location
+  properties: {
+    subnet: {
+      id: backendSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: storageAccountPrivateEndpointName
+        properties: {
+          privateLinkServiceId: FusekiStorageAccount.id
+          groupIds: [
+            'file'
+          ]
+        }
+      }
+    ]
+  }
+  dependsOn: [
+    vnet
+  ]
+}
+
+resource FusekiStorageAccountPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2022-07-01' = {
+  name: storageAccountPrivateEndpointDnsGroupName
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-file-core-windows-net'
+        properties: {
+          privateDnsZoneId: storagePrivateDnsZoneId
+        }
+      }
+    ]
+  }
+  dependsOn: [
+    FusekiStorageAccountPrivateEndpoint
+  ]
 }
 
 resource FusekiPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
@@ -64,6 +113,11 @@ resource FusekiPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   sku: {
     name: sku
   }
+}
+
+resource AcrPullIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: 'acr-pull-identity'
+  scope: resourceGroup('spine-acr')
 }
 
 resource Fuseki 'Microsoft.Web/sites@2021-03-01' = {
@@ -103,6 +157,7 @@ resource Fuseki 'Microsoft.Web/sites@2021-03-01' = {
         }
       ]
     }
+    virtualNetworkSubnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, fusekiSubnetName)
   }
   dependsOn: [
     FusekiFileShare
@@ -137,12 +192,8 @@ resource FusekiAuthSettings 'Microsoft.Web/sites/config@2021-03-01' = {
 
 */
 
-resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing = {
-  name: vnetName
-}
-
-resource privateEndpoint 'Microsoft.Network/privateEndpoints@2021-05-01' = {
-  name: privateEndpointName
+resource FusekiPrivateEndpoint 'Microsoft.Network/privateEndpoints@2021-05-01' = {
+  name: fusekiPrivateEndpointName
   location: location
   properties: {
     subnet: {
@@ -150,7 +201,7 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2021-05-01' = {
     }
     privateLinkServiceConnections: [
       {
-        name: privateEndpointName
+        name: fusekiPrivateEndpointName
         properties: {
           privateLinkServiceId: Fuseki.id
           groupIds: [
@@ -178,6 +229,6 @@ resource pvtEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneG
     ]
   }
   dependsOn: [
-    privateEndpoint
+    FusekiPrivateEndpoint
   ]
 }

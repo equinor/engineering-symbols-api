@@ -36,13 +36,33 @@ var vaultName = '${environmentTag}-${shortProductName}-vault'
 var vnetName = '${longResourcePrefix}-vnet'
 var vnetAddressPrefix = '10.0.0.0/16'
 
+// Frontend subnet: for the API web app service
 var frontendSubnetPrefix = '10.0.1.0/24'
-var frontendSubnetName = 'frontendSubnet'
+var frontendSubnetName = 'frontend'
 
+// Backend subnet: private endpoints for all fuseki web-app and storage account services
 var backendSubnetPrefix = '10.0.2.0/24'
-var backendSubnetName = 'backendSubnet'
+var backendSubnetName = 'backend'
 
 var privateDnsZoneName = 'privatelink.azurewebsites.net'
+var storagePrivateDnsZoneName = 'privatelink.file.core.windows.net'
+
+var fusekiWebAppSubnets = [for (item, i) in fusekiParameters: {
+  name: '${environmentTag}-${shortProductName}-${item.name}-fuseki-subnet'
+  properties: {
+    addressPrefix: '10.0.${(i + 3)}.0/24'
+    privateEndpointNetworkPolicies: 'Disabled'
+    delegations: [
+      {
+        name: 'Microsoft.Web.serverFarms'
+        properties: {
+          serviceName: 'Microsoft.Web/serverFarms'
+        }
+        type: 'Microsoft.Network/virtualNetworks/subnets/delegations'
+      }
+    ]
+  }
+}]
 
 resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' = {
   name: vnetName
@@ -53,31 +73,30 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' = {
         vnetAddressPrefix
       ]
     }
-    subnets: [
-      {
-        name: frontendSubnetName
-        properties: {
-          addressPrefix: frontendSubnetPrefix
-          privateEndpointNetworkPolicies: 'Disabled'
-          delegations: [
-            {
-              name: 'Microsoft.Web.serverFarms'
-              properties: {
-                serviceName: 'Microsoft.Web/serverFarms'
+    subnets: concat([
+        {
+          name: frontendSubnetName
+          properties: {
+            addressPrefix: frontendSubnetPrefix
+            privateEndpointNetworkPolicies: 'Disabled'
+            delegations: [
+              {
+                name: 'Microsoft.Web.serverFarms'
+                properties: {
+                  serviceName: 'Microsoft.Web/serverFarms'
+                }
+                type: 'Microsoft.Network/virtualNetworks/subnets/delegations'
               }
-              type: 'Microsoft.Network/virtualNetworks/subnets/delegations'
-            }
-          ]
+            ]
+          }
         }
-      }
-      {
-        name: backendSubnetName
-        properties: {
-          addressPrefix: backendSubnetPrefix
-          privateEndpointNetworkPolicies: 'Disabled'
-        }
-      }
-    ]
+        {
+          name: backendSubnetName
+          properties: {
+            addressPrefix: backendSubnetPrefix
+            privateEndpointNetworkPolicies: 'Disabled'
+          }
+        } ], fusekiWebAppSubnets)
   }
 }
 
@@ -93,6 +112,27 @@ resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
 resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   parent: privateDnsZone
   name: '${privateDnsZoneName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnet.id
+    }
+  }
+}
+
+resource StoragePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: storagePrivateDnsZoneName
+  location: 'global'
+  properties: {}
+  dependsOn: [
+    vnet
+  ]
+}
+
+resource StoragePrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  parent: StoragePrivateDnsZone
+  name: '${storagePrivateDnsZoneName}-link'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -267,6 +307,7 @@ module fuskis './fuseki.bicep' = [for parameter in fusekiParameters: {
     backendSubnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, backendSubnetName)
     vnetName: vnetName
     privateDnsZoneId: privateDnsZone.id
+    storagePrivateDnsZoneId: StoragePrivateDnsZone.id
   }
   dependsOn: [
     vnet
