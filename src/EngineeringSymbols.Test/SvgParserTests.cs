@@ -118,7 +118,8 @@ public class SvgParserTests
                 output.WriteLine("Parse Errors:");
                 OutputAsJson(result.ParseErrors);
                 output.WriteLine("Connectors:");
-                OutputAsJson(result.EngineeringSymbolParsed.Connectors);
+                if (result.EngineeringSymbolParsed?.Connectors != null)
+                    OutputAsJson(result.EngineeringSymbolParsed.Connectors);
                 return result.IsSuccess;
             },
             failure =>
@@ -128,8 +129,9 @@ public class SvgParserTests
                 return true;
             }));
     }
-    
-    public static void AssertValidEngineeringSymbol(EngineeringSymbolParsed symbolParsed)
+
+
+    private static void AssertValidEngineeringSymbol(EngineeringSymbolParsed symbolParsed)
     {
         //Assert.NotNull(symbol.Id);
         Assert.True(symbolParsed.Height % 24 == 0);
@@ -146,13 +148,10 @@ public class SvgParserTests
             Assert.True(c.Id.Length > 0);
             
             Assert.NotNull(c.RelativePosition);
-            Assert.NotNull(c.RelativePosition.X);
-            Assert.NotNull(c.RelativePosition.Y);
             
             Assert.True(c.RelativePosition.X >= 0);
             Assert.True(c.RelativePosition.Y >= 0);
-
-            Assert.NotNull(c.Direction);
+            
             Assert.InRange(c.Direction, 0, 360);
         }
     }

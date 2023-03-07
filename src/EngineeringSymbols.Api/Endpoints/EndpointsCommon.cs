@@ -53,7 +53,7 @@ public static class Common
             var a = await fileStream.ReadAsync(bytes, 0, (int)file.Length);
             result = System.Text.Encoding.UTF8.GetString(bytes);
         }
-        catch (Exception _)
+        catch (Exception)
         {
             // TODO: log ex here?
             throw new ValidationException("Failed to read file contents");

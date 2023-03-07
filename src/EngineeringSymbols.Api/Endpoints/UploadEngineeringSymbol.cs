@@ -68,15 +68,15 @@ public static class UploadEngineeringSymbol
 
 
     private static Func<UploadContext, TryAsync<UploadContext>> Save(IEngineeringSymbolService symbolService) =>
-        ctx => symbolService.CreateSymbolAsync(ctx.EngineeringSymbolCreateDto)
+        ctx => symbolService.CreateSymbolAsync(ctx.EngineeringSymbolCreateDto!)
                 .Map(symbolId => ctx with {CreatedUri = symbolId} );
 
     
     private record UploadContext(IFormFile File, string User)
     {
-        public string FileId { get; init; }
-        public string FileContent { get; init; }
-        public EngineeringSymbolCreateDto EngineeringSymbolCreateDto { get; init; }
-        public string CreatedUri { get; init; } 
+        public string FileId { get; init; } = "Unknown";
+        public string FileContent { get; init; } = "";
+        public EngineeringSymbolCreateDto? EngineeringSymbolCreateDto { get; init; }
+        public string CreatedUri { get; init; } = "UnknownUri";
     }
 }

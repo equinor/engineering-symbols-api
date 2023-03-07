@@ -25,6 +25,12 @@ internal class SvgParserContext
         {
             throw new SvgParseException("SvgRootElement was null");
         }
+        
+        if (ExtractedData.Key == null)
+        {
+            throw new SvgParseException("Symbol key was null");
+        }
+        
         return new SvgParserResult(
             new EngineeringSymbolParsed
             {

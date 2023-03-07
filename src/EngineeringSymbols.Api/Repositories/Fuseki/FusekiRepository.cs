@@ -127,7 +127,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
             if (!fusekiResponse.IsSuccessStatusCode)
             {
-                throw new RepositoryException(fusekiResponse.ReasonPhrase);
+                throw new RepositoryException(fusekiResponse.ReasonPhrase ?? "Failed to insert symbol into repository");
             }
             
             return symbolId;

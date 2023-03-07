@@ -101,11 +101,13 @@ public static class SvgParser
 		return () =>
 		{
 			//ctx.ExtractedData.Id = ctx.Options.SymbolId ?? Helpers.GetSymbolId(Path.GetFileName(filePath));
+			if (ctx.SvgRootElement == null)
+				throw new SvgParseException("SvgRootElement was null");
 			
 			// Store input SVG before transforming it
 			if (ctx.Options.IncludeRawSvgString)
 				ctx.ExtractedData.RawSvgInputString = ctx.SvgRootElement.ToString();
-
+			
 			return SvgCrawler.ExtractDataAndTransformElement(ctx.SvgRootElement, ctx);
 		};
 	}

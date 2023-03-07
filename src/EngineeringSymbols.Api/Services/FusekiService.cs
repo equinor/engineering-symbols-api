@@ -14,8 +14,13 @@ public class FusekiService : IFusekiService
 		if (fusekiServers == null || fusekiServers.Count == 0)
 			throw new Exception("'FusekiServers' is missing or empty in appsettings.json");
 
+		var serverBaseUrl = fusekiServers[0].BaseUrl;
+		
+		if (serverBaseUrl == null)
+			throw new Exception("'FusekiServer BaseUrl' in appsettings.json is null");
+		
 		_httpClient = httpClient;
-		_httpClient.BaseAddress = new Uri(fusekiServers[0].BaseUrl);
+		_httpClient.BaseAddress = new Uri(serverBaseUrl);
 		_httpClient.DefaultRequestHeaders.Accept.Clear();
 	}
 

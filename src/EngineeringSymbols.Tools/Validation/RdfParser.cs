@@ -19,7 +19,7 @@ public static class RdfParser
         {
             StringParser.Parse(graph, turtle);
         }
-        catch (Exception _)
+        catch (Exception)
         {
             return Fail<Error, EngineeringSymbol>(Error.New("Failed to parse Turtle"));
         }
