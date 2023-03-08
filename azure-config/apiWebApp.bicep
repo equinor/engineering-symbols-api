@@ -13,7 +13,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing = {
   name: vnetName
 }
 
-resource StorageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
+resource StorageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   name: '${resourcePrefix}store'
   location: location
   tags: tags
@@ -38,7 +38,7 @@ resource ApplicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-resource AppServicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
+resource AppServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: '${resourcePrefixHyphen}-plan'
   location: location
   tags: tags
@@ -73,7 +73,7 @@ var fusekiServers = [for (name, i) in fusekiNames: [
   }
 ]]
 
-resource Api 'Microsoft.Web/sites@2021-03-01' = {
+resource Api 'Microsoft.Web/sites@2022-03-01' = {
   name: '${resourcePrefixHyphen}-api'
   kind: 'app'
   tags: tags

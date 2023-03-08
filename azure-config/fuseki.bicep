@@ -44,7 +44,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing = {
 
 var subnetId = resourceId('Microsoft.Network/virtualNetworks/subnets', vnet.name, subnetName)
 
-resource FusekiStorageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
+resource FusekiStorageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   name: storageAccountName
   location: location
   tags: resourceTags
@@ -58,11 +58,11 @@ resource FusekiStorageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   }
 }
 
-resource FusekiFileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-08-01' = {
+resource FusekiFileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2022-09-01' = {
   name: '${FusekiStorageAccount.name}/default/${fileShareName}'
 }
 
-resource FusekiStorageAccountPrivateEndpoint 'Microsoft.Network/privateEndpoints@2021-05-01' = {
+resource FusekiStorageAccountPrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-07-01' = {
   name: storageAccountPrivateEndpointName
   location: location
   properties: {
@@ -103,7 +103,7 @@ resource FusekiStorageAccountPrivateEndpointDnsGroup 'Microsoft.Network/privateE
   ]
 }
 
-resource FusekiPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
+resource FusekiPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: '${fusekiResourceName}-plan'
   location: location
   tags: resourceTags
@@ -125,7 +125,7 @@ resource AcrPullIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-
     NOTE: No auth on fuseki because its on a virtual network (not exposed to the internett)
 */
 
-resource Fuseki 'Microsoft.Web/sites@2021-03-01' = {
+resource Fuseki 'Microsoft.Web/sites@2022-03-01' = {
   name: fusekiResourceName
   kind: 'app'
   tags: resourceTags
@@ -169,7 +169,7 @@ resource Fuseki 'Microsoft.Web/sites@2021-03-01' = {
   ]
 }
 
-resource FusekiPrivateEndpoint 'Microsoft.Network/privateEndpoints@2021-05-01' = {
+resource FusekiPrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-07-01' = {
   name: fusekiPrivateEndpointName
   location: location
   properties: {
