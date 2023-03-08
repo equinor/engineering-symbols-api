@@ -1,14 +1,14 @@
 param name string
-param shortProductName string
+param resourcePrefix string
+param resourcePrefixHyphen string
 param env string
-param environmentTag string
 param fusekiConfig string
 param buildId string
 param sku string
 param location string = resourceGroup().location
-param backendSubnetId string
 param vnetName string
-param privateDnsZoneId string
+param subnetName string
+param webAppPrivateDnsZoneId string
 param storagePrivateDnsZoneId string
 
 var resourceTags = {
@@ -23,25 +23,26 @@ var javaOptions = {
   P1V2: '-Xmx2048m'
 }
 
-var shortResourcePrefix = '${environmentTag}${shortProductName}${name}fuseki'
-var longResourcePrefix = '${environmentTag}-${shortProductName}-${name}-fuseki'
+var fusekiName = '${name}-fuseki'
+var fusekiResourceName = '${resourcePrefixHyphen}-${fusekiName}' // dev-engsym-main-fuseki
+
+// Fuseki web app
+var fusekiSubnetName = '${fusekiName}-subnet' // main-fuseki-subnet
+var fusekiPrivateEndpointName = '${fusekiResourceName}-endpoint'
+var fusekiPrivateEndpointDnsGroupName = '${fusekiPrivateEndpointName}/default'
+
+// Storage
 
 var fileShareName = 'fusekifileshare'
-
-var fusekiSubnetName = '${longResourcePrefix}-subnet'
-
-var fusekiPrivateEndpointName = '${longResourcePrefix}-privateEndpoint'
-
-var pvtEndpointDnsGroupName = '${fusekiPrivateEndpointName}/default'
-
-var storageAccountName = '${shortResourcePrefix}store'
-
-var storageAccountPrivateEndpointName = '${storageAccountName}-privateEndpoint'
+var storageAccountName = '${resourcePrefix}${name}fustore' // devengsymmainfustore
+var storageAccountPrivateEndpointName = '${storageAccountName}-endpoint'
 var storageAccountPrivateEndpointDnsGroupName = '${storageAccountPrivateEndpointName}/default'
 
 resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing = {
   name: vnetName
 }
+
+var subnetId = resourceId('Microsoft.Network/virtualNetworks/subnets', vnet.name, subnetName)
 
 resource FusekiStorageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
@@ -66,7 +67,7 @@ resource FusekiStorageAccountPrivateEndpoint 'Microsoft.Network/privateEndpoints
   location: location
   properties: {
     subnet: {
-      id: backendSubnetId
+      id: subnetId
     }
     privateLinkServiceConnections: [
       {
@@ -103,7 +104,7 @@ resource FusekiStorageAccountPrivateEndpointDnsGroup 'Microsoft.Network/privateE
 }
 
 resource FusekiPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
-  name: '${longResourcePrefix}-plan'
+  name: '${fusekiResourceName}-plan'
   location: location
   tags: resourceTags
   kind: 'linux'
@@ -120,8 +121,12 @@ resource AcrPullIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-
   scope: resourceGroup('spine-acr')
 }
 
+/*
+    NOTE: No auth on fuseki because its on a virtual network (not exposed to the internett)
+*/
+
 resource Fuseki 'Microsoft.Web/sites@2021-03-01' = {
-  name: longResourcePrefix
+  name: fusekiResourceName
   kind: 'app'
   tags: resourceTags
   location: location
@@ -164,40 +169,12 @@ resource Fuseki 'Microsoft.Web/sites@2021-03-01' = {
   ]
 }
 
-/*
-    NOTE: No auth on fuseki because its on a virtual network (not exposed to the internett)
-*/
-
-/*
-resource FusekiAuthSettings 'Microsoft.Web/sites/config@2021-03-01' = {
-  name: 'authsettingsV2'
-  kind: 'string'
-  parent: Fuseki
-  properties: {
-    globalValidation: {
-      unauthenticatedClientAction: 'Return401'
-      requireAuthentication: true
-    }
-    identityProviders: {
-      azureActiveDirectory: {
-        enabled: true
-        registration: {
-          clientId: clientId
-          openIdIssuer: 'https://sts.windows.net/${tenantId}/v2.0'
-        }
-      }
-    }
-  }
-}
-
-*/
-
 resource FusekiPrivateEndpoint 'Microsoft.Network/privateEndpoints@2021-05-01' = {
   name: fusekiPrivateEndpointName
   location: location
   properties: {
     subnet: {
-      id: backendSubnetId
+      id: subnetId
     }
     privateLinkServiceConnections: [
       {
@@ -216,14 +193,14 @@ resource FusekiPrivateEndpoint 'Microsoft.Network/privateEndpoints@2021-05-01' =
   ]
 }
 
-resource pvtEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2022-07-01' = {
-  name: pvtEndpointDnsGroupName
+resource FusekiPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2022-07-01' = {
+  name: fusekiPrivateEndpointDnsGroupName
   properties: {
     privateDnsZoneConfigs: [
       {
         name: 'config1'
         properties: {
-          privateDnsZoneId: privateDnsZoneId
+          privateDnsZoneId: webAppPrivateDnsZoneId
         }
       }
     ]
