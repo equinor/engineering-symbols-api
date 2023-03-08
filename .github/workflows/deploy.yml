@@ -54,5 +54,5 @@ jobs:
       - name: Deploy API
         uses: Azure/webapps-deploy@v2.2.5
         with:
-          app-name: "${{ inputs.env }}-engineering-symbols-api"
+          app-name: "${{ inputs.env }}-engsym-api"
           package: api/
