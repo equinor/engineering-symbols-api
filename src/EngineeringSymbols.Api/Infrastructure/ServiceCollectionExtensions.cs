@@ -15,15 +15,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAzureAuthentication(this IServiceCollection services, IConfiguration config)
     {
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApi(config.GetSection("AzureAd"))
-            .EnableTokenAcquisitionToCallDownstreamApi()
-            .AddDownstreamApi("fuseki", options =>
-            {
-                var fusekiServer = config.GetFusekiSettings();
-                options.BaseUrl = fusekiServer.BaseUrl;
-                options.Scopes = fusekiServer.Scopes;
-            })
-            .AddInMemoryTokenCaches();
+            .AddMicrosoftIdentityWebApi(config.GetSection("AzureAd"));
         
         return services;
     }
@@ -143,7 +135,7 @@ public static class ServiceCollectionExtensions
         services.AddRateLimiter(rlOptions => rlOptions
             .AddFixedWindowLimiter(policyName: RateLimiterPolicy.Fixed, options =>
             {
-                options.PermitLimit = 4;
+                options.PermitLimit = 500;
                 options.Window = TimeSpan.FromSeconds(12);
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                 options.QueueLimit = 2;

@@ -6,7 +6,10 @@ public static class EngineeringSymbolValidation
     {
         if (!Guid.TryParse(id, out var result))
         {
-            throw new ValidationException("Invalid Engineering Symbol Id");
+            throw new ValidationException(new Dictionary<string, string[]>
+                {
+                    {"id", new [] { "Invalid symbol Id"}}
+                });
         }
 
         return result;
@@ -16,7 +19,7 @@ public static class EngineeringSymbolValidation
     {
         return Guid.TryParse(id, out var result) 
             ? Success<ValidationError, Guid>(result) 
-            : Fail<ValidationError, Guid>(new ValidationError("id",$"invalid value"));
+            : Fail<ValidationError, Guid>(new ValidationError("id",$"Not a valid GUID"));
     }
     
     public static Validation<ValidationError, string> ValidateKey(string key)

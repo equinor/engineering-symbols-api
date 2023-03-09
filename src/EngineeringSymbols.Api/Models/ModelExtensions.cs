@@ -10,12 +10,12 @@ public static class ModelExtensions
         return new EngineeringSymbolCreateDto
         {
             Key = sym.Key,
+            Description = sym.Description ?? "None",
             Filename = filename ?? sym.Filename ?? "<Unknown>",
             Owner = userId,
             Width = sym.Width,
             Height = sym.Height,
-            GeometryString = sym.GeometryString,
-            SvgString = sym.SvgString,
+            GeometryPath = sym.GeometryString,
             Connectors = sym.Connectors.Select(ToEngineeringSymbolConnector).ToList()
         };
     }
@@ -35,15 +35,15 @@ public static class ModelExtensions
         return new EngineeringSymbolCompleteResponseDto
         {
             Id = symbol.Id,
-            Filename = symbol.Filename,
             Key = symbol.Key,
+            Description = symbol.Description,
+            Filename = symbol.Filename,
             DateTimeCreated = symbol.DateTimeCreated,
             DateTimeUpdated = symbol.DateTimeUpdated,
             Owner = symbol.Owner,
             Width = symbol.Width,
             Height = symbol.Height,
-            GeometryString = symbol.GeometryString,
-            SvgString = symbol.SvgString,
+            Geometry = symbol.GeometryPath,
             Connectors = symbol.Connectors
         };
     }
@@ -54,10 +54,12 @@ public static class ModelExtensions
         {
             Id = symbol.Id,
             Key = symbol.Key,
+            Description = symbol.Description,
+            DateTimeCreated = symbol.DateTimeCreated,
+            DateTimeUpdated = symbol.DateTimeUpdated,
             Width = symbol.Width,
             Height = symbol.Height,
-            GeometryString = symbol.GeometryString,
-            SvgString = symbol.SvgString,
+            Geometry = symbol.GeometryPath,
             Connectors = symbol.Connectors
         };
     }

@@ -21,7 +21,7 @@ public static class SparqlQueries
 
     public static string GetAllSymbolsDistinctQuery()
     {
-        // Inlclude date: SELECT ?symbolGraph ?key ?latestDateCreated WHERE ...
+        // Include date: SELECT ?symbolGraph ?key ?latestDateCreated WHERE ...
         return $$"""
                 {{RdfConst.EngSymPrefix}}
                 {{RdfConst.SymbolPrefix}}
@@ -167,8 +167,6 @@ public static class SparqlQueries
                             {cIri} {ESProp.HasDirectionYIriPrefix} "{connector.Direction}" .
                     """;
         }).ToList();
-        
-        var svgStrBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(createDto.SvgString));
 
         return $$"""
                 {{RdfConst.AllPrefixes}}
@@ -176,11 +174,11 @@ public static class SparqlQueries
                 INSERT DATA {
                     GRAPH {{sub}} {
                         {{sub}} {{ESProp.HasEngSymKeyIriPrefix}} "{{createDto.Key ?? symbolId}}" .
+                        {{sub}} {{ESProp.HasDescriptionIriPrefix}} "{{createDto.Description}}" .
                         {{sub}} {{ESProp.IsTypeIriPrefix}} <{{RdfConst.SymbolTypeIri}}> .
                         {{sub}} {{ESProp.HasDateCreatedIriPrefix}} "{{DateTimeOffset.UtcNow:O}}"^^xsd:dateTime .
                         {{sub}} {{ESProp.HasDateUpdatedIriPrefix}} "{{DateTimeOffset.MinValue:O}}"^^xsd:dateTime .
-                        {{sub}} {{ESProp.HasGeometryIriPrefix}} "{{createDto.GeometryString}}" .
-                        {{sub}} {{ESProp.HasSvgBase64IriPrefix}} "{{svgStrBase64}}" .
+                        {{sub}} {{ESProp.HasGeometryIriPrefix}} "{{createDto.GeometryPath}}" .
                         {{sub}} {{ESProp.HasWidthIriPrefix}} "{{createDto.Width.ToString(nfi)}}" .
                         {{sub}} {{ESProp.HasHeightIriPrefix}} "{{createDto.Height.ToString(nfi)}}" .
                         {{sub}} {{ESProp.HasOwnerIriPrefix}} "{{createDto.Owner}}" .

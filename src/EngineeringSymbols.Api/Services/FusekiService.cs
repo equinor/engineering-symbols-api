@@ -14,10 +14,13 @@ public class FusekiService : IFusekiService
 		if (fusekiServers == null || fusekiServers.Count == 0)
 			throw new Exception("'FusekiServers' is missing or empty in appsettings.json");
 
-		var serverBaseUrl = fusekiServers[0].BaseUrl;
+		var serverBaseUrl = fusekiServers[0].DatasetUrl;
 		
 		if (serverBaseUrl == null)
-			throw new Exception("'FusekiServer BaseUrl' in appsettings.json is null");
+			throw new Exception("'FusekiServer DatasetUrl' in appsettings.json is null");
+
+		// Dataset URL must end i a / to be able to construct full URI
+		if (serverBaseUrl.Last() != '/') serverBaseUrl += '/';
 		
 		_httpClient = httpClient;
 		_httpClient.BaseAddress = new Uri(serverBaseUrl);
@@ -26,7 +29,7 @@ public class FusekiService : IFusekiService
 
 	public async Task<HttpResponseMessage> QueryAsync(string sparqlQuery, string? accept)
 	{
-		var request = new HttpRequestMessage(HttpMethod.Post, new Uri("ds/query", UriKind.Relative))
+		var request = new HttpRequestMessage(HttpMethod.Post, new Uri("query", UriKind.Relative))
 		{
 			Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
 			{
@@ -40,7 +43,7 @@ public class FusekiService : IFusekiService
 
 	public async Task<HttpResponseMessage> UpdateAsync(string updateQuery, string? accept)
 	{
-		var request = new HttpRequestMessage(HttpMethod.Post, new Uri("ds/update", UriKind.Relative))
+		var request = new HttpRequestMessage(HttpMethod.Post, new Uri("update", UriKind.Relative))
 		{
 			Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
 			{

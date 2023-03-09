@@ -1,8 +1,11 @@
 using EngineeringSymbols.Api.Infrastructure;
 using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Api.Repositories.Fuseki;
+using EngineeringSymbols.Api.Services.EngineeringSymbolService;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddLogging();
 
 builder.Configuration.AddKeyVault();
 
@@ -25,8 +28,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 // Services and repos
 builder.Services.AddHttpClient<IFusekiService, FusekiService>();
-builder.Services.AddTransient<IEngineeringSymbolService, EngineeringSymbolService>();
-builder.Services.AddSingleton<IEngineeringSymbolRepository, FusekiRepository>();
+builder.Services.AddScoped<IEngineeringSymbolService, EngineeringSymbolService>();
+builder.Services.AddScoped<IEngineeringSymbolRepository, FusekiRepository>();
 
 // Construct WebApplication
 var app = builder.Build();

@@ -35,6 +35,7 @@ internal class SvgParserContext
             new EngineeringSymbolParsed
             {
                 Key = ExtractedData.Key,
+                Description = ExtractedData.Description,
                 Filename = ExtractedData.Filename,
                 SvgString = SvgRootElement.ToString(),
                 GeometryString = string.Join("", ExtractedData.PathData),

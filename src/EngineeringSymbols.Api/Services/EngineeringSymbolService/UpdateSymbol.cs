@@ -1,22 +1,17 @@
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.Validation;
-using Microsoft.AspNetCore.Mvc;
-namespace EngineeringSymbols.Api.Endpoints;
 
-public static class UpdateEngineeringSymbol
+namespace EngineeringSymbols.Api.Services.EngineeringSymbolService;
+
+public static class UpdateSymbol
 {
-    public static async Task<IResult> UpdateSingleAsync(string id, [FromBody] EngineeringSymbolUpdateDto updateDto, IEngineeringSymbolService symbolService) =>
-        await CreateUpdateContext(id, updateDto)
-            .Bind(ValidateInput)
-            .Bind(UpdateDatabase(symbolService))
-            .Match(
-                Succ: _ => TypedResults.NoContent(),
-                Fail: Common.OnFailure);
-
-    private static TryAsync<UpdateContext> CreateUpdateContext(string id, EngineeringSymbolUpdateDto updateDto) =>
+    
+    public record UpdateContext(string Id, EngineeringSymbolUpdateDto UpdateDto);
+    
+    public static TryAsync<UpdateContext> CreateUpdateContext(string id, EngineeringSymbolUpdateDto updateDto) =>
         TryAsync(() => Task.FromResult(new UpdateContext(id, updateDto)));
     
-    private static TryAsync<UpdateContext> ValidateInput(UpdateContext ctx) =>
+   public static TryAsync<UpdateContext> ValidateInput(UpdateContext ctx) =>
         TryAsync(() =>
         {
             var idV = EngineeringSymbolValidation.ValidateId(ctx.Id);
@@ -70,9 +65,4 @@ public static class UpdateEngineeringSymbol
                     throw new ValidationException(errorDict);
                 });
         });
-
-    private static Func<UpdateContext, TryAsync<UpdateContext>> UpdateDatabase(IEngineeringSymbolService symbolService) =>
-        ctx => symbolService.UpdateSymbolAsync(ctx.Id, ctx.UpdateDto)
-            .Map(_ => ctx with {});
-    private record UpdateContext(string Id, EngineeringSymbolUpdateDto UpdateDto);
 }

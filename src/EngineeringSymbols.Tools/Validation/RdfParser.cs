@@ -37,6 +37,8 @@ public static class RdfParser
         
         var keyV = graph.GetStringLiteral(sIri, ESProp.HasEngSymKeyIri);
         
+        var descV = graph.GetStringLiteral(sIri, ESProp.HasDescriptionIri);
+        
         var dateCreatedV = graph.GetDateTimeOffsetLiteral(sIri, ESProp.HasDateCreatedIri);
         var dateUpdatedV = graph.GetDateTimeOffsetLiteral(sIri, ESProp.HasDateUpdatedIri);
         
@@ -44,7 +46,7 @@ public static class RdfParser
         
         var filenameV = graph.GetStringLiteral(sIri, ESProp.HasSourceFilenameIri);
         
-        var svgB64V = graph.GetStringLiteral(sIri, ESProp.HasSvgBase64Iri);
+        //var svgB64V = graph.GetStringLiteral(sIri, ESProp.HasSvgBase64Iri);
         
         var geometryV = graph.GetStringLiteral(sIri, ESProp.HasGeometryIri);
         
@@ -65,18 +67,18 @@ public static class RdfParser
         
         var connectorsV = graph.GetConnectors(connectorsIris);
         
-        return (idV, keyV, dateCreatedV, dateUpdatedV, ownerV, filenameV, svgB64V, geometryV, widthV, heightV, connectorsV).Apply(
-            (id, key, dateCreated, dateUpdated, owner, filename, svgB64, geometry, width, height, connectors) =>
+        return (idV, keyV, descV, dateCreatedV, dateUpdatedV, ownerV, filenameV, geometryV, widthV, heightV, connectorsV).Apply(
+            (id , key, desc, dateCreated, dateUpdated, owner, filename, geometry, width, height, connectors) =>
                 new EngineeringSymbol
                 {
                     Id = id,
                     Key = key,
+                    Description = desc,
                     DateTimeCreated = dateCreated,
                     DateTimeUpdated = dateUpdated,
                     Owner = owner,
                     Filename = filename,
-                    SvgString = svgB64,
-                    GeometryString = geometry,
+                    GeometryPath = geometry,
                     Width = width,
                     Height = height,
                     Connectors = connectors

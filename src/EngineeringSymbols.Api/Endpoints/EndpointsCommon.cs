@@ -6,19 +6,22 @@ namespace EngineeringSymbols.Api.Endpoints;
 /// <summary>
 /// Common/generic methods for endpoints
 /// </summary>
-public static class Common
+public static class EndpointsCommon
 {
-    public static IResult OnFailure(Exception exception)
+    public static IResult OnFailure(Exception exception, ILogger? logger = null)
     {
-        // TODO: Log stuff
         return exception.Match<IResult>()
             .With<ValidationException>(ex =>
                 TypedResults.ValidationProblem(ex.Errors, ex.Message, title: "Validation Error"))
             .With<SvgParseException>(ex =>
                 TypedResults.Problem(ex.Message, title: "SVG Parse Error", statusCode: StatusCodes.Status400BadRequest))
             .With<RepositoryException>(OnRepositoryException)
-            .Otherwise(_ =>
-                TypedResults.Problem("Unexpected error", statusCode: StatusCodes.Status500InternalServerError));
+            .Otherwise(ex =>
+            {
+                logger?.LogError("Status500InternalServerError with exception: {Exception}", ex);
+                return TypedResults.Problem("Unexpected Error", statusCode: StatusCodes.Status500InternalServerError);
+            });
+
     }
 
     private static IResult OnRepositoryException(RepositoryException ex)
@@ -28,10 +31,10 @@ public static class Common
             case RepositoryOperationError.EntityNotFound:
                 return TypedResults.NotFound();
             case RepositoryOperationError.EntityAlreadyExists:
-                return TypedResults.UnprocessableEntity();
+                return TypedResults.UnprocessableEntity("Entity already exists");
             case RepositoryOperationError.Unknown:
             default:
-                return TypedResults.BadRequest(ex.Message);
+                return TypedResults.Problem(ex.Message, statusCode: StatusCodes.Status500InternalServerError, title: "Repository Error");
         }
     }
 

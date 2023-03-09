@@ -4,20 +4,19 @@ using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EngineeringSymbols.Api.Endpoints;
+namespace EngineeringSymbols.Api.Services.EngineeringSymbolService;
 
-public static class UploadEngineeringSymbol
+public static class CreateSymbol
 {
-    public static async Task<IResult> UploadAsync(ClaimsPrincipal user, [FromForm] IFormFile svgFile, [FromServices] IEngineeringSymbolService symbolService) =>
-        await CreateUploadContext(user, svgFile)
-            .Bind(ReadFileToString)
-            .Bind(ParseSvgString)
-            .Bind(Save(symbolService))
-            .Match(
-                Succ: ctx => TypedResults.Created(ctx.CreatedUri),
-                Fail: Common.OnFailure);
+    public record InsertContext(IFormFile File, string User)
+    {
+        public string FileId { get; init; } = "Unknown";
+        public string FileContent { get; init; } = "";
+        public EngineeringSymbolCreateDto? EngineeringSymbolCreateDto { get; init; }
+        public string CreatedUri { get; init; } = "UnknownUri";
+    }
     
-    private static TryAsync<UploadContext> CreateUploadContext(IPrincipal user, IFormFile file) => 
+    public static TryAsync<InsertContext> CreateInsertContext(IPrincipal user, IFormFile file) => 
         TryAsync(() =>
         {
             var fileId = file.FileName;
@@ -26,10 +25,10 @@ public static class UploadEngineeringSymbol
             if(!fileId.Split(".").Apply(s => s.Length > 0 && s.Last().ToLower() == "svg"))
                 throw new ValidationException("Only SVG files are supported");
             
-            return Task.FromResult(new UploadContext(file, userId) {FileId = fileId});
+            return Task.FromResult(new InsertContext(file, userId) {FileId = fileId});
         });
     
-    private static TryAsync<UploadContext> ReadFileToString(UploadContext ctx) => 
+    public static TryAsync<InsertContext> ReadFileToString(InsertContext ctx) => 
         TryAsync(async () =>
         {
             const long maxSize = 500; // KiB
@@ -38,12 +37,12 @@ public static class UploadEngineeringSymbol
             if (length is <= 0 or > maxSize * 1024)
                 throw new ValidationException($"File size is 0 or greater than {maxSize} KiB");
 
-            var fileContent = await Common.ReadFileContentToString(ctx.File);
+            var fileContent = await ReadFileContentToString(ctx.File);
             
             return ctx with { FileContent = fileContent };
         });
 
-    private static TryAsync<UploadContext> ParseSvgString(UploadContext ctx) =>
+    public static TryAsync<InsertContext> ParseSvgString(InsertContext ctx) =>
         TryAsync(() =>
             SvgParser.FromString(ctx.FileContent, opt =>
                 {
@@ -62,21 +61,27 @@ public static class UploadEngineeringSymbol
                         return Task.FromResult(ctx with
                         {
                             EngineeringSymbolCreateDto = result.EngineeringSymbolParsed.ToCreateDto(ctx.User, ctx.FileId)
-                        }); 
+                        });
                     }, 
                     Fail: exception => throw exception));
-
-
-    private static Func<UploadContext, TryAsync<UploadContext>> Save(IEngineeringSymbolService symbolService) =>
-        ctx => symbolService.CreateSymbolAsync(ctx.EngineeringSymbolCreateDto!)
-                .Map(symbolId => ctx with {CreatedUri = symbolId} );
-
     
-    private record UploadContext(IFormFile File, string User)
+    private static async Task<string> ReadFileContentToString(IFormFile file)
     {
-        public string FileId { get; init; } = "Unknown";
-        public string FileContent { get; init; } = "";
-        public EngineeringSymbolCreateDto? EngineeringSymbolCreateDto { get; init; }
-        public string CreatedUri { get; init; } = "UnknownUri";
+        string result;
+        
+        try
+        {
+            await using var fileStream = file.OpenReadStream();
+            var bytes = new byte[file.Length];
+            var a = await fileStream.ReadAsync(bytes, 0, (int)file.Length);
+            result = System.Text.Encoding.UTF8.GetString(bytes);
+        }
+        catch (Exception)
+        {
+            // TODO: log ex here?
+            throw new ValidationException("Failed to read file contents");
+        }
+
+        return result;
     }
 }

@@ -57,7 +57,7 @@ resource AppServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   "FusekiServers": [
     {
       "Name": "Dugtrio",
-      "BaseUrl": "https://dev-dugtrio-fuseki.azurewebsites.net",
+      "DatasetUrl": "https://dev-dugtrio-fuseki.azurewebsites.net/ds/",
     },
     ...
   ]
@@ -65,8 +65,8 @@ resource AppServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 
 var fusekiServers = [for (name, i) in fusekiNames: [
   {
-    name: 'FusekiServers__${i}__BaseUrl'
-    value: 'https://${resourcePrefixHyphen}-${name}-fuseki.azurewebsites.net'
+    name: 'FusekiServers__${i}__DatasetUrl'
+    value: 'https://${resourcePrefixHyphen}-${name}-fuseki.azurewebsites.net/ds/'
   }, {
     name: 'FusekiServers__${i}__Name'
     value: '${name}'

@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using EngineeringSymbols.Api.Endpoints;
 using EngineeringSymbols.Api.Infrastructure.Auth;
 using EngineeringSymbols.Api.Repositories.Fuseki;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Web;
 
 namespace EngineeringSymbols.Api.Infrastructure;
@@ -11,7 +13,10 @@ public static class EndpointsInfrastructure
     {
         var symbols = app.MapGroup("/symbols");
 
-        symbols.MapGet("/", GetEngineeringSymbols.GetAllAsync)
+        symbols.MapGet("/", async (IEngineeringSymbolService symbolService, bool? allVersions, int? detailLevel) 
+            => await symbolService
+                .GetSymbolsAsync(allVersions, detailLevel)
+                .Match(TypedResults.Ok, exception =>  EndpointsCommon.OnFailure(exception, app.Logger)))
             .WithTags("Anonymous")
             .WithName("GetAllIds")
             .WithDescription("Get all Engineering Symbols (list of Id's)")
@@ -19,21 +24,34 @@ public static class EndpointsInfrastructure
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
         
-        symbols.MapGet("/{idOrKey}", GetEngineeringSymbols.GetByIdOrKeyAsync)
+        symbols.MapGet("/{idOrKey}", async (IEngineeringSymbolService symbolService, string idOrKey) 
+                => await symbolService
+                    .GetSymbolByIdOrKeyAsync(idOrKey)
+                    .Map(symbol => symbol.ToResponseDto())
+                    .Match(TypedResults.Ok, exception =>  EndpointsCommon.OnFailure(exception, app.Logger)))
             .WithTags("Anonymous")
             .Produces<EngineeringSymbolResponseDto>()
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
 
-        symbols.MapPost("/", UploadEngineeringSymbol.UploadAsync)
+        symbols.MapPost("/", async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, IFormFile svgFile) 
+                => await symbolService
+                    .CreateSymbolAsync(user, svgFile)
+                    .Match(TypedResults.Created, exception =>  EndpointsCommon.OnFailure(exception, app.Logger)))
             .WithTags("Authenticated")
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
-        symbols.MapPatch("/{id}", UpdateEngineeringSymbol.UpdateSingleAsync)
+        symbols.MapPatch("/{id}", async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolUpdateDto updateDto) 
+                => await symbolService
+                    .UpdateSymbolAsync(id, updateDto)
+                    .Match(_ => TypedResults.NoContent(), exception =>  EndpointsCommon.OnFailure(exception, app.Logger)))
             .WithTags("Authenticated")
             .RequireAuthorization(Policy.ContributorOrAdmin);
         
-        symbols.MapDelete("/{id}", DeleteEngineeringSymbols.DeleteSingleAsync)
+        symbols.MapDelete("/{id}", async (IEngineeringSymbolService symbolService, string id)
+                => await symbolService
+                    .DeleteSymbolAsync(id)
+                    .Match(Succ: _ => TypedResults.NoContent(), Fail: exception =>  EndpointsCommon.OnFailure(exception, app.Logger)))
             .WithTags("Authenticated")
             .RequireAuthorization(Policy.OnlyAdmins);
 
