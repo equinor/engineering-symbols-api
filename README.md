@@ -1,11 +1,11 @@
 # engineering-symbols-api
 
-## Environments
+## Deployments
 
-### Development
+### DEV
 
-[dev-engineering-symbols-api.azurewebsites.net/swagger](https://dev-engineering-symbols-api.azurewebsites.net/swagger)
+[dev-engsym-api.azurewebsites.net](https://dev-engsym-api.azurewebsites.net/swagger)
 
-### Production (TBD)
+### PROD (TBA)
 
-[prod-engineering-symbols-api.azurewebsites.net/swagger](https://prod-engineering-symbols-api.azurewebsites.net/swagger)
+[prod-engsym-api.azurewebsites.net](https://prod-engsym-api.azurewebsites.net/swagger)
