@@ -1,6 +1,8 @@
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.Validation;
+using VDS.RDF.Shacl.Validation;
+using Optional = LanguageExt.Optional;
 
 namespace EngineeringSymbols.Api.Repositories.Fuseki;
 
@@ -14,25 +16,27 @@ public class FusekiRepository : IEngineeringSymbolRepository
         _fuseki = fuseki;
         _logger = loggerFactory.CreateLogger("FusekiRepository");
     }
-
-    private void ThrowOnFusekiRequestError(HttpResponseMessage httpResponse, string? sparqlQuery = null)
+    
+    private Result<T> FusekiRequestErrorResult<T>(HttpResponseMessage httpResponse, string? sparqlQuery = null)
     {
-        if (httpResponse.IsSuccessStatusCode) return;
         var reqUri = httpResponse.RequestMessage?.RequestUri?.AbsoluteUri ?? "?";
         var method = httpResponse.RequestMessage?.Method.Method ?? "";
         _logger.LogError("Repository request failed: Status {StatusCode} {ReasonPhrase} (Uri: {Method} {AbsoluteUri})\nSparql Query: \n{SparqlQuery}", (int)httpResponse.StatusCode, httpResponse.ReasonPhrase, method, reqUri, sparqlQuery);
-        throw new RepositoryException($"Repository request failed: Status {httpResponse.ReasonPhrase}");
+        return new Result<T>(new RepositoryException($"Repository request failed: Status {httpResponse.ReasonPhrase}"));
     }
-    
+
     public TryAsync<IEnumerable<IEngineeringSymbolResponseDto>> GetAllEngineeringSymbolsAsync() =>
         async () =>
         {
             var query = SparqlQueries.GetAllSymbolsDistinctQuery2();
 
             var httpResponse = await _fuseki.QueryAsync(query, "text/csv");
-
-            ThrowOnFusekiRequestError(httpResponse);
             
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                return FusekiRequestErrorResult<IEnumerable<IEngineeringSymbolResponseDto>>(httpResponse, query);
+            }
+
             var stringContent = await httpResponse.Content.ReadAsStringAsync();
 
             var symbolArray = stringContent
@@ -58,7 +62,10 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
             var httpResponse = await _fuseki.QueryAsync(query, "text/csv");
 
-            ThrowOnFusekiRequestError(httpResponse, query);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                return FusekiRequestErrorResult<IEnumerable<IEngineeringSymbolResponseDto>>(httpResponse, query);
+            }
             
             var stringContent = await httpResponse.Content.ReadAsStringAsync();
 
@@ -76,51 +83,50 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
             return symbolArray;
         };
-
-
+    
     public TryAsync<EngineeringSymbol> GetEngineeringSymbolByIdAsync(string id) =>
-        async () =>
-        {
-            if (!await SymbolExistsByIdAsync(id))
-            {
-                throw new RepositoryException(RepositoryOperationError.EntityNotFound);
-            }
-            
-            return await _getEngineeringSymbolByQueryAsync(SparqlQueries.GetEngineeringSymbolByIdQuery(id));
-        };
-        
+        SymbolExistsByIdAsync(id)
+            .Bind(exists => new TryAsync<string>(async () =>
+                exists 
+                    ? SparqlQueries.GetEngineeringSymbolByIdQuery(id) 
+                    : new Result<string>(new RepositoryException(RepositoryOperationError.EntityNotFound))
+            ))
+            .Bind(_getEngineeringSymbolByQueryAsync);
+    
     
     public TryAsync<EngineeringSymbol> GetEngineeringSymbolByKeyAsync(string key) =>
+        SymbolExistsByKeyAsync(key)
+            .Bind(exists => new TryAsync<string>(async () =>
+                exists 
+                    ? SparqlQueries.GetEngineeringSymbolByKeyQuery(key) 
+                    : new Result<string>(new RepositoryException(RepositoryOperationError.EntityNotFound))
+            ))
+            .Bind(_getEngineeringSymbolByQueryAsync);
+
+    private TryAsync<EngineeringSymbol> _getEngineeringSymbolByQueryAsync(string query) =>
         async () =>
         {
-            if (!await SymbolExistsByKeyAsync(key))
-            {
-                throw new RepositoryException(RepositoryOperationError.EntityNotFound);
-            }
-            
-            return await _getEngineeringSymbolByQueryAsync(SparqlQueries.GetEngineeringSymbolByKeyQuery(key));
-        };
-    
-    private async Task<EngineeringSymbol> _getEngineeringSymbolByQueryAsync(string query)
-    {
             var httpResponse = await _fuseki.QueryAsync(query, "text/turtle");
-            
-            ThrowOnFusekiRequestError(httpResponse, query);
-            
+
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                return FusekiRequestErrorResult<EngineeringSymbol>(httpResponse, query);
+            }
+
             var stringContent = await httpResponse.Content.ReadAsStringAsync();
 
-            var symbolV = RdfParser.TurtleToEngineeringSymbol(stringContent);
+            return RdfParser.TurtleToEngineeringSymbol(stringContent)
+                .Match(symbol => symbol, 
+                    Fail: errors => 
+                    {
+                        foreach (var error in errors)
+                        {
+                            Console.WriteLine(error.Value);
+                        }
 
-            return symbolV.Match(symbol => symbol, seq =>
-            {
-                foreach (var error in seq)
-                {
-                    Console.WriteLine(error.Value);
-                }
-
-                throw new RepositoryException("Failed to retrieve symbol from store");
-            });
-    }
+                        return new Result<EngineeringSymbol> (new RepositoryException("Failed to retrieve symbol from store"));
+                    });
+        };
 
     public TryAsync<string> InsertEngineeringSymbolAsync(EngineeringSymbolCreateDto createDto) =>
         async () =>
@@ -128,89 +134,95 @@ public class FusekiRepository : IEngineeringSymbolRepository
             var symbolId = Guid.NewGuid().ToString(); //RepoUtils.GetRandomString();
             var query = SparqlQueries.InsertEngineeringSymbolQuery(symbolId, createDto);
             
-            Console.WriteLine("   ---  QUERY  ---");
-            Console.WriteLine(query);
+            _logger.LogInformation("Sparql Query:\n{SparqlQuery}", query);
             
-            var fusekiResponse = await _fuseki.UpdateAsync(query);
+            var httpResponse = await _fuseki.UpdateAsync(query);
             
-            ThrowOnFusekiRequestError(fusekiResponse, query);
-            
-            return symbolId;
+            return httpResponse.IsSuccessStatusCode ? symbolId : FusekiRequestErrorResult<string>(httpResponse, query);
         };
 
-    public TryAsync<bool> UpdateEngineeringSymbolAsync(string id, EngineeringSymbolUpdateDto updateDto) => 
-        async () => 
-        {
-            if (!await SymbolExistsByIdAsync(id))
+    public TryAsync<bool> UpdateEngineeringSymbolAsync(string id, EngineeringSymbolUpdateDto updateDto) =>
+        SymbolExistsByIdAsync(id)
+            .Bind(exists => new TryAsync<bool>(async () =>
             {
-                throw new RepositoryException(RepositoryOperationError.EntityNotFound);
-            }
-            
-            var query = SparqlQueries.UpdateEngineeringSymbolQuery(id, updateDto);
+                if (!exists)
+                {
+                    return new Result<bool>(new RepositoryException(RepositoryOperationError.EntityNotFound));
+                }
 
-            if (query == null)
+                var query = SparqlQueries.UpdateEngineeringSymbolQuery(id, updateDto);
+
+                if (query == null)
+                {
+                    return new Result<bool>(new RepositoryException("Invalid update dto"));
+                }
+
+                _logger.LogInformation("Sparql Query:\n{SparqlQuery}", query);
+
+                var httpResponse = await _fuseki.UpdateAsync(query);
+
+                return httpResponse.IsSuccessStatusCode
+                    ? true
+                    : FusekiRequestErrorResult<bool>(httpResponse, query);
+            }));
+
+    public TryAsync<bool> DeleteEngineeringSymbolAsync(string id) => 
+        SymbolExistsByIdAsync(id)
+            .Bind(exists => new TryAsync<bool>(async () => 
             {
-                throw new RepositoryException("Invalid update dto");
-            }
-            
-            Console.WriteLine("   ---  PATCH QUERY  ---");
-            Console.WriteLine(query);
-
-            var fusekiResponse = await _fuseki.UpdateAsync(query);
-            ThrowOnFusekiRequestError(fusekiResponse, query);
-
-            return true;
-        };
-
-    public TryAsync<bool> DeleteEngineeringSymbolAsync(string id) =>
-        async () =>
-        {
-            var query = SparqlQueries.DeleteEngineeringSymbolByIdQuery(id);
-
-            if (!await SymbolExistsByIdAsync(id))
-            {
-                throw new RepositoryException(RepositoryOperationError.EntityNotFound);
-            }
-            
-            var fusekiResponse = await _fuseki.UpdateAsync(query);
-            ThrowOnFusekiRequestError(fusekiResponse, query);
-            
-            return true;
-        };
-
-    private async Task<bool> SymbolExistsByIdAsync(string id)
+                if (!exists)
+                {
+                    return new Result<bool>(new RepositoryException(RepositoryOperationError.EntityNotFound));
+                }
+                
+                var query = SparqlQueries.DeleteEngineeringSymbolByIdQuery(id);
+                
+                var httpResponse = await _fuseki.UpdateAsync(query);
+                
+                return httpResponse.IsSuccessStatusCode 
+                    ? true 
+                    : FusekiRequestErrorResult<bool>(httpResponse, query);
+            }));
+    
+    private TryAsync<bool> SymbolExistsByIdAsync(string id) => async () =>
     {
-        
-        
         var query = SparqlQueries.SymbolExistByIdQuery(id);
-        
-        var fusekiResponse = await _fuseki.QueryAsync(query);
-        ThrowOnFusekiRequestError(fusekiResponse, query);
 
-        var res = await fusekiResponse.Content.ReadFromJsonAsync<FusekiAskResponse>();
+        var httpResponse = await _fuseki.QueryAsync(query);
+
+        if (!httpResponse.IsSuccessStatusCode)
+        {
+            return FusekiRequestErrorResult<bool>(httpResponse, query);
+        }
+
+        var res = await httpResponse.Content.ReadFromJsonAsync<FusekiAskResponse>();
 
         if (res == null)
         {
-            throw new RepositoryException("Failed to prove the symbol's existence");
+            return new Result<bool>(new RepositoryException("Failed to prove the symbol's existence"));
         }
-        
+
         return res.Boolean;
-    }
-    
-    private async Task<bool> SymbolExistsByKeyAsync(string key)
+    };
+
+    private TryAsync<bool> SymbolExistsByKeyAsync(string key) => async () =>
     {
         var query = SparqlQueries.SymbolExistByKeyQuery(key);
-        
-        var fusekiResponse = await _fuseki.QueryAsync(query);
-        ThrowOnFusekiRequestError(fusekiResponse, query);
 
-        var res = await fusekiResponse.Content.ReadFromJsonAsync<FusekiAskResponse>();
+        var httpResponse = await _fuseki.QueryAsync(query);
+
+        if (!httpResponse.IsSuccessStatusCode)
+        {
+            return FusekiRequestErrorResult<bool>(httpResponse, query);
+        }
+
+        var res = await httpResponse.Content.ReadFromJsonAsync<FusekiAskResponse>();
 
         if (res == null)
         {
-            throw new RepositoryException("Failed to prove the symbol's existence");
+            return new Result<bool>(new RepositoryException("Failed to prove the symbol's existence"));
         }
-        
+
         return res.Boolean;
-    }
+    };
 }

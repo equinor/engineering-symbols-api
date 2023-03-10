@@ -5,7 +5,7 @@ public class ValidationException : Exception
     private const string _DefaultMessage = "One or more input parameters is invalid";
     public new string Message { get; init; }
     
-    public IDictionary<string, string[]> Errors { get; } = new Dictionary<string, string[]>();
+    public IDictionary<string, string[]>? Errors { get; } = new Dictionary<string, string[]>();
     
     
     public ValidationException()
@@ -24,14 +24,23 @@ public class ValidationException : Exception
         Errors = errors;
     }
     
-    public ValidationException(string message, IDictionary<string, string[]> errors) // : base(message)
+    public ValidationException(string message, IDictionary<string, string[]>? errors) // : base(message)
     {
         Message = message;
         Errors = errors;
     }
     
-    public ValidationException(string message, Exception inner) : base(message, inner)
+    public ValidationException(string message, IDictionary<string, string[]>? errors, Exception? inner) : base(message, inner)
+    {
+        Message = message;
+        Errors = errors;
+    }
+    
+    
+    public ValidationException(string message, Exception? inner) : base(message, inner)
     {
         Message = message;
     }
+    
+
 }
