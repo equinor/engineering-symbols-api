@@ -1,4 +1,6 @@
+@allowed([ 'dev', 'prod' ])
 param env string
+@allowed([ 'dev', 'prod' ])
 param environmentTag string
 param buildId string
 param location string = resourceGroup().location

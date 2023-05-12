@@ -2,6 +2,8 @@ using EngineeringSymbols.Api.Infrastructure;
 using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Api.Repositories.Fuseki;
 using EngineeringSymbols.Api.Services.EngineeringSymbolService;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +13,8 @@ builder.Configuration.AddKeyVault();
 
 builder.Services.AddRateLimiterFixed(builder.Configuration, builder.Environment);
 
-builder.Services.AddAzureAuthentication(builder.Configuration);
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration);
 
 builder.Services.AddRoleBasedAuthorization();
 builder.Services.AddFallbackAuthorization();

@@ -21,7 +21,6 @@ public static class EndpointsCommon
                 logger?.LogError("Status500InternalServerError with exception: {Exception}", ex);
                 return TypedResults.Problem("Unexpected Error", statusCode: StatusCodes.Status500InternalServerError);
             });
-
     }
 
     private static IResult OnRepositoryException(RepositoryException ex)

@@ -14,16 +14,16 @@ public class FusekiService : IFusekiService
 		if (fusekiServers == null || fusekiServers.Count == 0)
 			throw new Exception("'FusekiServers' is missing or empty in appsettings.json");
 
-		var serverBaseUrl = fusekiServers[0].DatasetUrl;
+		var datasetUrl = fusekiServers[0].DatasetUrl;
 		
-		if (serverBaseUrl == null)
+		if (datasetUrl == null)
 			throw new Exception("'FusekiServer DatasetUrl' in appsettings.json is null");
 
-		// Dataset URL must end i a / to be able to construct full URI
-		if (serverBaseUrl.Last() != '/') serverBaseUrl += '/';
+		// Last char of Dataset URL must be a forward slash '/' to be able to construct full a URI later on
+		if (datasetUrl.Last() != '/') datasetUrl += '/';
 		
 		_httpClient = httpClient;
-		_httpClient.BaseAddress = new Uri(serverBaseUrl);
+		_httpClient.BaseAddress = new Uri(datasetUrl);
 		_httpClient.DefaultRequestHeaders.Accept.Clear();
 	}
 

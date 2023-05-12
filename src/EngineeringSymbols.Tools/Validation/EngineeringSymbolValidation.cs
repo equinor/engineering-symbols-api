@@ -77,7 +77,7 @@ public static class EngineeringSymbolValidation
             : Fail<ValidationError, string>(errors);
     }
 
-    public static bool ContainsIllegalChars(string value, char[]? whitelist = null)
+    private static bool ContainsIllegalChars(string value, char[]? whitelist = null)
     {
         var wl = whitelist ?? new[] {'-', '_'};
         return !value.ToCharArray().All(c =>

@@ -22,6 +22,10 @@ public static class ESProp
     public const string HasDescriptionIri = $"{RdfConst.EngSymOntologyIri}{HasDescription}";
     public const string HasDescriptionIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasDescription}";
     
+    public const string HasCategory = "hasCategory";
+    public const string HasCategoryIri = $"{RdfConst.EngSymOntologyIri}{HasCategory}";
+    public const string HasCategoryIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasCategory}";
+    
     public const string HasSourceFilename = "hasSourceFilename";
     public const string HasSourceFilenameIri = $"{RdfConst.EngSymOntologyIri}{HasSourceFilename}";
     public const string HasSourceFilenameIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasSourceFilename}";
@@ -29,15 +33,7 @@ public static class ESProp
     public const string HasGeometry = "hasGeometry";
     public const string HasGeometryIri = $"{RdfConst.EngSymOntologyIri}{HasGeometry}";
     public const string HasGeometryIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasGeometry}";
-    
-    //public const string HasSvg = "hasSvg";
-    //public const string HasSvgIri = $"{RdfConst.EngSymOntologyIri}{HasSvg}";
-    //public const string HasSvgIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasSvg}";
-    
-    //public const string HasSvgBase64 = "hasSvgBase64";
-    //public const string HasSvgBase64Iri = $"{RdfConst.EngSymOntologyIri}{HasSvgBase64}";
-    //public const string HasSvgBase64IriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasSvgBase64}";
-    
+
     public const string HasWidth = "width";
     public const string HasWidthIri = $"{RdfConst.EngSymOntologyIri}{HasWidth}";
     public const string HasWidthIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasWidth}";

@@ -12,23 +12,16 @@ namespace EngineeringSymbols.Api.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddAzureAuthentication(this IServiceCollection services, IConfiguration config)
-    {
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApi(config.GetSection("AzureAd"));
-        
-        return services;
-    }
-    
+
     public static IServiceCollection AddRoleBasedAuthorization(this IServiceCollection services)
     {
         services.AddAuthorizationBuilder()
             .AddPolicy(Policy.OnlyAdmins, policy => policy.RequireRole(Role.Admin))
-            .AddPolicy(Policy.ContributorOrAdmin, policy => policy.RequireRole(Role.Admin, Role.Contributor));;
-        
+            .AddPolicy(Policy.ContributorOrAdmin, policy => policy.RequireRole(Role.Admin, Role.Contributor)); ;
+
         return services;
     }
-    
+
     public static IServiceCollection AddFallbackAuthorization(this IServiceCollection services)
     {
         services.AddAuthorization(options =>
@@ -42,12 +35,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAuthorizationHandler, FallbackSafeguardHandler>();
         return services;
     }
-    
+
     public static IServiceCollection AddCustomSwaggerGen(this IServiceCollection services, IConfiguration config)
     {
         var azureAdConfig = config.GetSection("AzureAd").Get<AzureAdConfig>();
         if (azureAdConfig == null) { throw new InvalidOperationException("Missing 'AzureAd' configuration"); }
-        
+
         services.AddSwaggerGen(options =>
         {
             options.SwaggerDoc("v1", new OpenApiInfo { Title = "Engineering Symbols", Version = "v1" });
@@ -72,15 +65,15 @@ public static class ServiceCollectionExtensions
 
             options.AddAuthRequirementToAllSwaggerEndpoints();
         });
-        
+
         return services;
     }
-    
+
     private static void AddAuthRequirementToAllSwaggerEndpoints(this SwaggerGenOptions options)
     {
         options.AddSecurityRequirement(new OpenApiSecurityRequirement
         {
-            [new OpenApiSecurityScheme 
+            [new OpenApiSecurityScheme
             {
                 Reference = new OpenApiReference
                 {
@@ -94,20 +87,20 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddCorsWithPolicyFromAppSettings(this IServiceCollection services, IConfiguration config, IWebHostEnvironment env)
     {
-        
+
         if (env.IsDevelopment())
         {
-            services.AddCors(options => 
-                options.AddDefaultPolicy(policyBuilder => 
+            services.AddCors(options =>
+                options.AddDefaultPolicy(policyBuilder =>
                     policyBuilder
                         .AllowAnyOrigin()
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                     ));
-            
+
             return services;
         }
-        
+
         var allowedOrigins = config.GetSection("Cors:AllowedOrigins").Get<string[]>()
                              ?? System.Array.Empty<string>();
 
@@ -115,9 +108,9 @@ public static class ServiceCollectionExtensions
         {
             Console.WriteLine("Warning: No CORS configured!");
         }
-        
-        services.AddCors(options => 
-            options.AddDefaultPolicy(policyBuilder => 
+
+        services.AddCors(options =>
+            options.AddDefaultPolicy(policyBuilder =>
                 policyBuilder
                     .WithOrigins(allowedOrigins)
                     .SetIsOriginAllowedToAllowWildcardSubdomains()
@@ -127,7 +120,7 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
-    
+
     public static IServiceCollection AddRateLimiterFixed(this IServiceCollection services, IConfiguration config, IWebHostEnvironment env)
     {
         // https://learn.microsoft.com/en-us/aspnet/core/performance/rate-limit?view=aspnetcore-7.0
