@@ -1,13 +1,48 @@
 # Engineering Symbol Specification - Alpha
 
+## Rules
+
+1. SVG width and height
+    1. Must be a multiple of 24px
+    2. Minimum 24px
+    3. Rectangular shape allowed
+    4. 'width', 'height' and 'viewBox' attributes must be defined at root `<svg>` element
+    5. 'viewBox' element must have (x1, y1) = (0, 0) and x2 and y2 must match 'width' and 'height' attributes
+    6. Ex.: `<svg width="48" height="96" viewBox="0 0 48 96">`
+2. Scaling
+    1. The size of a symbol must be relative to other symbols in the library
+    2. When designing a new symbol, keep in mind that the smallest possible element is 24x24 px
+3. Drawing
+    1. Only `<path ... />` elements are allowed to define symbol
+    2. Path 'fill-rule' must be 'nonzero' (same as ommiting fill rule attrubute). Ex.: `<path fill-rule="nonzero" ... />`
+4. Annotations
+    1. Annotations must be defined in a 'g' element with id = "Annotations"
+    2. Ex.: `<g id="Annotations">`
+5. Connector annotations
+    1. Connectors must be defined using the `<circle>` element
+    2. The 'id' attribute is used to identify a connector and its 'id' and 'direction'
+    3. Connector 'id' attribute is a string list with hyphen as item separator. Position `0 and 1 = annotation-connector`. `Position 2 and 3 = ID-DIRECTION`
+    4. The `cx` and `cy` attributes defines the position
+6. Metadata
+    1. The `<metadata>` tag must include the symbol key on the format:
+
+```xml
+<metadata xmlns:es="http://rdf.equinor.com/ontology/engineering-symbol/v1#">
+    <es:key>ND0025</es:key>
+</metadata>
+```
 
 ## Symbol Lifecycle
 
-### SVG
+Workflow example:
 
-![ND0025](ND0025_bg2.svg)
+- Create symbol file
+- Upload symbol file to API
+- Fetch symbol as JSON representation
 
-### SVG (source)
+### Create SVG file
+
+![ND0025](ND0025.svg)
 
 ```svg
 <svg width="48" height="48" viewBox="0 0 48 48" fill="black" xmlns="http://www.w3.org/2000/svg">
@@ -38,7 +73,7 @@
 </svg>
 ```
 
-### JSON
+### Fetch symbol as JSON
 
 JSON representation parsed by the Engineering Symbols API [dev-engsym-api.azurewebsites.net](https://dev-engsym-api.azurewebsites.net/swagger/index.html)
 
@@ -90,6 +125,10 @@ JSON representation parsed by the Engineering Symbols API [dev-engsym-api.azurew
 ```
 
 ### JSON to SVG
+
+The JSON representation contains all information needed to reconstruct a SVG file:
+
+![Alt text](ND0025_reconstructed.svg)
 
 ```svg
 <svg width="48" height="48" viewBox="0 0 48 48" fill="black" xmlns="http://www.w3.org/2000/svg">
