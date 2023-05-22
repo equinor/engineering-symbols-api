@@ -7,7 +7,7 @@
     2. Minimum 24px
     3. Rectangular shape allowed
     4. 'width', 'height' and 'viewBox' attributes must be defined at root `<svg>` element
-    5. 'viewBox' element must have (x1, y1) = (0, 0) and x2 and y2 must match 'width' and 'height' attributes
+    5. Required 'viewBox' element value (min-x, min-y, width, height) = '0, 0, width, height'
     6. Ex.: `<svg width="48" height="96" viewBox="0 0 48 96">`
 2. Scaling
     1. The size of a symbol must be relative to other symbols in the library

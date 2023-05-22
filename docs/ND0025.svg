@@ -19,10 +19,10 @@
                         43 42.8646 34.6282 42.9984 24.25Z" />
         </g>
         <g id="Annotations">
-            <circle id="annotation-connector-1-90" cx="43.5" cy="24" r="0.5" fill="red"/>
-            <circle id="annotation-connector-2-180" cx="24" cy="43.5" r="0.5" fill="blue"/>
-            <circle id="annotation-connector-3-270" cx="4.5" cy="24" r="0.5" fill="green"/>
-            <circle id="annotation-connector-4-0" cx="24" cy="4.5" r="0.5" fill="yellow"/>
+            <circle id="annotation-connector-1-90" cx="43.5" cy="24" r="0.5" fill="red" />
+            <circle id="annotation-connector-2-180" cx="24" cy="43.5" r="0.5" fill="blue" />
+            <circle id="annotation-connector-3-270" cx="4.5" cy="24" r="0.5" fill="green" />
+            <circle id="annotation-connector-4-0" cx="24" cy="4.5" r="0.5" fill="yellow" />
         </g>
     </g>
 </svg>
