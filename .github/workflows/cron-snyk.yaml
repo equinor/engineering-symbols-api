@@ -1,0 +1,38 @@
+name: 🐩 Snyk Test & Monitor
+
+on:
+  schedule:
+    # At 06:00 on every 3rd day
+    - cron: "0 6 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  test-and-monitor:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Snyk
+        uses: snyk/actions/setup@master
+
+      - name: Authenticate
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+
+      - name: Dotnet restore
+        working-directory: src
+        run: dotnet restore
+
+      - name: Update EngineeringSymbols.Api snapshot at Snyk.io
+        continue-on-error: true
+        working-directory: src/EngineeringSymbols.Api/obj
+        run: snyk monitor --project-name=EngineeringSymbols.Api
+
+      - name: Update EngineeringSymbols.Tools snapshot at Snyk.io
+        continue-on-error: true
+        working-directory: src/EngineeringSymbols.Tools/obj
+        run: snyk monitor --project-name=EngineeringSymbols.Tools
+
+      - name: Test dependencies for known issues
+        run: snyk test --all-projects --exclude=EngineeringSymbols.Test
