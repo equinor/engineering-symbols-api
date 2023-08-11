@@ -1,13 +1,10 @@
 using System.Globalization;
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using AngleSharp.Dom;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.Validation;
 using JsonSerializer = System.Text.Json.JsonSerializer;
-
 
 namespace EngineeringSymbols.Api.Repositories.Fuseki;
 
@@ -49,7 +46,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
             var symbolsJsonDom = JsonSerializer.Deserialize<JsonObject>(stringContent);
 
-            var symbols = new List<IEngineeringSymbolResponseDto>();
+            var symbols = new List<EngineeringSymbolCompleteResponseDto>();
 
             if (symbolsJsonDom.ContainsKey("@id") && symbolsJsonDom.ContainsKey("@graph"))
             {
