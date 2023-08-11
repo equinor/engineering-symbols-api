@@ -22,8 +22,10 @@ public record EngineeringSymbolResponseDto : IEngineeringSymbolResponseDto
 /// </summary>
 public record EngineeringSymbolCompleteResponseDto : IEngineeringSymbolResponseDto //: EngineeringSymbol
 {
-    public required string Id { get; init; }
+    public required string? Id { get; init; }
     public required string Key { get; init; }
+    
+    public required string Status { get; init; }
     public required string Description { get; init; }
     public required DateTimeOffset DateTimeCreated { get; init; }
     public required DateTimeOffset DateTimeUpdated { get; init; }

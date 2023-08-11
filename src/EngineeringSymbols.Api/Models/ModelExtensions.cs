@@ -36,6 +36,7 @@ public static class ModelExtensions
         {
             Id = symbol.Id,
             Key = symbol.Key,
+            Status = symbol.Status.ToString(),
             Description = symbol.Description,
             Filename = symbol.Filename,
             DateTimeCreated = symbol.DateTimeCreated,

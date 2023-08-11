@@ -1,9 +1,20 @@
 namespace EngineeringSymbols.Tools.Entities;
 
+public enum EngineeringSymbolStatus
+{
+    None,
+    Draft,
+    Review,
+    Accepted,
+    Rejected,
+}
+
 public record EngineeringSymbol
 {
     public required string Id { get; init; }
     public required string Key { get; init; }
+    
+    public required EngineeringSymbolStatus Status { get; init; }
     public required string Description { get; init; }
     public required DateTimeOffset DateTimeCreated { get; init; }
     public required DateTimeOffset DateTimeUpdated { get; init; }

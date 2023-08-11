@@ -37,6 +37,13 @@ public static class RdfParser
         
         var keyV = graph.GetStringLiteral(sIri, ESProp.HasEngSymKeyIri);
         
+        var statusV = graph.GetIntegerLiteral(sIri, ESProp.HasStatusIri)
+            .Match(
+                Succ: s => !Enum.IsDefined(typeof(EngineeringSymbolStatus), s) 
+                    ? Fail<Error, EngineeringSymbolStatus>(new Error($"Invalid value '{s}' for '{nameof(EngineeringSymbolStatus)}'")) 
+                    : Success<Error, EngineeringSymbolStatus>((EngineeringSymbolStatus) s), 
+                Fail: _ => Fail<Error, EngineeringSymbolStatus>(new Error($"Failed to retrieve {ESProp.HasStatusIri}")));
+        
         var descV = graph.GetStringLiteral(sIri, ESProp.HasDescriptionIri);
         
         var dateCreatedV = graph.GetDateTimeOffsetLiteral(sIri, ESProp.HasDateCreatedIri);
@@ -67,12 +74,13 @@ public static class RdfParser
         
         var connectorsV = graph.GetConnectors(connectorsIris);
         
-        return (idV, keyV, descV, dateCreatedV, dateUpdatedV, ownerV, filenameV, geometryV, widthV, heightV, connectorsV).Apply(
-            (id , key, desc, dateCreated, dateUpdated, owner, filename, geometry, width, height, connectors) =>
+        return (idV, keyV, statusV, descV, dateCreatedV, dateUpdatedV, ownerV, filenameV, geometryV, widthV, heightV, connectorsV).Apply(
+            (id , key, status, desc, dateCreated, dateUpdated, owner, filename, geometry, width, height, connectors) =>
                 new EngineeringSymbol
                 {
                     Id = id,
                     Key = key,
+                    Status = status,
                     Description = desc,
                     DateTimeCreated = dateCreated,
                     DateTimeUpdated = dateUpdated,
@@ -122,7 +130,7 @@ public static class RdfParser
             var idV = graph.GetStringLiteral(cIri, ESProp.HasNameIri);
             var posXV = graph.GetDoubleLiteral(cIri, ESProp.HasPositionXIri);
             var posYV = graph.GetDoubleLiteral(cIri, ESProp.HasPositionYIri);
-            var dirV = graph.GetIntegerLiteral(cIri, ESProp.HasDirectionYIri);
+            var dirV = graph.GetIntegerLiteral(cIri, ESProp.HasDirectionIri);
 
             var connector = (idV, posXV, posYV, dirV)
                 .Apply((id, x, y, dir) => new EngineeringSymbolConnector
@@ -141,10 +149,7 @@ public static class RdfParser
                 Fail: seq => err = err.Concat(seq));
         }
 
-        if (err.Count > 0)
-            return Fail<Error, List<EngineeringSymbolConnector>>(err);
-        
-        return Success<Error, List<EngineeringSymbolConnector>>(result);
+        return err.Count > 0 ? Fail<Error, List<EngineeringSymbolConnector>>(err) : Success<Error, List<EngineeringSymbolConnector>>(result);
     }
     
     public static Validation<Error, INode> GetObjectNode(this Graph graph, string subject, string predicate)

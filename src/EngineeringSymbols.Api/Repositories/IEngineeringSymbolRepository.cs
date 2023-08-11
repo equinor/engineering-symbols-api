@@ -4,8 +4,8 @@ namespace EngineeringSymbols.Api.Repositories;
 
 public interface IEngineeringSymbolRepository
 {
-    TryAsync<IEnumerable<IEngineeringSymbolResponseDto>> GetAllEngineeringSymbolsAsync();
-    TryAsync<IEnumerable<IEngineeringSymbolResponseDto>> GetAllEngineeringSymbolsIncludeAllVersionsAsync();
+    TryAsync<IEnumerable<IEngineeringSymbolResponseDto>> GetAllEngineeringSymbolsAsync(bool distinct = true);
+    //TryAsync<IEnumerable<IEngineeringSymbolResponseDto>> GetAllEngineeringSymbolsIncludeAllVersionsAsync();
     TryAsync<EngineeringSymbol> GetEngineeringSymbolByIdAsync(string id);
     TryAsync<EngineeringSymbol> GetEngineeringSymbolByKeyAsync(string key); 
     TryAsync<string> InsertEngineeringSymbolAsync(EngineeringSymbolCreateDto createDto);

@@ -1,19 +1,20 @@
 using System.Globalization;
 using System.Text;
 using EngineeringSymbols.Tools.Constants;
+using EngineeringSymbols.Tools.Entities;
 
 namespace EngineeringSymbols.Api.Repositories.Fuseki;
 
 public static class SparqlQueries
 {
-    public const string GetAllSymbolsQuery = $$"""
+    public const string GetAllSymbolsQuery_VOID = $$"""
                     {{RdfConst.EngSymPrefix}}
                     SELECT ?symbolGraph ?key WHERE { 
                         GRAPH ?symbolGraph { ?s {{ESProp.HasEngSymKeyIriPrefix}} ?key } 
                     }
                     """;
     
-    public const string GetAllSymbolsQuery2 = $$"""
+    public const string GetAllSymbolsQuery_VOID1 = $$"""
                     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                     SELECT ?symbolIri WHERE { ?symbolIri rdf:type <{{RdfConst.SymbolTypeIri}}> }
                     """;
@@ -54,13 +55,13 @@ public static class SparqlQueries
                 {{RdfConst.EngSymPrefix}}
                 {{RdfConst.SymbolPrefix}}
 
-                SELECT ?symbolGraph ?key ?numVersions
+                SELECT ?symbolGraph ?key ?numVersions ?height
                 WHERE {
                     GRAPH ?symbolGraph { 
                         ?s1 {{ESProp.HasEngSymKeyIriPrefix}} ?key .
-                        ?s1 {{ESProp.HasDateCreatedIriPrefix}} ?latestDateCreated . 
+                        ?s1 {{ESProp.HasDateCreatedIriPrefix}} ?latestDateCreated .
                     }
-                  
+                
                     {
                         SELECT ?key (MAX(?dc) AS ?latestDateCreated) (COUNT(?g) AS ?numVersions)
                         WHERE {
@@ -75,6 +76,86 @@ public static class SparqlQueries
                 """;
     }
     
+    public static string GetAllSymbolsQuery(bool distinct = false)
+    {
+        var distinctSubQuery = distinct ? $$"""
+                                    {
+                                        SELECT ?key (MAX(?dc) AS ?dateCreated) (COUNT(?g) AS ?numVersions)
+                                        WHERE {
+                                            GRAPH ?g { 
+                                                ?s2 {{ESProp.HasEngSymKeyIriPrefix}} ?key .
+                                                ?s2 {{ESProp.HasDateCreatedIriPrefix}} ?dc .
+                                            }
+                                        }
+                                        GROUP BY ?key
+                                    }
+                                """ : "";
+        
+        return $$"""
+                {{RdfConst.XsdPrefix}}
+                {{RdfConst.EngSymPrefix}}
+                {{RdfConst.SymbolPrefix}}
+
+                SELECT ?symbolGraph ?id ?key ?status ?filename ?numVersions ?dateCreated ?dateUpdated ?owner ?description ?geometry ?width ?height ?connector ?connectorName ?connectorDirection ?connectorPosX ?connectorPosY
+                WHERE {
+                    GRAPH ?symbolGraph {
+                        ?s1 {{ESProp.HasEngSymIdIriPrefix}} ?id .
+                        ?s1 {{ESProp.HasEngSymKeyIriPrefix}} ?key .
+                        ?s1 {{ESProp.HasStatusIriPrefix}} ?status .
+                        ?s1 {{ESProp.HasSourceFilenameIriPrefix}} ?filename .
+                        ?s1 {{ESProp.HasDateCreatedIriPrefix}} ?dateCreated . 
+                        ?s1 {{ESProp.HasDateUpdatedIriPrefix}} ?dateUpdated .
+                        ?s1 {{ESProp.HasDescriptionIriPrefix}} ?description .
+                        ?s1 {{ESProp.HasGeometryIriPrefix}} ?geometry .
+                        ?s1 {{ESProp.HasOwnerIriPrefix}} ?owner .
+                        ?s1 {{ESProp.HasWidthIriPrefix}} ?width .
+                        ?s1 {{ESProp.HasHeightIriPrefix}} ?height .
+                        ?s1 {{ESProp.HasConnectorIriPrefix}} ?connector .
+                        ?connector {{ESProp.HasNameIriPrefix}} ?connectorName .
+                        ?connector {{ESProp.HasDirectionIriPrefix}} ?connectorDirection .
+                        ?connector {{ESProp.HasPositionXIriPrefix}} ?connectorPosX .
+                        ?connector {{ESProp.HasPositionYIriPrefix}} ?connectorPosY .
+                    }
+                {{distinctSubQuery}}
+                }
+                """;
+    }
+    
+    public static string GetAllSymbolsConstructQuery(bool distinct = false)
+    {
+        var distinctSubQuery = distinct ? $$"""
+                                    {
+                                        SELECT ?key (MAX(?dc) AS ?dateCreated) (COUNT(?g) AS ?numVersions)
+                                        WHERE {
+                                            GRAPH ?g { 
+                                                ?s2 {{ESProp.HasEngSymKeyIriPrefix}} ?key .
+                                                ?s2 {{ESProp.HasDateCreatedIriPrefix}} ?dc .
+                                            }
+                                        }
+                                        GROUP BY ?key
+                                    }
+                                """ : "";
+        
+        return $$"""
+                {{RdfConst.XsdPrefix}}
+                {{RdfConst.EngSymPrefix}}
+                {{RdfConst.SymbolPrefix}}
+
+                CONSTRUCT {
+                    GRAPH ?symbolGraph {
+                        ?s ?p ?o .
+                    }
+                }
+
+                WHERE {
+                    GRAPH ?symbolGraph {
+                        ?s ?p ?o .
+                        ?ss {{ESProp.HasDateCreatedIriPrefix}} ?dateCreated .
+                    }
+                {{distinctSubQuery}}
+                }
+                """;
+    }
 
     
     public static string SymbolExistByIdQuery(string id)
@@ -161,10 +242,10 @@ public static class SparqlQueries
             return $"""
                             {sub} {ESProp.HasConnectorIriPrefix} {cIri} .
                             {cIri} {ESProp.IsTypeIriPrefix} <{RdfConst.ConnectorTypeIri}> .
-                            {cIri} {ESProp.HasNameIriPrefix} "{connector.Id}" .
-                            {cIri} {ESProp.HasPositionXIriPrefix} "{connector.RelativePosition.X.ToString(nfi)}" .
-                            {cIri} {ESProp.HasPositionYIriPrefix} "{connector.RelativePosition.Y.ToString(nfi)}" .
-                            {cIri} {ESProp.HasDirectionYIriPrefix} "{connector.Direction}" .
+                            {cIri} {ESProp.HasNameIriPrefix} "{connector.Id}"^^xsd:string .
+                            {cIri} {ESProp.HasPositionXIriPrefix} "{connector.RelativePosition.X.ToString(nfi)}"^^xsd:decimal .
+                            {cIri} {ESProp.HasPositionYIriPrefix} "{connector.RelativePosition.Y.ToString(nfi)}"^^xsd:decimal .
+                            {cIri} {ESProp.HasDirectionIriPrefix} "{connector.Direction}"^^xsd:integer .
                     """;
         }).ToList();
 
@@ -173,16 +254,18 @@ public static class SparqlQueries
 
                 INSERT DATA {
                     GRAPH {{sub}} {
-                        {{sub}} {{ESProp.HasEngSymKeyIriPrefix}} "{{createDto.Key ?? symbolId}}" .
-                        {{sub}} {{ESProp.HasDescriptionIriPrefix}} "{{createDto.Description}}" .
+                        {{sub}} {{ESProp.HasEngSymIdIriPrefix}} "{{symbolId}}"^^xsd:string .
+                        {{sub}} {{ESProp.HasEngSymKeyIriPrefix}} "{{createDto.Key ?? symbolId}}"^^xsd:string .
+                        {{sub}} {{ESProp.HasStatusIriPrefix}} "{{EngineeringSymbolStatus.Draft}}"^^xsd:string .
+                        {{sub}} {{ESProp.HasDescriptionIriPrefix}} "{{createDto.Description}}"^^xsd:string .
                         {{sub}} {{ESProp.IsTypeIriPrefix}} <{{RdfConst.SymbolTypeIri}}> .
                         {{sub}} {{ESProp.HasDateCreatedIriPrefix}} "{{DateTimeOffset.UtcNow:O}}"^^xsd:dateTime .
                         {{sub}} {{ESProp.HasDateUpdatedIriPrefix}} "{{DateTimeOffset.MinValue:O}}"^^xsd:dateTime .
-                        {{sub}} {{ESProp.HasGeometryIriPrefix}} "{{createDto.GeometryPath}}" .
-                        {{sub}} {{ESProp.HasWidthIriPrefix}} "{{createDto.Width.ToString(nfi)}}" .
-                        {{sub}} {{ESProp.HasHeightIriPrefix}} "{{createDto.Height.ToString(nfi)}}" .
-                        {{sub}} {{ESProp.HasOwnerIriPrefix}} "{{createDto.Owner}}" .
-                        {{sub}} {{ESProp.HasSourceFilenameIriPrefix}} "{{createDto.Filename}}" .
+                        {{sub}} {{ESProp.HasGeometryIriPrefix}} "{{createDto.GeometryPath}}"^^xsd:string .
+                        {{sub}} {{ESProp.HasWidthIriPrefix}} "{{createDto.Width.ToString(nfi)}}"^^xsd:integer .
+                        {{sub}} {{ESProp.HasHeightIriPrefix}} "{{createDto.Height.ToString(nfi)}}"^^xsd:integer .
+                        {{sub}} {{ESProp.HasOwnerIriPrefix}} "{{createDto.Owner}}"^^xsd:string .
+                        {{sub}} {{ESProp.HasSourceFilenameIriPrefix}} "{{createDto.Filename}}"^^xsd:string .
                 {{string.Join(Environment.NewLine, connectorTurtle)}}
                     }
                 }

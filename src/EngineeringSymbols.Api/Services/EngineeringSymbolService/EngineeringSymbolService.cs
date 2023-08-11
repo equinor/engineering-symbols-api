@@ -21,14 +21,9 @@ public class EngineeringSymbolService : IEngineeringSymbolService
         _logger = loggerFactory.CreateLogger("EngineeringSymbolService");
     }
 
-    public TryAsync<IEnumerable<IEngineeringSymbolResponseDto>> GetSymbolsAsync(bool? allVersions = false, int? detailLevel = 0)
+    public TryAsync<IEnumerable<IEngineeringSymbolResponseDto>> GetSymbolsAsync(bool allVersions = false)
     {
-        if (allVersions != null || allVersions == true)
-        {
-            return _repo.GetAllEngineeringSymbolsIncludeAllVersionsAsync();
-        }
-        
-        return _repo.GetAllEngineeringSymbolsAsync();
+        return _repo.GetAllEngineeringSymbolsAsync(distinct: !allVersions);
     }
 
     public TryAsync<EngineeringSymbol> GetSymbolByIdOrKeyAsync(string idOrKey) => async () => 
