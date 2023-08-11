@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using AngleSharp.Dom;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
@@ -68,46 +69,15 @@ public class FusekiRepository : IEngineeringSymbolRepository
                     symbols.Add(JsonObjectToEngineeringSymbol(symbolGraph));
                 }
             }
-
+            
             return symbols;
-
-
-            //var selectResponse = JsonConvert.DeserializeObject<FusekiSelectResponse>(stringContent);
-            //
-            //var symbols = selectResponse.Results.Bindings
-            //    .Select(BindingToEngineeringSymbol)
-            //    .GroupBy(k => k.Id)
-            //    .Select(g => 
-            //    { 
-            //        var connectors = g.Select(i => i.Connectors[0]); 
-            //        return g.First() with {Connectors = connectors.ToList()}; 
-            //    });
-//
-            //return symbols.ToList();
         };
 
 
     public static EngineeringSymbolCompleteResponseDto JsonObjectToEngineeringSymbol(JsonNode jsonNode)
     {
         var jsonObject = jsonNode.AsObject();
-
-        if (!jsonObject.ContainsKey("@id"))
-        {
-
-        }
-
-        var id = "";
-
-        if (jsonObject["@id"] is JsonValue idValue)
-        {
-            if (!idValue.TryGetValue(out string? parsedId))
-            {
-                throw new Exception("");
-            }
-
-            id = parsedId;
-        }
-
+        
         if (jsonObject["@graph"] is not JsonArray graph)
         {
             throw new Exception("");
@@ -115,8 +85,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
         EngineeringSymbolCompleteResponseDto? symbolParsed = null;
         var connectors = new List<EngineeringSymbolConnector>();
-
-
+        
         // The nodes are either connectors or a symbol
         foreach (var node in graph)
         {
@@ -148,7 +117,9 @@ public class FusekiRepository : IEngineeringSymbolRepository
             throw new Exception("");
         }
 
-        return symbolParsed with {Connectors = connectors};
+        symbolParsed.Connectors.AddRange(connectors);
+
+        return symbolParsed;
     }
 
     public static T GetSymbolProp<T>(JsonObject obj, string prop)
@@ -160,18 +131,39 @@ public class FusekiRepository : IEngineeringSymbolRepository
             throw new Exception("Prop not found");
         }
         
-        if (typeof(T) == typeof(string) && node is JsonValue)
+        if (typeof(T) == typeof(string))
         {
-            
+            return (T) (object) node.ToString();
         }
         
-        if (node is JsonValue && node.GetValue<JsonElement>() is var el)
+        if (typeof(T) == typeof(double))
         {
-            if (typeof(T) == typeof(string))
+            if (node is JsonObject jobj && jobj.ContainsKey("@value"))
             {
-                return (T) (object) el.GetString();
+                double.TryParse(jobj["@value"].ToString(), CultureInfo.InvariantCulture, out var parsedDouble);
+            
+                return (T) (object) parsedDouble;
             }
         }
+        
+        if (typeof(T) == typeof(int))
+        {
+            if (node is JsonObject jobj && jobj.ContainsKey("@value"))
+            {
+                int.TryParse(jobj["@value"].ToString(), null, out var parsedInt);
+            
+                return (T) (object) parsedInt;
+            }
+        } 
+        
+        if (typeof(T) == typeof(DateTimeOffset))
+        {
+            if (node is JsonObject dobj && dobj.ContainsKey("@value"))
+            {
+                DateTimeOffset.TryParseExact(dobj["@value"].ToString(), "o", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDateTime);
+                return (T) (object) parsedDateTime;
+            }
+        } 
         
         return default;
     }
@@ -191,7 +183,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
             Geometry = GetSymbolProp<string>(obj, ESProp.HasGeometryIriPrefix),
             Width = GetSymbolProp<double>(obj, ESProp.HasWidthIriPrefix),
             Height = GetSymbolProp<double>(obj, ESProp.HasHeightIriPrefix),
-            Connectors = null!
+            Connectors = new List<EngineeringSymbolConnector>()
         };
     }
     
@@ -199,115 +191,16 @@ public class FusekiRepository : IEngineeringSymbolRepository
     {
         return new EngineeringSymbolConnector
         {
-            Id = null,
-            RelativePosition = null,
-            Direction = 0
+            Id = GetSymbolProp<string>(obj, ESProp.HasNameIriPrefix),
+            RelativePosition = new Point
+            {
+                X = GetSymbolProp<double>(obj, ESProp.HasPositionXIriPrefix),
+                Y = GetSymbolProp<double>(obj, ESProp.HasPositionYIriPrefix)
+            },
+            Direction = GetSymbolProp<int>(obj, ESProp.HasDirectionIriPrefix)
         };
     }
 
-    public T? getV<T>(Dictionary<string, FusekiTriplet> binding, string key)
-    {
-        //T result = default;
-
-        var vType = typeof(T);
-
-        if (vType == null)
-        {
-            throw new Exception();
-        }
-
-        string v;
-        
-        if (binding.TryGetValue(key, out FusekiTriplet triplet))
-        {
-            if (triplet.Value == null) throw new Exception("");
-            
-            v = triplet.Value;
-        }
-        else
-        {
-            throw new Exception("");
-        }
-        
-        if (typeof(T) == typeof(string))
-        {
-            return (T) (object) v;
-        }
-        
-        if (typeof(T) == typeof(int))
-        {
-            int.TryParse(v, null, out int parsedInt);
-            
-            return (T) (object) parsedInt;
-        }
-        
-        if (typeof(T) == typeof(double))
-        {
-            double.TryParse(v, CultureInfo.InvariantCulture, out double parsedDouble);
-            
-            return (T) (object) parsedDouble;
-        }
-        
-        if (typeof(T) == typeof(DateTimeOffset))
-        {
-            DateTimeOffset.TryParseExact(v, "o", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDateTime);
-            return (T) (object) parsedDateTime;
-        }
-        
-        return default;
-    }
-    
-    
-    private EngineeringSymbolCompleteResponseDto BindingToEngineeringSymbol(Dictionary<string, FusekiTriplet> binding)
-    {
-
-        var id = getV<string>(binding, "id");
-        var key = getV<string>(binding, "key");
-        var filename = getV<string>(binding, "filename");
-        var owner = getV<string>(binding, "owner");
-        var description = getV<string>(binding, "description");
-        var geometry = getV<string>(binding, "geometry");
-        var w = getV<int>(binding, "width");
-        var h = getV<int>(binding, "height");
-        var dateCreated = getV<DateTimeOffset>(binding, "dateCreated");
-        var dateUpdated = getV<DateTimeOffset>(binding, "dateUpdated");
-        
-        var statusString = getV<string>(binding, "status");
-
-        Enum.TryParse(statusString, true, out EngineeringSymbolStatus status);
-        
-        // ?symbolGraph ?id ?key ?filename ?numVersions ?dateCreated ?dateUpdated ?owner ?description ?geometry ?width ?height ?connector ?connectorName ?connectorDirection ?connectorPosX ?connectorPosY
-        var connectorName = getV<string>(binding, "connectorName");
-        var connectorDirection = getV<int>(binding, "connectorDirection");
-        var connectorPosX = getV<double>(binding, "connectorPosX");
-        var connectorPosY = getV<double>(binding, "connectorPosY");
-        
-        return new EngineeringSymbolCompleteResponseDto
-        {
-            Id = id,
-            Key = key,
-            Status = status.ToString(),
-            Description = description,
-            DateTimeCreated = dateCreated,
-            DateTimeUpdated = dateUpdated,
-            Owner = owner,
-            Filename = filename,
-            Geometry = geometry,
-            Width = w,
-            Height = h,
-            Connectors = new List<EngineeringSymbolConnector> { new()
-                {
-                    Id = connectorName,
-                    RelativePosition = new Point
-                    {
-                        X = connectorPosX,
-                        Y = connectorPosY
-                    },
-                    Direction = connectorDirection
-                }
-            }
-        };
-    }
     
     public TryAsync<IEnumerable<IEngineeringSymbolResponseDto>> GetAllEngineeringSymbolsIncludeAllVersionsAsync() =>
         async () =>

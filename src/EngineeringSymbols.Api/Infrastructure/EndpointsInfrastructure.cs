@@ -18,9 +18,9 @@ public static class EndpointsInfrastructure
                 .GetSymbolsAsync(allVersions ?? false)
                 .Match(TypedResults.Ok, exception =>  EndpointsCommon.OnFailure(exception, app.Logger)))
             .WithTags("Anonymous")
-            .WithName("GetAllIds")
-            .WithDescription("Get all Engineering Symbols (list of Id's)")
-            .Produces<List<EngineeringSymbolListItemResponseDto>>()
+            //.WithName("GetAllIds")
+            .WithDescription("Get all Engineering Symbols")
+            .Produces<List<EngineeringSymbolCompleteResponseDto>>()
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
         

@@ -20,21 +20,21 @@ public record EngineeringSymbolResponseDto : IEngineeringSymbolResponseDto
 /// <summary>
 /// Full representation as in DB
 /// </summary>
-public record EngineeringSymbolCompleteResponseDto : IEngineeringSymbolResponseDto //: EngineeringSymbol
+public class EngineeringSymbolCompleteResponseDto : IEngineeringSymbolResponseDto //: EngineeringSymbol
 {
-    public required string? Id { get; init; }
-    public required string Key { get; init; }
+    public string? Id { get; set; }
+    public string Key { get; set; }
     
-    public required string Status { get; init; }
-    public required string Description { get; init; }
-    public required DateTimeOffset DateTimeCreated { get; init; }
-    public required DateTimeOffset DateTimeUpdated { get; init; }
-    public required string Owner { get; init; }
-    public required string Filename { get; init; }
-    public required string Geometry { get; init; }
-    public required double Width { get; init; }
-    public required double Height { get; init; }
-    public List<EngineeringSymbolConnector> Connectors { get; init; } = new();
+    public string Status { get; set; }
+    public string Description { get; set; }
+    public DateTimeOffset DateTimeCreated { get; set; }
+    public DateTimeOffset DateTimeUpdated { get; set; }
+    public string Owner { get; set; }
+    public string Filename { get; set; }
+    public string Geometry { get; set; }
+    public double Width { get; set; }
+    public double Height { get; set; }
+    public List<EngineeringSymbolConnector> Connectors { get; set; } = new();
 }
 
 public class EngineeringSymbolListItemResponseDto : IEngineeringSymbolResponseDto
