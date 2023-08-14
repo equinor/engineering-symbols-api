@@ -4,19 +4,19 @@ namespace EngineeringSymbols.Tools.SvgParser;
 
 public static class SvgParser
 {
-	public static Result<SvgParserResult> FromString(string svgString, Action<SvgParserOptions>? options = null)
+	public static Result<SvgParserResult> FromString(string svgString)
 	{
-		return ParseSvgFlow(LoadRootXElementFromString(svgString), options);
+		return ParseSvgFlow(LoadRootXElementFromString(svgString));
 	}
 
-	public static Result<SvgParserResult> FromFile(string filepath, Action<SvgParserOptions>? options = null)
+	public static Result<SvgParserResult> FromFile(string filepath)
 	{
-		return ParseSvgFlow(LoadRootXElementFromFile(filepath), options);
+		return ParseSvgFlow(LoadRootXElementFromFile(filepath));
 	}
 	
-	private static Result<SvgParserResult> ParseSvgFlow(Func<SvgParserContext, Try<SvgParserContext>> xElementLoader, Action<SvgParserOptions>? options = null)
+	private static Result<SvgParserResult> ParseSvgFlow(Func<SvgParserContext, Try<SvgParserContext>> xElementLoader)
 	{
-		return CreateSvgParserContext(options)
+		return CreateSvgParserContext()
 			.Bind(xElementLoader)
 			.Bind(ValidateRootElement)
 			.Bind(ParseSvgData)
@@ -24,35 +24,9 @@ public static class SvgParser
 			.Try();
 	}
 	
-	private static Try<SvgParserContext> CreateSvgParserContext(Action<SvgParserOptions>? options = null)
+	private static Try<SvgParserContext> CreateSvgParserContext()
 	{
-		return () =>
-		{
-			var mergedOptions = new SvgParserOptions();
-			options?.Invoke(mergedOptions);
-			return new SvgParserContext { Options = mergedOptions};
-		};
-	}
-	
-	private static Func<SvgParserContext, Try<SvgParserContext>> LoadRootXElementFromString2(string svgString)
-	{
-		return (SvgParserContext ctx) => Try(() =>
-		{
-			XElement el;
-
-			try
-			{
-				el = XElement.Parse(svgString);
-			}
-			catch
-			{
-				throw new SvgParseException("Failed to load SVG from string");
-			}
-			
-			ctx.SvgRootElement = el; 
-			
-			return ctx;
-		});
+		return () => new SvgParserContext ();
 	}
 	
 	private static Func<SvgParserContext, Try<SvgParserContext>> LoadRootXElementFromString(string svgString)
@@ -103,12 +77,8 @@ public static class SvgParser
 			//ctx.ExtractedData.Id = ctx.Options.SymbolId ?? Helpers.GetSymbolId(Path.GetFileName(filePath));
 			if (ctx.SvgRootElement == null)
 				throw new SvgParseException("SvgRootElement was null");
-			
-			// Store input SVG before transforming it
-			if (ctx.Options.IncludeRawSvgString)
-				ctx.ExtractedData.RawSvgInputString = ctx.SvgRootElement.ToString();
-			
-			return SvgCrawler.ExtractDataAndTransformElement(ctx.SvgRootElement, ctx);
+
+			return SvgCrawler.ExtractData(ctx.SvgRootElement, ctx);
 		};
 	}
 }

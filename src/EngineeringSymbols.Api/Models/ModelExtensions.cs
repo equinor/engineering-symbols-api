@@ -5,28 +5,18 @@ namespace EngineeringSymbols.Api.Models;
 
 public static class ModelExtensions
 {
-    public static EngineeringSymbolCreateDto ToCreateDto(this EngineeringSymbolParsed sym, string userId, string? filename = null)
+    public static EngineeringSymbolCreateDto ToCreateDto(this EngineeringSymbolSvgParsed sym, string key, string userId, string description = "None", string? filename = null)
     {
         return new EngineeringSymbolCreateDto
         {
-            Key = sym.Key,
-            Description = sym.Description ?? "None",
-            Filename = filename ?? sym.Filename ?? "<Unknown>",
+            Key = key,
+            Description = description,
+            Filename = filename ?? sym.Filename,
             Owner = userId,
             Width = sym.Width,
             Height = sym.Height,
-            GeometryPath = sym.GeometryString,
-            Connectors = sym.Connectors.Select(ToEngineeringSymbolConnector).ToList()
-        };
-    }
-    
-    private static EngineeringSymbolConnector ToEngineeringSymbolConnector(this EngineeringSymbolConnectorParsed parsed)
-    {
-        return new EngineeringSymbolConnector
-        {
-            Id = parsed.Id,
-            RelativePosition = parsed.RelativePosition,
-            Direction = parsed.Direction
+            Geometry = sym.Geometry,
+            Connectors = new List<EngineeringSymbolConnector>()
         };
     }
     
@@ -44,7 +34,7 @@ public static class ModelExtensions
             Owner = symbol.Owner,
             Width = symbol.Width,
             Height = symbol.Height,
-            Geometry = symbol.GeometryPath,
+            Geometry = symbol.Geometry,
             Connectors = symbol.Connectors
         };
     }

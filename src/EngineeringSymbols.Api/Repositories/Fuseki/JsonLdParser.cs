@@ -92,35 +92,32 @@ public static class JsonLdParser
             throw new ArgumentException("Failed to parse EngineeringSymbolStatus");
         }
         
-        return new EngineeringSymbol
-        {
-            Id = GetStringValue(obj, ESProp.HasEngSymIdIriPrefix),
-            Key = GetStringValue(obj,  ESProp.HasEngSymKeyIriPrefix),
-            Status = statusEnum,
-            Description = GetStringValue(obj,  ESProp.HasDescriptionIriPrefix),
-            DateTimeCreated = GetDateTimeOffsetValue(obj,  ESProp.HasDateCreatedIriPrefix),
-            DateTimeUpdated = GetDateTimeOffsetValue(obj, ESProp.HasDateUpdatedIriPrefix),
-            Owner = GetStringValue(obj,  ESProp.HasOwnerIriPrefix),
-            Filename = GetStringValue(obj,  ESProp.HasSourceFilenameIriPrefix),
-            GeometryPath = GetStringValue(obj,  ESProp.HasGeometryIriPrefix),
-            Width = GetDoubleValue(obj, ESProp.HasWidthIriPrefix),
-            Height = GetDoubleValue(obj,  ESProp.HasHeightIriPrefix),
-            Connectors = new List<EngineeringSymbolConnector>()
-        };
+        return new EngineeringSymbol(
+            Id: GetStringValue(obj, ESProp.HasEngSymIdIriPrefix),
+            Key: GetStringValue(obj,  ESProp.HasEngSymKeyIriPrefix),
+            Status: statusEnum,
+            Description: GetStringValue(obj,  ESProp.HasDescriptionIriPrefix),
+            DateTimeCreated: GetDateTimeOffsetValue(obj,  ESProp.HasDateCreatedIriPrefix),
+            DateTimeUpdated: GetDateTimeOffsetValue(obj, ESProp.HasDateUpdatedIriPrefix),
+            Owner: GetStringValue(obj,  ESProp.HasOwnerIriPrefix),
+            Filename: GetStringValue(obj,  ESProp.HasSourceFilenameIriPrefix),
+            Geometry: GetStringValue(obj,  ESProp.HasGeometryIriPrefix),
+            Width: GetDoubleValue(obj, ESProp.HasWidthIriPrefix),
+            Height: GetDoubleValue(obj,  ESProp.HasHeightIriPrefix),
+            Connectors: new List<EngineeringSymbolConnector>());
     }
     
     public static EngineeringSymbolConnector ParseConnectorObject(JsonObject obj)
     {
-        return new EngineeringSymbolConnector
-        {
-            Id = GetStringValue(obj, ESProp.HasNameIriPrefix),
-            RelativePosition = new Point
+        return new EngineeringSymbolConnector(
+            Id: GetStringValue(obj, ESProp.HasNameIriPrefix),
+            RelativePosition: new Point 
             {
                 X = GetDoubleValue(obj,  ESProp.HasPositionXIriPrefix),
                 Y = GetDoubleValue(obj,  ESProp.HasPositionYIriPrefix)
             },
-            Direction = GetIntValue(obj,  ESProp.HasDirectionIriPrefix)
-        };
+            Direction: GetIntValue(obj,  ESProp.HasDirectionIriPrefix)
+        );
     }
     
     private static string GetValuePropString(JsonObject obj, string prop)

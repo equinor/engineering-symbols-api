@@ -28,7 +28,8 @@ public static class EndpointsInfrastructure
         symbols.MapPost("/", async (IEngineeringSymbolService symbolService,
                     [FromQuery(Name = "validationOnly")] bool? validationOnly,
                     ClaimsPrincipal user,
-                    IFormFile svgFile)
+                    IFormFile? svgFile,
+                    EngineeringSymbolCreateDto? createDto)
                 =>
             {
                 if (validationOnly is true)

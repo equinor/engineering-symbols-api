@@ -1,3 +1,6 @@
 namespace EngineeringSymbols.Tools.Entities;
 
-public record EngineeringSymbolConnector : EngineeringSymbolConnectorParsed;
+/// <summary>
+/// Represents an engineering symbol connector.
+/// </summary>
+public record EngineeringSymbolConnector(string Id, Point RelativePosition, int Direction);

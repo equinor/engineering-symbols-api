@@ -6,13 +6,13 @@ namespace EngineeringSymbols.Tools.SvgParser;
 
 internal static class SvgCrawler
 {
-	internal static SvgParserContext ExtractDataAndTransformElement(XElement element, SvgParserContext ctx)
+	internal static SvgParserContext ExtractData(XElement element, SvgParserContext ctx)
 	{
 		element.TransformAndExtract(ctx);
 		
 		return element.Elements()
 			.Fold(ctx, (current, child) => 
-				ExtractDataAndTransformElement(child, current));
+				ExtractData(child, current));
 	}
 	
 	private static void TransformAndExtract(this XElement element, SvgParserContext ctx)
@@ -22,18 +22,18 @@ internal static class SvgCrawler
 			case "svg":
 				element.TransformSvgElement(ctx);
 				break;
-			case "metadata":
-				element.TransformMetadataElement(ctx);
-				break;
-			case "g":
-				element.TransformGElement(ctx);
-				break;
+			//case "metadata":
+			//	element.TransformMetadataElement(ctx);
+			//	break;
+			//case "g":
+			//	element.TransformGElement(ctx);
+			//	break;
 			case "path":
 				element.TransformPathElement(ctx);
 				break;
-			case "circle":
-				element.TransformCircleElement(ctx);
-				break;
+			//case "circle":
+			//	element.TransformCircleElement(ctx);
+			//	break;
 		}
 	}
 
@@ -45,17 +45,16 @@ internal static class SvgCrawler
 	private static void TransformSvgElement(this XElement element, SvgParserContext ctx)
 	{
 		// Extract SVG height
-
 		if (!double.TryParse(element.Attribute("height")?.Value, NumberStyles.Any, CultureInfo.InvariantCulture,
 			    out var heightParsed))
 		{
 			ctx.AddParseError(SvgParseCategory.Dimensions,"SVG 'height' is missing or invalid");
 		}
 		
-		if (heightParsed % 24 != 0)
-		{
-			ctx.AddParseError(SvgParseCategory.Dimensions,$"SVG 'height' is not a multiple of 24");
-		}
+		//if (heightParsed % 24 != 0)
+		//{
+		//	ctx.AddParseError(SvgParseCategory.Dimensions,$"SVG 'height' is not a multiple of 24");
+		//}
 
 		ctx.ExtractedData.Height = heightParsed;
 
@@ -66,10 +65,10 @@ internal static class SvgCrawler
 			ctx.AddParseError(SvgParseCategory.Dimensions,"SVG 'width' is missing or invalid");
 		}
 
-		if (widthParsed % 24 != 0)
-		{
-			ctx.AddParseError(SvgParseCategory.Dimensions,$"SVG 'width' is not a multiple of 24");
-		}
+		//if (widthParsed % 24 != 0)
+		//{
+		//	ctx.AddParseError(SvgParseCategory.Dimensions,$"SVG 'width' is not a multiple of 24");
+		//}
 		
 		ctx.ExtractedData.Width  = widthParsed;
 
@@ -95,43 +94,34 @@ internal static class SvgCrawler
 			{
 				ctx.AddParseError(SvgParseCategory.Dimensions,$"Could not parse viewBox attribute value in <svg> element");
 			}
-			else if(viewBoxElements[0] != 0 || viewBoxElements[1] != 0 || viewBoxElements[2] != widthParsed ||
-			        viewBoxElements[3] != heightParsed)
+			else if(viewBoxElements[0] != 0 || viewBoxElements[1] != 0 || viewBoxElements[2] != widthParsed || viewBoxElements[3] != heightParsed)
 			{
 				ctx.AddParseError(SvgParseCategory.Dimensions,$"viewBox attribute value error in <svg> element. Expected '0 0 {widthParsed} {heightParsed}', but got '{viewBoxElements[0]} {viewBoxElements[1]} {viewBoxElements[2]} {viewBoxElements[3]}.'");
 			}
 		}
-		
-		// Remove styling
-
-		element.RemoveStyling();
-
-		// Remove stroke attribute as the symbols only should be colored using fill
-		element.SetAttributeValue("stroke", null);
-		element.SetAttributeValue("fill", ctx.Options.FillColor);
 	}
 
-	private static void TransformMetadataElement(this XElement element, SvgParserContext ctx)
-	{
-		element.RemoveStyling();
-
-		var metadata = element.Elements();
-
-		foreach (var el in metadata)
-		{
-			// Assume that all versions has the "key" property
-			if(el.Name.NamespaceName != "http://rdf.equinor.com/ontology/engineering-symbol/v1#") continue;
-
-			switch (el.Name.LocalName)
-			{
-				case "key":
-					ExtractMetadataKey(el.Value, ctx);
-					break;
-			}
-		}
-	}
+	// private static void TransformMetadataElement(this XElement element, SvgParserContext ctx)
+	// {
+	// 	element.RemoveStyling();
+	//
+	// 	var metadata = element.Elements();
+	//
+	// 	foreach (var el in metadata)
+	// 	{
+	// 		// Assume that all versions has the "key" property
+	// 		if(el.Name.NamespaceName != "http://rdf.equinor.com/ontology/engineering-symbol/v1#") continue;
+	//
+	// 		switch (el.Name.LocalName)
+	// 		{
+	// 			case "key":
+	// 				ExtractMetadataKey(el.Value, ctx);
+	// 				break;
+	// 		}
+	// 	}
+	//}
 	
-	private static void ExtractMetadataKey(string key, SvgParserContext ctx)
+	/*private static void ExtractMetadataKey(string key, SvgParserContext ctx)
 	{
 		var keyV = EngineeringSymbolValidation.ValidateKey(key);
 
@@ -152,7 +142,7 @@ internal static class SvgCrawler
 
 		if (element.IsAnnotationGroup(ctx))
 			element.ProcessAnnotations(ctx);
-	}
+	}*/
 
 	/// <summary>
 	/// 
@@ -160,20 +150,27 @@ internal static class SvgCrawler
 	/// <param name="element"></param>
 	private static void TransformPathElement(this XElement element, SvgParserContext ctx)
 	{
-		var parentId = element.Parent?.Attribute("id")?.Value.ToLower();
-		var id = element.Attribute("id")?.Value.ToLower();
+		//var parentId = element.Parent?.Attribute("id")?.Value.ToLower();
+		//var id = element.Attribute("id")?.Value.ToLower();
 
-		if (id == "symbol" || parentId == "symbol")
+		var transform = element.Attribute("transform")?.Value;
+
+		if (transform != null)
 		{
+			ctx.AddParseError(SvgParseCategory.Geometry,$"'transform' attribute on <path> element is not allowed");
+			return;
+		} 
+		
+		//if (id == "symbol" || parentId == "symbol")
+		//{
 			var pathData = element.Attribute("d")?.Value;
 			if (pathData != null)
 				ctx.ExtractedData.PathData.Add(pathData);
-		}
-
-		element.RemoveStyling();
+		//}
+		
 	}
 
-	/// <summary>
+	/*/// <summary>
 	/// 
 	/// </summary>
 	/// <param name="element"></param>
@@ -304,18 +301,6 @@ internal static class SvgCrawler
 	private static string[]? GetIdAttributeData(this XElement element)
 	{
 		return element.Attribute("id")?.Value.Split("-");
-	}
-
-	private static void RemoveStyling(this XElement element)
-	{
-		var removeAttrs = new[] { "fill", "stroke", "style" };
-		element.Attributes().Where(a => removeAttrs.Contains(a.Name.LocalName)).Remove();
-	}
-
-	private static void RemoveTransform(this XElement element)
-	{
-		var removeAttrs = new[] { "transform" };
-		element.Attributes().Where(a => removeAttrs.Contains(a.Name.LocalName)).Remove();
-	}
+	}*/
 
 }

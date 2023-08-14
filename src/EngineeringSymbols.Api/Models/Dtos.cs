@@ -27,7 +27,7 @@ public record EngineeringSymbolCreateDto
     public required string Description { get; init; }
     public required string Owner { get; init; }
     public required string Filename { get; init; }
-    public required string GeometryPath { get; init; }
+    public required string Geometry { get; init; }
     public required double Width { get; init; }
     public required double Height { get; init; }
     public List<EngineeringSymbolConnector> Connectors { get; init; } = new();

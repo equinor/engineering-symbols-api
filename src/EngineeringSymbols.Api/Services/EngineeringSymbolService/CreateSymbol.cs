@@ -8,11 +8,12 @@ namespace EngineeringSymbols.Api.Services.EngineeringSymbolService;
 
 public static class CreateSymbol
 {
-    public record InsertContext(IFormFile File, string User)
+    public record InsertContext(IFormFile File, string Key, string User)
     {
         public string FileId { get; init; } = "Unknown";
         public string FileContent { get; init; } = "";
         public EngineeringSymbolCreateDto? EngineeringSymbolCreateDto { get; init; }
+        
         public string CreatedUri { get; init; } = "UnknownUri";
     }
     
@@ -20,12 +21,23 @@ public static class CreateSymbol
         TryAsync(() =>
         {
             var fileId = file.FileName;
-            var userId = user.Identity?.Name ?? "Maverick";
             
-            if(!fileId.Split(".").Apply(s => s.Length > 0 && s.Last().ToLower() == "svg"))
+            var key = Path.GetFileNameWithoutExtension(fileId);
+            var extension = Path.GetExtension(fileId);
+            
+            var userId = user.Identity?.Name;
+
+            if (userId == null)
+            {
+                throw new ValidationException("UserId was null");
+            }
+
+            if (!string.Equals(extension, ".svg", StringComparison.OrdinalIgnoreCase))
+            {
                 throw new ValidationException("Only SVG files are supported");
-            
-            return Task.FromResult(new InsertContext(file, userId) {FileId = fileId});
+            }
+
+            return Task.FromResult(new InsertContext(file, key, userId) {FileId = fileId, Key = key});
         });
     
     public static TryAsync<InsertContext> ReadFileToString(InsertContext ctx) => 
@@ -44,10 +56,7 @@ public static class CreateSymbol
 
     public static TryAsync<InsertContext> ParseSvgString(InsertContext ctx) =>
         TryAsync(() =>
-            SvgParser.FromString(ctx.FileContent, opt =>
-                {
-                    opt.RemoveAnnotations = true;
-                })
+            SvgParser.FromString(ctx.FileContent)
                 .Match(
                     Succ: result => 
                     { 
@@ -55,12 +64,13 @@ public static class CreateSymbol
                             throw new ValidationException(
                                 result.ParseErrors.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray()));
                         
-                        if (result.EngineeringSymbolParsed == null)
+                        if (result.EngineeringSymbolSvgParsed == null)
                             throw new ValidationException("SVG parse error");
                         
                         return Task.FromResult(ctx with
                         {
-                            EngineeringSymbolCreateDto = result.EngineeringSymbolParsed.ToCreateDto(ctx.User, ctx.FileId)
+                            EngineeringSymbolCreateDto = result.EngineeringSymbolSvgParsed
+                                .ToCreateDto(ctx.Key, ctx.User, "", ctx.FileId)
                         });
                     }, 
                     Fail: exception => throw exception));

@@ -76,21 +76,19 @@ public static class RdfParser
         
         return (idV, keyV, statusV, descV, dateCreatedV, dateUpdatedV, ownerV, filenameV, geometryV, widthV, heightV, connectorsV).Apply(
             (id , key, status, desc, dateCreated, dateUpdated, owner, filename, geometry, width, height, connectors) =>
-                new EngineeringSymbol
-                {
-                    Id = id,
-                    Key = key,
-                    Status = status,
-                    Description = desc,
-                    DateTimeCreated = dateCreated,
-                    DateTimeUpdated = dateUpdated,
-                    Owner = owner,
-                    Filename = filename,
-                    GeometryPath = geometry,
-                    Width = width,
-                    Height = height,
-                    Connectors = connectors
-                });
+                new EngineeringSymbol(
+                    Id: id,
+                    Key: key,
+                    Status: status,
+                    Description: desc,
+                    DateTimeCreated: dateCreated,
+                    DateTimeUpdated: dateUpdated,
+                    Owner: owner,
+                    Filename: filename,
+                    Geometry: geometry,
+                    Width: width,
+                    Height: height,
+                    Connectors: connectors));
     }
 
     public static string? AbsUri(INode node) => (node as UriNode)?.Uri.AbsoluteUri;
@@ -133,16 +131,15 @@ public static class RdfParser
             var dirV = graph.GetIntegerLiteral(cIri, ESProp.HasDirectionIri);
 
             var connector = (idV, posXV, posYV, dirV)
-                .Apply((id, x, y, dir) => new EngineeringSymbolConnector
-                {
-                    Id = id,
-                    RelativePosition = new Point
+                .Apply((id, x, y, dir) => new EngineeringSymbolConnector(
+                    Id: id,
+                    RelativePosition: new Point
                     {
                         X = x,
                         Y = y
                     },
-                    Direction = dir
-                });
+                    Direction: dir
+                ));
 
             connector.Match(
                 Succ: symbolConnector => result.Add(symbolConnector),
