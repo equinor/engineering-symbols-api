@@ -188,6 +188,29 @@ public static class SparqlQueries
                 {{RdfConst.EngSymPrefix}}
 
                 CONSTRUCT 
+                {   
+                    GRAPH ?symbolGraph {
+                        ?s ?p ?o .
+                    }
+                }
+                WHERE
+                {
+                    GRAPH ?symbolGraph {
+                        ?ss {{ESProp.HasEngSymIdIriPrefix}} "{{id}}" .
+                        ?s ?p ?o .
+                    }
+                }
+                """;
+    }
+    
+    public static string GetEngineeringSymbolByIdQuery_OLD(string id)
+    {
+        return $$"""
+                {{RdfConst.XsdPrefix}}
+                {{RdfConst.SymbolPrefix}}
+                {{RdfConst.EngSymPrefix}}
+
+                CONSTRUCT 
                 {
                     ?s ?o ?p 
                 }
@@ -199,6 +222,31 @@ public static class SparqlQueries
     }
     
     public static string GetEngineeringSymbolByKeyQuery(string key)
+    {
+        return $$"""
+                {{RdfConst.XsdPrefix}}
+                {{RdfConst.RdfsPrefix}}
+                {{RdfConst.SymbolPrefix}}
+                {{RdfConst.EngSymPrefix}}
+
+                CONSTRUCT 
+                {
+                    GRAPH ?g {
+                        ?s ?o ?p 
+                    }
+                }
+                WHERE 
+                {
+                    GRAPH ?g 
+                    {
+                        ?ss {{ESProp.HasEngSymKeyIriPrefix}} "{{key}}" .
+                        ?s ?o ?p .
+                    }
+                }
+                """;
+    }
+    
+    public static string GetEngineeringSymbolByKeyQuery_OLD(string key)
     {
         return $$"""
                 {{RdfConst.XsdPrefix}}

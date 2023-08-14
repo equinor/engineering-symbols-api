@@ -7,8 +7,8 @@ namespace EngineeringSymbols.Api.Services;
 
 public interface IEngineeringSymbolService
 {
-	TryAsync<IEnumerable<IEngineeringSymbolResponseDto>> GetSymbolsAsync(bool allVersions = false);
-	TryAsync<EngineeringSymbol> GetSymbolByIdOrKeyAsync(string idOrKey);
+	TryAsync<IEnumerable<EngineeringSymbolDto>> GetSymbolsAsync(bool allVersions = false);
+	TryAsync<EngineeringSymbolDto> GetSymbolByIdOrKeyAsync(string idOrKey);
 	TryAsync<string> CreateSymbolAsync(ClaimsPrincipal user, IFormFile svgFile);
 	TryAsync<bool> UpdateSymbolAsync(string id, EngineeringSymbolUpdateDto updateDto);
 	TryAsync<bool> DeleteSymbolAsync(string id);

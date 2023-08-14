@@ -20,7 +20,7 @@ public static class EndpointsInfrastructure
             .WithTags("Anonymous")
             //.WithName("GetAllIds")
             .WithDescription("Get all Engineering Symbols")
-            .Produces<List<EngineeringSymbolCompleteResponseDto>>()
+            .Produces<List<EngineeringSymbolDto>>()
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
         
@@ -46,10 +46,9 @@ public static class EndpointsInfrastructure
         symbols.MapGet("/{idOrKey}", async (IEngineeringSymbolService symbolService, string idOrKey) 
                 => await symbolService
                     .GetSymbolByIdOrKeyAsync(idOrKey)
-                    .Map(symbol => symbol.ToResponseDto())
                     .Match(TypedResults.Ok, exception =>  EndpointsCommon.OnFailure(exception, app.Logger)))
             .WithTags("Anonymous")
-            .Produces<EngineeringSymbolResponseDto>()
+            .Produces<EngineeringSymbolDto>()
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
         

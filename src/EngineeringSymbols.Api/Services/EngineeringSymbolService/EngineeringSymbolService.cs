@@ -21,12 +21,13 @@ public class EngineeringSymbolService : IEngineeringSymbolService
         _logger = loggerFactory.CreateLogger("EngineeringSymbolService");
     }
 
-    public TryAsync<IEnumerable<IEngineeringSymbolResponseDto>> GetSymbolsAsync(bool allVersions = false)
+    public TryAsync<IEnumerable<EngineeringSymbolDto>> GetSymbolsAsync(bool allVersions = false)
     {
-        return _repo.GetAllEngineeringSymbolsAsync(distinct: !allVersions);
+        return _repo.GetAllEngineeringSymbolsAsync(distinct: !allVersions)
+            .Map(v => v.Map(s => s.ToDto()));
     }
 
-    public TryAsync<EngineeringSymbol> GetSymbolByIdOrKeyAsync(string idOrKey) => async () => 
+    public TryAsync<EngineeringSymbolDto> GetSymbolByIdOrKeyAsync(string idOrKey) => async () => 
     {
         string? idAsGuid = null;
         string? idAsKey = null;
@@ -43,15 +44,17 @@ public class EngineeringSymbolService : IEngineeringSymbolService
         
         if (idAsGuid != null)
         {
-            return await _repo.GetEngineeringSymbolByIdAsync(idAsGuid).Try();
+            return await _repo.GetEngineeringSymbolByIdAsync(idAsGuid)
+                .Map(v => v.ToDto()).Try();
         }
         
         if(idAsKey != null)
         {
-            return await _repo.GetEngineeringSymbolByKeyAsync(idAsKey).Try();
+            return await _repo.GetEngineeringSymbolByKeyAsync(idAsKey)
+                .Map(v => v.ToDto()).Try();
         }
   
-        return new Result<EngineeringSymbol>(new ValidationException(new Dictionary<string, string[]>
+        return new Result<EngineeringSymbolDto>(new ValidationException(new Dictionary<string, string[]>
         {
             {"idOrKey", new [] { "Provided symbol identifier 'idOrKey' is not a valid GUID or Symbol Key"}}
         }));

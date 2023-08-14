@@ -30,9 +30,9 @@ public static class ModelExtensions
         };
     }
     
-    public static EngineeringSymbolCompleteResponseDto ToCompleteResponseDto(this EngineeringSymbol symbol)
+    public static EngineeringSymbolDto ToDto(this EngineeringSymbol symbol)
     {
-        return new EngineeringSymbolCompleteResponseDto
+        return new EngineeringSymbolDto
         {
             Id = symbol.Id,
             Key = symbol.Key,
@@ -42,22 +42,6 @@ public static class ModelExtensions
             DateTimeCreated = symbol.DateTimeCreated,
             DateTimeUpdated = symbol.DateTimeUpdated,
             Owner = symbol.Owner,
-            Width = symbol.Width,
-            Height = symbol.Height,
-            Geometry = symbol.GeometryPath,
-            Connectors = symbol.Connectors
-        };
-    }
-    
-    public static EngineeringSymbolResponseDto ToResponseDto(this EngineeringSymbol symbol)
-    {
-        return new EngineeringSymbolResponseDto
-        {
-            Id = symbol.Id,
-            Key = symbol.Key,
-            Description = symbol.Description,
-            DateTimeCreated = symbol.DateTimeCreated,
-            DateTimeUpdated = symbol.DateTimeUpdated,
             Width = symbol.Width,
             Height = symbol.Height,
             Geometry = symbol.GeometryPath,
