@@ -1,14 +1,5 @@
 namespace EngineeringSymbols.Tools.Entities;
 
-public enum EngineeringSymbolStatus
-{
-    None,
-    Draft,
-    Review,
-    Accepted,
-    Rejected,
-}
-
 public record EngineeringSymbol(
     string Id,
     string Key,
@@ -16,6 +7,7 @@ public record EngineeringSymbol(
     string Description,
     DateTimeOffset DateTimeCreated,
     DateTimeOffset DateTimeUpdated,
+    DateTimeOffset DateTimePublished,
     string Owner,
     string Filename,
     string Geometry,

@@ -1,16 +1,17 @@
 using EngineeringSymbols.Tools.Entities;
+using EngineeringSymbols.Tools.Models;
 
 namespace EngineeringSymbols.Api.Repositories;
 
 public interface IEngineeringSymbolRepository
 {
     TryAsync<IEnumerable<EngineeringSymbol>> GetAllEngineeringSymbolsAsync(bool distinct = true);
-    //TryAsync<IEnumerable<IEngineeringSymbolResponseDto>> GetAllEngineeringSymbolsIncludeAllVersionsAsync();
+
     TryAsync<EngineeringSymbol> GetEngineeringSymbolByIdAsync(string id);
     TryAsync<EngineeringSymbol> GetEngineeringSymbolByKeyAsync(string key); 
-    TryAsync<string> InsertEngineeringSymbolAsync(EngineeringSymbolCreateDto createDto);
+    TryAsync<string> InsertEngineeringSymbolAsync(EngineeringSymbolDto symbol);
     
-    TryAsync<bool> UpdateEngineeringSymbolAsync(string id, EngineeringSymbolUpdateDto updateDto);
+    TryAsync<bool> ReplaceEngineeringSymbolAsync(EngineeringSymbolDto symbol);
     
     TryAsync<bool> DeleteEngineeringSymbolAsync(string id);
 }

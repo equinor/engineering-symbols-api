@@ -66,6 +66,10 @@ public static class ESProp
     public const string HasDateUpdatedIri = $"{RdfConst.EngSymOntologyIri}{HasDateUpdated}";
     public const string HasDateUpdatedIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasDateUpdated}";
     
+    public const string HasDatePublished = "datePublished";
+    public const string HasDatePublishedIri = $"{RdfConst.EngSymOntologyIri}{HasDatePublished}";
+    public const string HasDatePublishedIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasDatePublished}";
+    
     public const string HasPositionX = "positionX";
     public const string HasPositionXIri = $"{RdfConst.EngSymOntologyIri}{HasPositionX}";
     public const string HasPositionXIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasPositionX}";

@@ -1,6 +1,7 @@
 using System.Globalization;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
+using EngineeringSymbols.Tools.Models;
 
 namespace EngineeringSymbols.Api.Repositories.Fuseki;
 
@@ -121,14 +122,14 @@ public static class SparqlQueries
                 """;
     }
     
-    public static string InsertEngineeringSymbolQuery(string symbolId, EngineeringSymbolCreateDto createDto)
+    public static string InsertEngineeringSymbolQuery(EngineeringSymbol symbol)
     {
         var nfi = new NumberFormatInfo {NumberDecimalSeparator = "."};
-        var sub = $"{RdfConst.IndividualPrefix}:{symbolId}";
+        var sub = $"{RdfConst.IndividualPrefix}:{symbol.Id}";
         
-        var connectorTurtle = createDto.Connectors.Map(connector =>
+        var connectorTurtle = symbol.Connectors.Map(connector =>
         {
-            var cIri = $"{RdfConst.IndividualPrefix}:{symbolId}_C_{connector.Id}";
+            var cIri = $"{RdfConst.IndividualPrefix}:{symbol.Id}_C_{connector.Id}";
                 
             return $"""
                             {sub} {ESProp.HasConnectorIriPrefix} {cIri} .
@@ -145,18 +146,18 @@ public static class SparqlQueries
 
                 INSERT DATA {
                     GRAPH {{sub}} {
-                        {{sub}} {{ESProp.HasEngSymIdIriPrefix}} "{{symbolId}}"^^xsd:string .
-                        {{sub}} {{ESProp.HasEngSymKeyIriPrefix}} "{{createDto.Key ?? symbolId}}"^^xsd:string .
+                        {{sub}} {{ESProp.HasEngSymIdIriPrefix}} "{{symbol.Id}}"^^xsd:string .
+                        {{sub}} {{ESProp.HasEngSymKeyIriPrefix}} "{{symbol.Key}}"^^xsd:string .
                         {{sub}} {{ESProp.HasStatusIriPrefix}} "{{EngineeringSymbolStatus.Draft}}"^^xsd:string .
-                        {{sub}} {{ESProp.HasDescriptionIriPrefix}} "{{createDto.Description}}"^^xsd:string .
+                        {{sub}} {{ESProp.HasDescriptionIriPrefix}} "{{symbol.Description}}"^^xsd:string .
                         {{sub}} {{ESProp.IsTypeIriPrefix}} <{{RdfConst.SymbolTypeIri}}> .
                         {{sub}} {{ESProp.HasDateCreatedIriPrefix}} "{{DateTimeOffset.UtcNow:O}}"^^xsd:dateTime .
                         {{sub}} {{ESProp.HasDateUpdatedIriPrefix}} "{{DateTimeOffset.MinValue:O}}"^^xsd:dateTime .
-                        {{sub}} {{ESProp.HasGeometryIriPrefix}} "{{createDto.Geometry}}"^^xsd:string .
-                        {{sub}} {{ESProp.HasWidthIriPrefix}} "{{createDto.Width.ToString(nfi)}}"^^xsd:integer .
-                        {{sub}} {{ESProp.HasHeightIriPrefix}} "{{createDto.Height.ToString(nfi)}}"^^xsd:integer .
-                        {{sub}} {{ESProp.HasOwnerIriPrefix}} "{{createDto.Owner}}"^^xsd:string .
-                        {{sub}} {{ESProp.HasSourceFilenameIriPrefix}} "{{createDto.Filename}}"^^xsd:string .
+                        {{sub}} {{ESProp.HasGeometryIriPrefix}} "{{symbol.Geometry}}"^^xsd:string .
+                        {{sub}} {{ESProp.HasWidthIriPrefix}} "{{symbol.Width.ToString(nfi)}}"^^xsd:integer .
+                        {{sub}} {{ESProp.HasHeightIriPrefix}} "{{symbol.Height.ToString(nfi)}}"^^xsd:integer .
+                        {{sub}} {{ESProp.HasOwnerIriPrefix}} "{{symbol.Owner}}"^^xsd:string .
+                        {{sub}} {{ESProp.HasSourceFilenameIriPrefix}} "{{symbol.Filename}}"^^xsd:string .
                 {{string.Join(Environment.NewLine, connectorTurtle)}}
                     }
                 }
@@ -164,7 +165,7 @@ public static class SparqlQueries
     }
 
 
-    public static string? UpdateEngineeringSymbolQuery(string id, EngineeringSymbolUpdateDto dto)
+    public static string? UpdateEngineeringSymbolQuery(string id, EngineeringSymbolDto dto)
     {
         var triples = new Dictionary<string,string>();
 

@@ -1,5 +1,3 @@
-using EngineeringSymbols.Tools.Entities;
-
 namespace EngineeringSymbols.Tools.Models;
 
 public record EngineeringSymbolSvgParsed

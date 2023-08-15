@@ -43,6 +43,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSwaggerGen(options =>
         {
+            options.EnableAnnotations();
+            
             options.SwaggerDoc("v1", new OpenApiInfo { Title = "Engineering Symbols", Version = "v1" });
 
             options.AddSecurityDefinition(SecuritySchemeType.OAuth2.ToString(), new OpenApiSecurityScheme

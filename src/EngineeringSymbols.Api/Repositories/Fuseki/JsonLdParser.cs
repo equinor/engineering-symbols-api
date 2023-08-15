@@ -99,6 +99,7 @@ public static class JsonLdParser
             Description: GetStringValue(obj,  ESProp.HasDescriptionIriPrefix),
             DateTimeCreated: GetDateTimeOffsetValue(obj,  ESProp.HasDateCreatedIriPrefix),
             DateTimeUpdated: GetDateTimeOffsetValue(obj, ESProp.HasDateUpdatedIriPrefix),
+            DateTimePublished: GetDateTimeOffsetValue(obj, ESProp.HasDatePublishedIriPrefix),
             Owner: GetStringValue(obj,  ESProp.HasOwnerIriPrefix),
             Filename: GetStringValue(obj,  ESProp.HasSourceFilenameIriPrefix),
             Geometry: GetStringValue(obj,  ESProp.HasGeometryIriPrefix),

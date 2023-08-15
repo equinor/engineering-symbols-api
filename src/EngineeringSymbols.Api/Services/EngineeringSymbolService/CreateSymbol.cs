@@ -1,23 +1,29 @@
 using System.Security.Claims;
 using System.Security.Principal;
+using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser;
-using Microsoft.AspNetCore.Mvc;
+
 
 namespace EngineeringSymbols.Api.Services.EngineeringSymbolService;
 
 public static class CreateSymbol
 {
-    public record InsertContext(IFormFile File, string Key, string User)
+    public record InsertContext
     {
+        public IFormFile File { get; init; }
+        public string Key { get; init; }
+        public string User { get; init; }
         public string FileId { get; init; } = "Unknown";
         public string FileContent { get; init; } = "";
-        public EngineeringSymbolCreateDto? EngineeringSymbolCreateDto { get; init; }
+        public EngineeringSymbolCreateDto EngineeringSymbolCreateDto { get; init; }
+        
+        public EngineeringSymbolDto EngineeringSymbolDto { get; init; }
         
         public string CreatedUri { get; init; } = "UnknownUri";
     }
     
-    public static TryAsync<InsertContext> CreateInsertContext(IPrincipal user, IFormFile file) => 
+    public static TryAsync<InsertContext> CreateInsertContextFromFile(IPrincipal user, IFormFile file) => 
         TryAsync(() =>
         {
             var fileId = file.FileName;
@@ -37,7 +43,20 @@ public static class CreateSymbol
                 throw new ValidationException("Only SVG files are supported");
             }
 
-            return Task.FromResult(new InsertContext(file, key, userId) {FileId = fileId, Key = key});
+            return Task.FromResult(new InsertContext { File=file, Key = key, User = userId, FileId = fileId} );
+        });
+    
+    
+    public static TryAsync<InsertContext> CreateInsertContextFromDto(IPrincipal user, EngineeringSymbolCreateDto createDto) => 
+        TryAsync(() =>
+        {
+            var userId = user.Identity?.Name;
+            if (userId == null)
+            {
+                throw new ValidationException("UserId was null");
+            }
+
+            return Task.FromResult(new InsertContext { Key = createDto.Key, User = userId,  EngineeringSymbolCreateDto = createDto} );
         });
     
     public static TryAsync<InsertContext> ReadFileToString(InsertContext ctx) => 
@@ -74,6 +93,10 @@ public static class CreateSymbol
                         });
                     }, 
                     Fail: exception => throw exception));
+    
+    
+    public static TryAsync<InsertContext> CreateInsertDto(InsertContext ctx) => 
+        TryAsync(async () => ctx with {EngineeringSymbolDto = ctx.EngineeringSymbolCreateDto.ToDto()});
     
     private static async Task<string> ReadFileContentToString(IFormFile file)
     {

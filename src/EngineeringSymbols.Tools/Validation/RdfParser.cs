@@ -83,6 +83,7 @@ public static class RdfParser
                     Description: desc,
                     DateTimeCreated: dateCreated,
                     DateTimeUpdated: dateUpdated,
+                    DateTimePublished: DateTimeOffset.MinValue,
                     Owner: owner,
                     Filename: filename,
                     Geometry: geometry,

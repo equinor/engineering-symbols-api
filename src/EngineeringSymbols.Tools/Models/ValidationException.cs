@@ -24,6 +24,31 @@ public class ValidationException : Exception
         Errors = errors;
     }
     
+    
+    public ValidationException(Seq<ValidationError> errors)
+    {
+        Message = _DefaultMessage;
+
+        var err = new Dictionary<string, string[]>();
+        
+        foreach (var validationError in errors)
+        {
+            var cat = validationError.Category ?? "unknown";
+
+            if (err.ContainsKey(cat))
+            {
+                err[cat] = err[cat].Append(validationError.Value).ToArray();
+            }
+            else
+            {
+                err.Add(cat, new []{ validationError.Value });
+            }
+          
+        }
+        
+        Errors = err;
+    }
+    
     public ValidationException(string message, IDictionary<string, string[]>? errors) // : base(message)
     {
         Message = message;
@@ -36,11 +61,8 @@ public class ValidationException : Exception
         Errors = errors;
     }
     
-    
     public ValidationException(string message, Exception? inner) : base(message, inner)
     {
         Message = message;
     }
-    
-
 }

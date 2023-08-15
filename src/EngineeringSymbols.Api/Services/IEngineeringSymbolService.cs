@@ -1,15 +1,16 @@
 using System.Security.Claims;
-using EngineeringSymbols.Api.Models;
-using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 
 namespace EngineeringSymbols.Api.Services;
 
 public interface IEngineeringSymbolService
 {
+	TryAsync<IEnumerable<EngineeringSymbolPublicDto>> GetSymbolsPublicAsync(bool allVersions = false);
 	TryAsync<IEnumerable<EngineeringSymbolDto>> GetSymbolsAsync(bool allVersions = false);
+	TryAsync<EngineeringSymbolPublicDto> GetSymbolByIdOrKeyPublicAsync(string idOrKey);
 	TryAsync<EngineeringSymbolDto> GetSymbolByIdOrKeyAsync(string idOrKey);
-	TryAsync<string> CreateSymbolAsync(ClaimsPrincipal user, IFormFile svgFile);
-	TryAsync<bool> UpdateSymbolAsync(string id, EngineeringSymbolUpdateDto updateDto);
+	TryAsync<string> CreateSymbolFromFileAsync(ClaimsPrincipal user, IFormFile svgFile);
+	TryAsync<string> CreateSymbolFromJsonAsync(ClaimsPrincipal user, EngineeringSymbolCreateDto createDto);
+	TryAsync<bool> ReplaceSymbolAsync(EngineeringSymbolDto symbolDto);
 	TryAsync<bool> DeleteSymbolAsync(string id);
 }
