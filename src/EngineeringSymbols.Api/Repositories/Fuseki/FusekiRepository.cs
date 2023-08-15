@@ -1,6 +1,7 @@
 
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
+using EngineeringSymbols.Tools.RdfParser;
 using EngineeringSymbols.Tools.Validation;
 
 namespace EngineeringSymbols.Api.Repositories.Fuseki;
@@ -26,10 +27,10 @@ public class FusekiRepository : IEngineeringSymbolRepository
         return new Result<T>(new RepositoryException($"Repository request failed: Status {httpResponse.ReasonPhrase}"));
     }
 
-    public TryAsync<IEnumerable<EngineeringSymbol>> GetAllEngineeringSymbolsAsync(bool distinct = true) =>
+    public TryAsync<IEnumerable<EngineeringSymbol>> GetAllEngineeringSymbolsAsync(bool distinct = true, bool onlyPublished = true) =>
         async () =>
         {
-            var query = SparqlQueries.GetAllSymbolsConstructQuery(distinct);
+            var query = SparqlQueries.GetAllSymbolsConstructQuery(distinct, onlyPublished);
 
             var httpResponse =
                 await _fuseki.QueryAsync(query, "application/ld+json"); //"application/sparql-results+json" "text/csv"
@@ -45,21 +46,21 @@ public class FusekiRepository : IEngineeringSymbolRepository
         };
     
     
-    public TryAsync<EngineeringSymbol> GetEngineeringSymbolByIdAsync(string id) =>
+    public TryAsync<EngineeringSymbol> GetEngineeringSymbolByIdAsync(string id, bool onlyPublished = true) =>
         SymbolExistsByIdAsync(id)
             .Bind(exists => new TryAsync<string>(async () =>
                 exists 
-                    ? SparqlQueries.GetEngineeringSymbolByIdQuery(id) 
+                    ? SparqlQueries.GetEngineeringSymbolByIdQuery(id, onlyPublished) 
                     : new Result<string>(new RepositoryException(RepositoryOperationError.EntityNotFound))
             ))
             .Bind(_getEngineeringSymbolByQueryAsync);
     
     
-    public TryAsync<EngineeringSymbol> GetEngineeringSymbolByKeyAsync(string key) =>
+    public TryAsync<EngineeringSymbol> GetEngineeringSymbolByKeyAsync(string key, bool onlyPublished = true) =>
         SymbolExistsByKeyAsync(key)
             .Bind(exists => new TryAsync<string>(async () =>
                 exists 
-                    ? SparqlQueries.GetEngineeringSymbolByKeyQuery(key) 
+                    ? SparqlQueries.GetEngineeringSymbolByKeyQuery(key, onlyPublished) 
                     : new Result<string>(new RepositoryException(RepositoryOperationError.EntityNotFound))
             ))
             .Bind(_getEngineeringSymbolByQueryAsync);
@@ -78,19 +79,9 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
             var parsedSymbols = JsonLdParser.ParseEngineeringSymbols(stringContent);
 
-            return parsedSymbols.First();
-            
-            //return RdfParser.TurtleToEngineeringSymbol(stringContent)
-            //    .Match(symbol => symbol, 
-            //        Fail: errors => 
-            //        {
-            //            foreach (var error in errors)
-            //            {
-            //                Console.WriteLine(error.Value);
-            //            }
-   //
-            //            return new Result<EngineeringSymbol> (new RepositoryException("Failed to retrieve symbol from store"));
-            //        });
+            return parsedSymbols.Count == 0 
+                ? new Result<EngineeringSymbol>(new RepositoryException(RepositoryOperationError.EntityNotFound)) 
+                : parsedSymbols.First();
         };
 
     public TryAsync<string> InsertEngineeringSymbolAsync(EngineeringSymbolDto symbol) =>
@@ -98,7 +89,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
         {
             var symbolId = Guid.NewGuid().ToString();
 
-            return await EngineeringSymbolValidation.Validate(symbol with {Id = symbolId})
+            return await EngineeringSymbolValidation.Validate(symbol with {Id = symbolId, DateTimeCreated = DateTimeOffset.Now})
                 .MatchAsync(async s => 
                 {
                     var query = SparqlQueries.InsertEngineeringSymbolQuery(s);

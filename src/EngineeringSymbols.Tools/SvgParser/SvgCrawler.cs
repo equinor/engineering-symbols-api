@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Xml.Linq;
-using EngineeringSymbols.Tools.Validation;
 
 namespace EngineeringSymbols.Tools.SvgParser;
 
@@ -25,15 +24,9 @@ internal static class SvgCrawler
 			//case "metadata":
 			//	element.TransformMetadataElement(ctx);
 			//	break;
-			//case "g":
-			//	element.TransformGElement(ctx);
-			//	break;
 			case "path":
 				element.TransformPathElement(ctx);
 				break;
-			//case "circle":
-			//	element.TransformCircleElement(ctx);
-			//	break;
 		}
 	}
 
@@ -51,11 +44,6 @@ internal static class SvgCrawler
 			ctx.AddParseError(SvgParseCategory.Dimensions,"SVG 'height' is missing or invalid");
 		}
 		
-		//if (heightParsed % 24 != 0)
-		//{
-		//	ctx.AddParseError(SvgParseCategory.Dimensions,$"SVG 'height' is not a multiple of 24");
-		//}
-
 		ctx.ExtractedData.Height = heightParsed;
 
 		// Extract SVG width
@@ -65,15 +53,9 @@ internal static class SvgCrawler
 			ctx.AddParseError(SvgParseCategory.Dimensions,"SVG 'width' is missing or invalid");
 		}
 
-		//if (widthParsed % 24 != 0)
-		//{
-		//	ctx.AddParseError(SvgParseCategory.Dimensions,$"SVG 'width' is not a multiple of 24");
-		//}
-		
 		ctx.ExtractedData.Width  = widthParsed;
 
 		// Check viewBox
-
 		var viewBox = element.Attribute("viewBox")?.Value;
 
 		if (viewBox == null)

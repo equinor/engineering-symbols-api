@@ -7,8 +7,14 @@ namespace EngineeringSymbols.Api.Repositories.Fuseki;
 
 public static class SparqlQueries
 {
-    public static string GetAllSymbolsConstructQuery(bool distinct = false)
+    public static string GetAllSymbolsConstructQuery(bool distinct = false, bool onlyPublished = true)
     {
+        var onlyPublishedConstraint = onlyPublished
+            ? $$"""
+                    ?s2 {{ESProp.HasStatusIriPrefix}} "Published" .
+            """
+            : "";
+        
         var distinctSubQuery = distinct ? $$"""
                                     {
                                         SELECT ?key (MAX(?dc) AS ?dateCreated) (COUNT(?g) AS ?numVersions)
@@ -36,7 +42,8 @@ public static class SparqlQueries
                 WHERE {
                     GRAPH ?symbolGraph {
                         ?s ?p ?o .
-                        ?ss {{ESProp.HasDateCreatedIriPrefix}} ?dateCreated .
+                        ?s1 {{ESProp.HasDateCreatedIriPrefix}} ?dateCreated .
+                {{onlyPublishedConstraint}}
                     }
                 {{distinctSubQuery}}
                 }
@@ -66,10 +73,17 @@ public static class SparqlQueries
                 """;
     }
     
-    public static string GetEngineeringSymbolByIdQuery(string id)
+    public static string GetEngineeringSymbolByIdQuery(string id, bool onlyPublished = true)
     {
+        var onlyPublishedConstraint = onlyPublished
+            ? $$"""
+                    ?s2 {{ESProp.HasStatusIriPrefix}} "Published" .
+            """
+            : "";
+        
         return $$"""
                 {{RdfConst.XsdPrefix}}
+                {{RdfConst.RdfsPrefix}}
                 {{RdfConst.SymbolPrefix}}
                 {{RdfConst.EngSymPrefix}}
 
@@ -82,6 +96,7 @@ public static class SparqlQueries
                 WHERE
                 {
                     GRAPH ?symbolGraph {
+                {{onlyPublishedConstraint}}
                         ?ss {{ESProp.HasEngSymIdIriPrefix}} "{{id}}" .
                         ?s ?p ?o .
                     }
@@ -89,8 +104,14 @@ public static class SparqlQueries
                 """;
     }
 
-    public static string GetEngineeringSymbolByKeyQuery(string key)
+    public static string GetEngineeringSymbolByKeyQuery(string key, bool onlyPublished = true)
     {
+        var onlyPublishedConstraint = onlyPublished
+            ? $$"""
+                    ?s2 {{ESProp.HasStatusIriPrefix}} "Published" .
+            """
+            : "";
+        
         return $$"""
                 {{RdfConst.XsdPrefix}}
                 {{RdfConst.RdfsPrefix}}
@@ -107,6 +128,7 @@ public static class SparqlQueries
                 {
                     GRAPH ?g 
                     {
+                {{onlyPublishedConstraint}}
                         ?ss {{ESProp.HasEngSymKeyIriPrefix}} "{{key}}" .
                         ?s ?o ?p .
                     }
@@ -153,6 +175,7 @@ public static class SparqlQueries
                         {{sub}} {{ESProp.IsTypeIriPrefix}} <{{RdfConst.SymbolTypeIri}}> .
                         {{sub}} {{ESProp.HasDateCreatedIriPrefix}} "{{DateTimeOffset.UtcNow:O}}"^^xsd:dateTime .
                         {{sub}} {{ESProp.HasDateUpdatedIriPrefix}} "{{DateTimeOffset.MinValue:O}}"^^xsd:dateTime .
+                        {{sub}} {{ESProp.HasDatePublishedIriPrefix}} "{{DateTimeOffset.MinValue:O}}"^^xsd:dateTime .
                         {{sub}} {{ESProp.HasGeometryIriPrefix}} "{{symbol.Geometry}}"^^xsd:string .
                         {{sub}} {{ESProp.HasWidthIriPrefix}} "{{symbol.Width.ToString(nfi)}}"^^xsd:integer .
                         {{sub}} {{ESProp.HasHeightIriPrefix}} "{{symbol.Height.ToString(nfi)}}"^^xsd:integer .

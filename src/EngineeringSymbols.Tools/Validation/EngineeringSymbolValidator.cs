@@ -15,7 +15,8 @@ public class EngineeringSymbolDtoValidator : AbstractValidator<EngineeringSymbol
             .NotNull()
             .MinimumLength(4)
             .MaximumLength(250)
-            .Matches("^[a-zA-Z0-9]+$");
+            .Must(s => !EngineeringSymbolValidation.ContainsIllegalChars(s, new []{'-', '_'}));
+            //.Matches("^[a-zA-Z0-9]+$");
         
         RuleFor(symbol => symbol.Status)
             .NotNull()
@@ -27,7 +28,7 @@ public class EngineeringSymbolDtoValidator : AbstractValidator<EngineeringSymbol
 
         RuleFor(symbol => symbol.Description)
             .NotNull()
-            .MinimumLength(4)
+            //.MinimumLength(4)
             .MaximumLength(250)
             .Must(s => !EngineeringSymbolValidation.ContainsIllegalChars(s));
 
@@ -36,18 +37,22 @@ public class EngineeringSymbolDtoValidator : AbstractValidator<EngineeringSymbol
 
         RuleFor(symbol => symbol.DateTimeCreated)
             .NotNull()
-            .Must(d => d != DateTimeOffset.MinValue);
+            .Must(d =>
+            {
+                Console.WriteLine(d.ToString());
+                return d != DateTimeOffset.MinValue;
+            });
 
 
         RuleFor(symbol => symbol.DateTimeUpdated)
-            .NotNull()
-            .Must((dto, dateUpdated) => dateUpdated > dto.DateTimeCreated)
-            .When(dto => dto.DateTimeUpdated != DateTimeOffset.MinValue);
-        
+            .NotNull();
+            //.Must((dto, dateUpdated) => dateUpdated > dto.DateTimeCreated)
+            //.When(dto => dto.DateTimeUpdated != DateTimeOffset.MinValue);
+
         RuleFor(symbol => symbol.DateTimePublished)
-            .NotNull()
-            .Must((dto, datePublished) => datePublished > dto.DateTimeCreated)
-            .When(dto => dto.DateTimePublished != DateTimeOffset.MinValue);
+            .NotNull();
+            //.Must((dto, datePublished) => datePublished > dto.DateTimeCreated)
+            //.When(dto => dto.DateTimePublished != DateTimeOffset.MinValue);
 
         RuleFor(symbol => symbol.Geometry)
             .NotNull()

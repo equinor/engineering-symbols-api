@@ -11,6 +11,6 @@ public interface IEngineeringSymbolService
 	TryAsync<EngineeringSymbolDto> GetSymbolByIdOrKeyAsync(string idOrKey);
 	TryAsync<string> CreateSymbolFromFileAsync(ClaimsPrincipal user, IFormFile svgFile);
 	TryAsync<string> CreateSymbolFromJsonAsync(ClaimsPrincipal user, EngineeringSymbolCreateDto createDto);
-	TryAsync<bool> ReplaceSymbolAsync(EngineeringSymbolDto symbolDto);
+	TryAsync<bool> ReplaceSymbolAsync(EngineeringSymbolPutDto putDto);
 	TryAsync<bool> DeleteSymbolAsync(string id);
 }

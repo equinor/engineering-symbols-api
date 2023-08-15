@@ -2,53 +2,56 @@ using EngineeringSymbols.Tools.Entities;
 
 namespace EngineeringSymbols.Tools.Models;
 
-public record EngineeringSymbolPublicDto
-{
-    public required string Id { get; init; }
-    public required string Key { get; init; }
-    public required string Description { get; init; }
-    public required DateTimeOffset DateTimePublished { get; init; }
-    public required string Geometry { get; init; }
-    public required double Width { get; init; }
-    public required double Height { get; init; }
-    public required List<EngineeringSymbolConnectorPublicDto> Connectors { get; set; } = new();
-}
+public record EngineeringSymbolPublicDto(
+    string Id,
+    string Key,
+    string Description,
+    DateTimeOffset DateTimePublished,
+    string Geometry,
+    double Width,
+    double Height,
+    List<EngineeringSymbolConnectorPublicDto> Connectors
+);
 
-public record EngineeringSymbolDto
-{
-    public required string? Id { get; init; }
-    public required string? Key { get; init; }
-    public required string? Status { get; init; }
-    public required string? Description { get; init; }
-    public required DateTimeOffset? DateTimeCreated { get; init; }
-    public required DateTimeOffset? DateTimeUpdated { get; init; }
-    
-    public required DateTimeOffset? DateTimePublished { get; init; }
-    public required string? Owner { get; init; }
-    public required string? Filename { get; init; }
-    public required string? Geometry { get; init; }
-    public required double? Width { get; init; }
-    public required double? Height { get; init; }
-    public required List<EngineeringSymbolConnector>? Connectors { get; set; } = new();
-}
+public record EngineeringSymbolConnectorPublicDto(string Id, Point RelativePosition, int Direction);
 
-public record EngineeringSymbolConnectorDto 
-{
-    public required string? Id { get; init; }
-    public required Point? RelativePosition { get; init; }
-    public required int? Direction { get; init; }
-}
+public record EngineeringSymbolDto(
+    string Id,
+    string Key,
+    string Status,
+    string Description,
+    DateTimeOffset DateTimeCreated,
+    DateTimeOffset DateTimeUpdated,
+    DateTimeOffset DateTimePublished,
+    string Owner,
+    string Filename,
+    string Geometry,
+    double Width,
+    double Height,
+    List<EngineeringSymbolConnectorDto> Connectors
+);
 
-public record EngineeringSymbolConnectorPublicDto : EngineeringSymbolConnectorDto;
+public record EngineeringSymbolConnectorDto(string Id, Point RelativePosition, int Direction);
 
-public record EngineeringSymbolCreateDto
-{
-    public required string? Key { get; init; }
-    public required string? Description { get; init; }
-    public required string? Owner { get; init; }
-    public required string? Filename { get; init; }
-    public required string? Geometry { get; init; }
-    public required double? Width { get; init; }
-    public required double? Height { get; init; }
-    public required List<EngineeringSymbolConnector>? Connectors { get; init; } = new();
-}
+public record EngineeringSymbolCreateDto(
+    string Key,
+    string Description,
+    string Owner,
+    string Filename,
+    string Geometry,
+    double Width,
+    double Height,
+    List<EngineeringSymbolConnectorDto> Connectors);
+
+public record EngineeringSymbolPutDto(
+    string Id,
+    string Key,
+    string Status,
+    string Description,
+    string Owner,
+    string Filename,
+    string Geometry,
+    double Width,
+    double Height,
+    List<EngineeringSymbolConnectorDto> Connectors
+);

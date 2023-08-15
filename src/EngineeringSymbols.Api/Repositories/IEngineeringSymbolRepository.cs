@@ -5,10 +5,10 @@ namespace EngineeringSymbols.Api.Repositories;
 
 public interface IEngineeringSymbolRepository
 {
-    TryAsync<IEnumerable<EngineeringSymbol>> GetAllEngineeringSymbolsAsync(bool distinct = true);
+    TryAsync<IEnumerable<EngineeringSymbol>> GetAllEngineeringSymbolsAsync(bool distinct = true, bool onlyPublished = true);
 
-    TryAsync<EngineeringSymbol> GetEngineeringSymbolByIdAsync(string id);
-    TryAsync<EngineeringSymbol> GetEngineeringSymbolByKeyAsync(string key); 
+    TryAsync<EngineeringSymbol> GetEngineeringSymbolByIdAsync(string id, bool onlyPublished = true);
+    TryAsync<EngineeringSymbol> GetEngineeringSymbolByKeyAsync(string key, bool onlyPublished = true); 
     TryAsync<string> InsertEngineeringSymbolAsync(EngineeringSymbolDto symbol);
     
     TryAsync<bool> ReplaceEngineeringSymbolAsync(EngineeringSymbolDto symbol);

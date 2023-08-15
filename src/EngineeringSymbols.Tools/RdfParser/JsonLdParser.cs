@@ -5,7 +5,7 @@ using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 
-namespace EngineeringSymbols.Api.Repositories.Fuseki;
+namespace EngineeringSymbols.Tools.RdfParser;
 
 public static class JsonLdParser
 {

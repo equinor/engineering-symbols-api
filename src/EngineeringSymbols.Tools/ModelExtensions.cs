@@ -17,9 +17,14 @@ public static class ModelExtensions
             dto.Owner, 
             dto.Filename, 
             dto.Geometry,
-            dto.Width ?? default,
-            dto.Height ?? default,
-            dto.Connectors);
+            dto.Width,
+            dto.Height,
+            dto.Connectors.Map(connectorDto 
+                    => new EngineeringSymbolConnector(
+                        connectorDto.Id,
+                        connectorDto.RelativePosition,
+                        connectorDto.Direction))
+                .ToList());
     }
     
     public static EngineeringSymbol ToEngineeringSymbol(this EngineeringSymbolDto dto)
@@ -31,89 +36,91 @@ public static class ModelExtensions
             dto.Key, 
             status, 
             dto.Description, 
-            dto.DateTimeCreated.Value,
-            dto.DateTimeUpdated.Value, 
-            dto.DateTimePublished.Value, 
+            dto.DateTimeCreated,
+            dto.DateTimeUpdated, 
+            dto.DateTimePublished, 
             dto.Owner, 
             dto.Filename, 
             dto.Geometry,
-            dto.Width ?? default,
-            dto.Height ?? default,
-            dto.Connectors);
+            dto.Width,
+            dto.Height,
+            dto.Connectors.Map(connectorDto 
+                => new EngineeringSymbolConnector(
+                    connectorDto.Id,
+                    connectorDto.RelativePosition,
+                    connectorDto.Direction))
+                .ToList()
+            );
     }
     
     public static EngineeringSymbolCreateDto ToCreateDto(this EngineeringSymbolSvgParsed sym, string key, string userId, string description = "None", string? filename = null)
     {
         return new EngineeringSymbolCreateDto
-        {
-            Key = key,
-            Description = description,
-            Filename = filename ?? sym.Filename,
-            Owner = userId,
-            Width = sym.Width,
-            Height = sym.Height,
-            Geometry = sym.Geometry,
-            Connectors = new List<EngineeringSymbolConnector>()
-        };
+        (
+            Key: key,
+            Description: description,
+            Owner: userId,
+            Filename: filename ?? sym.Filename,
+            Geometry: sym.Geometry,
+            Width: sym.Width,
+            Height: sym.Height,
+            Connectors: new List<EngineeringSymbolConnectorDto>());
     }
     
     public static EngineeringSymbolDto ToDto(this EngineeringSymbol symbol)
     {
-        return new EngineeringSymbolDto
-        {
-            Id = symbol.Id,
-            Key = symbol.Key,
-            Status = symbol.Status.ToString(),
-            Description = symbol.Description,
-            Filename = symbol.Filename,
-            DateTimeCreated = symbol.DateTimeCreated,
-            DateTimeUpdated = symbol.DateTimeUpdated,
-            DateTimePublished = symbol.DateTimePublished,
-            Owner = symbol.Owner,
-            Width = symbol.Width,
-            Height = symbol.Height,
-            Geometry = symbol.Geometry,
-            Connectors = symbol.Connectors
-        };
+        return new EngineeringSymbolDto(
+            Id: symbol.Id,
+            Key: symbol.Key,
+            Status: symbol.Status.ToString(),
+            Description: symbol.Description,
+            DateTimeCreated: symbol.DateTimeCreated,
+            DateTimeUpdated: symbol.DateTimeUpdated,
+            DateTimePublished: symbol.DateTimePublished,
+            Owner: symbol.Owner,
+            Filename: symbol.Filename,
+            Geometry: symbol.Geometry,
+            Width: symbol.Width,
+            Height: symbol.Height,
+            Connectors: symbol.Connectors.Map(connector => 
+                    new EngineeringSymbolConnectorDto(connector.Id, connector.RelativePosition, connector.Direction))
+                .ToList()
+        );
     }
     
     public static EngineeringSymbolDto ToDto(this EngineeringSymbolCreateDto symbol)
     {
-        return new EngineeringSymbolDto
-        {
-            Id = string.Empty,
-            Key = symbol.Key,
-            Status = EngineeringSymbolStatus.Draft.ToString(),
-            Description = symbol.Description,
-            Filename = symbol.Filename,
-            DateTimeCreated = DateTimeOffset.MaxValue,
-            DateTimeUpdated = DateTimeOffset.MaxValue,
-            DateTimePublished = DateTimeOffset.MaxValue,
-            Owner = symbol.Owner,
-            Width = symbol.Width,
-            Height = symbol.Height,
-            Geometry = symbol.Geometry,
-            Connectors = symbol.Connectors
-        };
+        return new EngineeringSymbolDto(
+            Id: string.Empty,
+            Key: symbol.Key,
+            Status: EngineeringSymbolStatus.Draft.ToString(),
+            Description: symbol.Description,
+            DateTimeCreated: DateTimeOffset.MinValue,
+            DateTimeUpdated: DateTimeOffset.MinValue,
+            DateTimePublished: DateTimeOffset.MinValue,
+            Owner: symbol.Owner,
+            Filename: symbol.Filename,
+            Geometry: symbol.Geometry,
+            Width: symbol.Width,
+            Height: symbol.Height,
+            Connectors: symbol.Connectors.Map(connector => 
+                new EngineeringSymbolConnectorDto(connector.Id, connector.RelativePosition, connector.Direction))
+                .ToList());
     }
     
     public static EngineeringSymbolPublicDto ToPublicDto(this EngineeringSymbol symbol)
     {
-        return new EngineeringSymbolPublicDto
-        {
-            Id = symbol.Id,
-            Key = symbol.Key,
-            Description = symbol.Description,
-            DateTimePublished = symbol.DateTimePublished,
-            Width = symbol.Width,
-            Height = symbol.Height,
-            Geometry = symbol.Geometry,
-            Connectors = symbol.Connectors.Map(c => new EngineeringSymbolConnectorPublicDto
-            {
-                Id = c.Id,
-                RelativePosition = c.RelativePosition,
-                Direction = c.Direction
-            }).ToList()
-        };
+        return new EngineeringSymbolPublicDto(
+            Id: symbol.Id,
+            Key: symbol.Key,
+            Description: symbol.Description,
+            DateTimePublished: symbol.DateTimePublished,
+            Geometry: symbol.Geometry,
+            Width: symbol.Width,
+            Height: symbol.Height,
+            Connectors: symbol.Connectors.Map(connector => new EngineeringSymbolConnectorPublicDto(
+                connector.Id,
+                connector.RelativePosition,
+                connector.Direction)).ToList());
     }
 }

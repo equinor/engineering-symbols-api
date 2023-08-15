@@ -23,7 +23,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
     }
 
     public TryAsync<IEnumerable<EngineeringSymbolDto>> GetSymbolsAsync(bool allVersions = false)
-        => _repo.GetAllEngineeringSymbolsAsync(distinct: !allVersions)
+        => _repo.GetAllEngineeringSymbolsAsync(distinct: !allVersions, onlyPublished: false)
             .Map(symbols => symbols.Map(symbol => symbol.ToDto()));
     
     public TryAsync<IEnumerable<EngineeringSymbolPublicDto>> GetSymbolsPublicAsync(bool allVersions = false) 
@@ -32,13 +32,13 @@ public class EngineeringSymbolService : IEngineeringSymbolService
     
     
     public TryAsync<EngineeringSymbolDto> GetSymbolByIdOrKeyAsync(string idOrKey) 
-        => _GetSymbolByIdOrKeyPublicAsync(idOrKey).Map(symbol => symbol.ToDto());
+        => _GetSymbolByIdOrKeyPublicAsync(idOrKey, onlyPublished: false).Map(symbol => symbol.ToDto());
     
     
     public TryAsync<EngineeringSymbolPublicDto> GetSymbolByIdOrKeyPublicAsync(string idOrKey)
         => _GetSymbolByIdOrKeyPublicAsync(idOrKey).Map(symbol => symbol.ToPublicDto());
     
-    private TryAsync<EngineeringSymbol> _GetSymbolByIdOrKeyPublicAsync(string idOrKey) =>
+    private TryAsync<EngineeringSymbol> _GetSymbolByIdOrKeyPublicAsync(string idOrKey, bool onlyPublished = true) =>
         async () => 
         {
         string? idAsGuid = null;
@@ -56,12 +56,12 @@ public class EngineeringSymbolService : IEngineeringSymbolService
         
         if (idAsGuid != null)
         {
-            return await _repo.GetEngineeringSymbolByIdAsync(idAsGuid).Try();
+            return await _repo.GetEngineeringSymbolByIdAsync(idAsGuid, onlyPublished).Try();
         }
         
         if(idAsKey != null)
         {
-            return await _repo.GetEngineeringSymbolByKeyAsync(idAsKey).Try();
+            return await _repo.GetEngineeringSymbolByKeyAsync(idAsKey, onlyPublished).Try();
         }
   
         return new Result<EngineeringSymbol>(new ValidationException(new Dictionary<string, string[]>
@@ -87,7 +87,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
             .MapAsync(async ctx => await _repo.InsertEngineeringSymbolAsync(ctx.EngineeringSymbolDto).Try())
             .IfFail(exception => new Result<string>(exception));
     
-    public TryAsync<bool> ReplaceSymbolAsync(EngineeringSymbolDto symbolDto) =>
+    public TryAsync<bool> ReplaceSymbolAsync(EngineeringSymbolPutDto putDto) =>
         async () => new Result<bool>(false);
     //async () => await CreateUpdateContext(id, updateDto)
         //    .Bind(ValidateInput)

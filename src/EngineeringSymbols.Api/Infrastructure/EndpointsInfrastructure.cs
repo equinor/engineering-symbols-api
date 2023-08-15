@@ -34,7 +34,7 @@ public static class EndpointsInfrastructure
                     .GetSymbolByIdOrKeyPublicAsync(idOrKey)
                     .Match(TypedResults.Ok, exception =>  EndpointsCommon.OnFailure(exception, app.Logger)))
             .WithTags("Anonymous")
-            .WithMetadata(new SwaggerOperationAttribute("Get an Engineering Symbol by Id or Key", "Get an Engineering Symbol by Id or Key"))
+            .WithMetadata(new SwaggerOperationAttribute("Get an Engineering Symbol by Id or Key (Published only)", "Get an Engineering Symbol by Id or Key. Only published symbols will be returned."))
             .Produces<EngineeringSymbolPublicDto>()
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
@@ -52,6 +52,17 @@ public static class EndpointsInfrastructure
             .Produces<List<EngineeringSymbolDto>>()
             //.RequireRateLimiting(RateLimiterPolicy.Fixed)
             .RequireAuthorization(Policy.ContributorOrAdmin);
+        
+        
+        auth.MapGet("/{idOrKey}", async (IEngineeringSymbolService symbolService, string idOrKey) 
+                => await symbolService
+                    .GetSymbolByIdOrKeyAsync(idOrKey)
+                    .Match(TypedResults.Ok, exception =>  EndpointsCommon.OnFailure(exception, app.Logger)))
+            .WithTags("Authenticated")
+            .WithMetadata(new SwaggerOperationAttribute("Get an Engineering Symbol by Id or Key", "Get an Engineering Symbol by Id or Key"))
+            .Produces<EngineeringSymbolDto>()
+            .RequireRateLimiting(RateLimiterPolicy.Fixed)
+            .AllowAnonymous();
         
         auth.MapPost("/fromFile", async (IEngineeringSymbolService symbolService,
                     [FromQuery(Name = "validationOnly")] bool? validationOnly,
