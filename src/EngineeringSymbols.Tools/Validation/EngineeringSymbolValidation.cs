@@ -26,7 +26,6 @@ public static class EngineeringSymbolValidation
         return result;
     }
     
-
     public static Validation<ValidationError, EngineeringSymbol> Validate(this EngineeringSymbolDto symbol)
     {
         var validator = new EngineeringSymbolDtoValidator();
@@ -61,28 +60,5 @@ public static class EngineeringSymbolValidation
             .ToSeq();
         
         return Fail<ValidationError, EngineeringSymbolCreateDto>(errors);
-    }
-
-    public static Validation<ValidationError, string> ValidateKey(string? key)
-    {
-        var errors = Seq<ValidationError>();
-        
-        if (key == null ||string.IsNullOrEmpty(key) || string.IsNullOrWhiteSpace(key))
-        {
-            errors = errors.Add(new ValidationError("key","null or empty"));
-            return Fail<ValidationError, string>(errors);
-        }
-
-        if(key is {Length: > 60 or < 4})
-            errors = errors.Add(new ValidationError("key", "invalid lenght (valid: 4-60)"));
-        
-        var legalChars = new [] {'-', '_'};
-        
-        if (ContainsIllegalChars(key, legalChars))
-            errors = errors.Add(new ValidationError("key", "contains illegal characters"));
-        
-        return errors.Length == 0
-            ? Success<ValidationError, string>(key) 
-            : Fail<ValidationError, string>(errors);
     }
 }

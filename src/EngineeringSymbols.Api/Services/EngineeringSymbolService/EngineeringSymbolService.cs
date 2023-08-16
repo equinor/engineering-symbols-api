@@ -4,11 +4,13 @@ using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.Validation;
-
+using Lucene.Net.Util.Fst;
 using static EngineeringSymbols.Api.Services.EngineeringSymbolService.CreateSymbol;
 
 
 namespace EngineeringSymbols.Api.Services.EngineeringSymbolService;
+
+
 
 public class EngineeringSymbolService : IEngineeringSymbolService
 {
@@ -22,54 +24,53 @@ public class EngineeringSymbolService : IEngineeringSymbolService
         _logger = loggerFactory.CreateLogger("EngineeringSymbolService");
     }
 
-    public TryAsync<IEnumerable<EngineeringSymbolDto>> GetSymbolsAsync(bool allVersions = false)
-        => _repo.GetAllEngineeringSymbolsAsync(distinct: !allVersions, onlyPublished: false)
-            .Map(symbols => symbols.Map(symbol => symbol.ToDto()));
-    
-    public TryAsync<IEnumerable<EngineeringSymbolPublicDto>> GetSymbolsPublicAsync(bool allVersions = false) 
-        => _repo.GetAllEngineeringSymbolsAsync(distinct: !allVersions)
-            .Map(symbols => symbols.Map(symbol => symbol.ToPublicDto()));
-    
-    
-    public TryAsync<EngineeringSymbolDto> GetSymbolByIdOrKeyAsync(string idOrKey) 
-        => _GetSymbolByIdOrKeyPublicAsync(idOrKey, onlyPublished: false).Map(symbol => symbol.ToDto());
-    
-    
-    public TryAsync<EngineeringSymbolPublicDto> GetSymbolByIdOrKeyPublicAsync(string idOrKey)
-        => _GetSymbolByIdOrKeyPublicAsync(idOrKey).Map(symbol => symbol.ToPublicDto());
-    
-    private TryAsync<EngineeringSymbol> _GetSymbolByIdOrKeyPublicAsync(string idOrKey, bool onlyPublished = true) =>
-        async () => 
-        {
-        string? idAsGuid = null;
-        string? idAsKey = null;
-        
-        if(Guid.TryParse(idOrKey, out var parsedIdGuid))
-        {
-            idAsGuid = parsedIdGuid.ToString();
-        } 
-        else
-        {
-            EngineeringSymbolValidation.ValidateKey(idOrKey)
-                .IfSuccess(validKey => { idAsKey = validKey; });
-        }
-        
-        if (idAsGuid != null)
-        {
-            return await _repo.GetEngineeringSymbolByIdAsync(idAsGuid, onlyPublished).Try();
-        }
-        
-        if(idAsKey != null)
-        {
-            return await _repo.GetEngineeringSymbolByKeyAsync(idAsKey, onlyPublished).Try();
-        }
-  
-        return new Result<EngineeringSymbol>(new ValidationException(new Dictionary<string, string[]>
-        {
-            {"idOrKey", new [] { "Provided symbol identifier 'idOrKey' is not a valid GUID or Symbol Key"}}
-        }));
-    };
+    public TryAsync<IEnumerable<IEngineeringSymbolResponse>> GetSymbolsAsync(bool allVersions = false, bool publicVersion = true)
+        => _repo.GetAllEngineeringSymbolsAsync(distinct: !allVersions, onlyPublished: publicVersion)
+            .Map(symbols => symbols.Map(
+                symbol => publicVersion ? (IEngineeringSymbolResponse)symbol.ToPublicDto() : symbol.ToDto()));
 
+    public TryAsync<IEngineeringSymbolResponse> GetSymbolByIdOrKeyAsync(string idOrKey, bool publicVersion = true) => 
+        async () =>
+        {
+            string? idAsGuid = null;
+            string? idAsKey = null;
+        
+            if(Guid.TryParse(idOrKey, out var parsedIdGuid))
+            {
+                idAsGuid = parsedIdGuid.ToString();
+            } 
+            else
+            {
+                var keyValidator = new EngineeringSymbolKeyValidator();
+                if (keyValidator.Validate(idOrKey).IsValid)
+                {
+                    idAsKey = idOrKey;
+                }
+            }
+
+            Result<EngineeringSymbol> result = default;
+            
+            if (idAsGuid != null)
+            {
+                result = await _repo.GetEngineeringSymbolByIdAsync(idAsGuid, onlyPublished: publicVersion).Try();
+            } 
+            else if(idAsKey != null)
+            {
+                result = await _repo.GetEngineeringSymbolByKeyAsync(idAsKey, onlyPublished: publicVersion).Try();
+            }
+
+            if (result == default)
+            {
+                return new Result<IEngineeringSymbolResponse>(new ValidationException(new Dictionary<string, string[]>
+                {
+                    {"idOrKey", new [] { "Provided symbol identifier 'idOrKey' is not a valid GUID or Symbol Key"}}
+                }));
+            }
+            
+            return result.Map(symbol =>
+                publicVersion ? (IEngineeringSymbolResponse) symbol.ToPublicDto() : symbol.ToDto());
+        };
+    
 
     public TryAsync<string> CreateSymbolAsync(ClaimsPrincipal user, InsertContentType contentType, string content, bool validationOnly) =>
         async () => await CreateInsertContext(user, contentType, content, validationOnly)
@@ -82,20 +83,6 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                     : "")
             .IfFail(exception => new Result<string>(exception));
     
-    /*public TryAsync<string> CreateSymbolFromFileAsync2(ClaimsPrincipal user, IFormFile svgFile) =>
-        async () => await CreateInsertContextFromFile(user, svgFile)
-            .Bind(ReadFileToString)
-            .Bind(ParseSvgString)
-            .Bind(CreateInsertDto)
-            .MapAsync(async ctx => await _repo.InsertEngineeringSymbolAsync(ctx.EngineeringSymbolDto).Try())
-            .IfFail(exception => new Result<string>(exception));
-
-    
-    public TryAsync<string> CreateSymbolFromJsonAsync(ClaimsPrincipal user, EngineeringSymbolCreateDto createDto) =>
-        async () => await CreateInsertContextFromDto(user, createDto)
-            .Bind(CreateInsertDto)
-            .MapAsync(async ctx => await _repo.InsertEngineeringSymbolAsync(ctx.EngineeringSymbolDto).Try())
-            .IfFail(exception => new Result<string>(exception));*/
     
     public TryAsync<bool> ReplaceSymbolAsync(EngineeringSymbolCreateDto createDto) =>
         async () => new Result<bool>(false);

@@ -73,3 +73,17 @@ public class EngineeringSymbolConnectorDtoValidator : AbstractValidator<Engineer
         RuleFor(connector => connector.Direction).MustBeValidEngineeringSymbolConnectorDirection();
     }
 }
+
+public class EngineeringSymbolKeyValidator : AbstractValidator<string> {
+    public EngineeringSymbolKeyValidator() {
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        RuleFor(key => key).MustBeValidEngineeringSymbolKey();
+    }
+}
+
+public class EngineeringSymbolIdValidator : AbstractValidator<string> {
+    public EngineeringSymbolIdValidator() {
+        RuleLevelCascadeMode = CascadeMode.Stop;
+        RuleFor(key => key).MustBeValidEngineeringSymbolId();
+    }
+}

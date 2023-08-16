@@ -1,6 +1,13 @@
+using System.Text.Json.Serialization;
 using EngineeringSymbols.Tools.Entities;
 
 namespace EngineeringSymbols.Tools.Models;
+
+[JsonDerivedType(typeof(EngineeringSymbolDto))]
+[JsonDerivedType(typeof(EngineeringSymbolPublicDto))]
+public interface IEngineeringSymbolResponse
+{
+}
 
 public record EngineeringSymbolPublicDto(
     string Id,
@@ -11,7 +18,7 @@ public record EngineeringSymbolPublicDto(
     double Width,
     double Height,
     List<EngineeringSymbolConnectorPublicDto> Connectors
-);
+) : IEngineeringSymbolResponse;
 
 public record EngineeringSymbolConnectorPublicDto(string Id, Point RelativePosition, int Direction);
 
@@ -28,7 +35,7 @@ public record EngineeringSymbolDto(
     double Width,
     double Height,
     List<EngineeringSymbolConnectorDto> Connectors
-);
+) : IEngineeringSymbolResponse;
 
 public record EngineeringSymbolConnectorDto(string Id, Point RelativePosition, int Direction);
 

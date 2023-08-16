@@ -1,23 +1,23 @@
 using System.Threading.RateLimiting;
 using EngineeringSymbols.Api.Infrastructure.Auth;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Array = System.Array;
 
 namespace EngineeringSymbols.Api.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
 
+    public static readonly string[] ContributorOrAdminRoles = { Role.Admin, Role.Contributor };
+    
     public static IServiceCollection AddRoleBasedAuthorization(this IServiceCollection services)
     {
         services.AddAuthorizationBuilder()
             .AddPolicy(Policy.OnlyAdmins, policy => policy.RequireRole(Role.Admin))
-            .AddPolicy(Policy.ContributorOrAdmin, policy => policy.RequireRole(Role.Admin, Role.Contributor)); ;
+            .AddPolicy(Policy.ContributorOrAdmin, policy => policy.RequireRole(ContributorOrAdminRoles)); ;
 
         return services;
     }
@@ -82,7 +82,7 @@ public static class ServiceCollectionExtensions
                     Type = ReferenceType.SecurityScheme,
                     Id = SecuritySchemeType.OAuth2.ToString()
                 }
-            }] = System.Array.Empty<string>()
+            }] = Array.Empty<string>()
         });
     }
 
@@ -104,7 +104,7 @@ public static class ServiceCollectionExtensions
         }
 
         var allowedOrigins = config.GetSection("Cors:AllowedOrigins").Get<string[]>()
-                             ?? System.Array.Empty<string>();
+                             ?? Array.Empty<string>();
 
         if (!allowedOrigins.Any())
         {
