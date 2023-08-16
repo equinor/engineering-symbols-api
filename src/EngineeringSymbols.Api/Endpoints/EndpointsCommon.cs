@@ -36,31 +36,4 @@ public static class EndpointsCommon
                 return TypedResults.Problem(ex.Message, statusCode: StatusCodes.Status500InternalServerError, title: "Repository Error");
         }
     }
-
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="file"></param>
-    /// <returns></returns>
-    /// <exception cref="ValidationException"></exception>
-    public static async Task<string> ReadFileContentToString(IFormFile file)
-    {
-        string result;
-        
-        try
-        {
-            await using var fileStream = file.OpenReadStream();
-            var bytes = new byte[file.Length];
-            var a = await fileStream.ReadAsync(bytes, 0, (int)file.Length);
-            result = System.Text.Encoding.UTF8.GetString(bytes);
-        }
-        catch (Exception)
-        {
-            // TODO: log ex here?
-            throw new ValidationException("Failed to read file contents");
-        }
-
-        return result;
-    }
 }

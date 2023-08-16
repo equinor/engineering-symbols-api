@@ -70,11 +70,10 @@ public static class SvgParser
 	{
 		return () =>
 		{
-			//ctx.ExtractedData.Id = ctx.Options.SymbolId ?? Helpers.GetSymbolId(Path.GetFileName(filePath));
 			if (ctx.SvgRootElement == null)
 				throw new SvgParseException("SvgRootElement was null");
 
-			return SvgCrawler.ExtractData(ctx.SvgRootElement, ctx);
+			return SvgCrawler.ValidateAndExtractData(ctx.SvgRootElement, ctx);
 		};
 	}
 }

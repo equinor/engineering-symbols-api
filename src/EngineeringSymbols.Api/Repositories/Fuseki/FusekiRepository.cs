@@ -98,19 +98,6 @@ public class FusekiRepository : IEngineeringSymbolRepository
             var httpResponse = await _fuseki.UpdateAsync(query);
                     
             return httpResponse.IsSuccessStatusCode ? symbolId : FusekiRequestErrorResult<string>(httpResponse, query);
-
-            /*return await (symbol with {Id = symbolId, DateTimeCreated = DateTimeOffset.Now}).Validate()
-                .MatchAsync(async s => 
-                {
-                    var query = SparqlQueries.InsertEngineeringSymbolQuery(s);
-                    
-                    _logger.LogInformation("Sparql Query:\n{SparqlQuery}", query);
-                    
-                    var httpResponse = await _fuseki.UpdateAsync(query);
-                    
-                    return httpResponse.IsSuccessStatusCode ? symbolId : FusekiRequestErrorResult<string>(httpResponse, query);
-                    
-                }, Fail: seq => new Result<string>(new ValidationException(seq)));*/
         };
 
     

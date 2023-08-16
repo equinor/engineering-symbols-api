@@ -94,7 +94,16 @@ public class EngineeringSymbolService : IEngineeringSymbolService
     public TryAsync<bool> DeleteSymbolAsync(string id) =>
         async () =>
         {
-            var idParsed = EngineeringSymbolValidation.ParseEngineeringSymbolId(id);
-            return await _repo.DeleteEngineeringSymbolAsync(idParsed.ToString()).Try();
+            var idValidator = new EngineeringSymbolIdValidator();
+
+            if (!idValidator.Validate(id).IsValid)
+            {
+                throw new ValidationException(new Dictionary<string, string[]>
+                {
+                    {"id", new [] { "Invalid symbol Id"}}
+                });
+            }
+
+            return await _repo.DeleteEngineeringSymbolAsync(id).Try();
         };
 }

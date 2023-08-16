@@ -4,10 +4,8 @@ namespace EngineeringSymbols.Tools.SvgParser.Models;
 
 public enum SvgParseCategory
 {
-    Key,
     Dimensions,
     Geometry,
-    Connector,
 }
 
 internal class SvgParserContext

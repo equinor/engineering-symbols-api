@@ -7,20 +7,9 @@ public record SvgParserResult
     public bool IsSuccess => ParseErrors.Count == 0 && EngineeringSymbolSvgParsed != null;
     public Dictionary<string, List<string>> ParseErrors { get; } = new();
 
-    public SvgParserResult(EngineeringSymbolSvgParsed symbolParsed)
-    {
-	    EngineeringSymbolSvgParsed = symbolParsed;
-    }
-    
-    public SvgParserResult(Dictionary<string, List<string>> parseErrors)
-    {
-	    ParseErrors = parseErrors;
-    }
-    
     public SvgParserResult(EngineeringSymbolSvgParsed symbolParsed, Dictionary<string, List<string>> parseErrors)
     {
 	    EngineeringSymbolSvgParsed = symbolParsed;
 	    ParseErrors = parseErrors;
     }
-	
 }

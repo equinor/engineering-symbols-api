@@ -1,13 +1,9 @@
-using System.Security.Claims;
 using System.Security.Principal;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser;
 using EngineeringSymbols.Tools.Validation;
 using Newtonsoft.Json;
-
 
 namespace EngineeringSymbols.Api.Services.EngineeringSymbolService;
 

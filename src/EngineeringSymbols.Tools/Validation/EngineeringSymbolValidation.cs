@@ -12,19 +12,6 @@ public static class EngineeringSymbolValidation
             || char.IsNumber(c)
             || wl.Contains(c));
     }
-
-    public static Guid ParseEngineeringSymbolId(string id)
-    {
-        if (!Guid.TryParse(id, out var result))
-        {
-            throw new ValidationException(new Dictionary<string, string[]>
-            {
-                {"id", new [] { "Invalid symbol Id"}}
-            });
-        }
-
-        return result;
-    }
     
     public static Validation<ValidationError, EngineeringSymbol> Validate(this EngineeringSymbolDto symbol)
     {
