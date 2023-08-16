@@ -71,8 +71,18 @@ public class EngineeringSymbolService : IEngineeringSymbolService
     };
 
 
+    public TryAsync<string> CreateSymbolAsync(ClaimsPrincipal user, InsertContentType contentType, string content, bool validationOnly) =>
+        async () => await CreateInsertContext(user, contentType, content, validationOnly)
+            .Bind(ParseContent)
+            .Bind(CreateInsertDto)
+            .Bind(ValidateEngineeringSymbol)
+            .MapAsync(async ctx => 
+                validationOnly == false 
+                    ? await _repo.InsertEngineeringSymbolAsync(ctx.EngineeringSymbolDto).Try() 
+                    : "")
+            .IfFail(exception => new Result<string>(exception));
     
-    public TryAsync<string> CreateSymbolFromFileAsync(ClaimsPrincipal user, IFormFile svgFile) =>
+    /*public TryAsync<string> CreateSymbolFromFileAsync2(ClaimsPrincipal user, IFormFile svgFile) =>
         async () => await CreateInsertContextFromFile(user, svgFile)
             .Bind(ReadFileToString)
             .Bind(ParseSvgString)
@@ -85,9 +95,9 @@ public class EngineeringSymbolService : IEngineeringSymbolService
         async () => await CreateInsertContextFromDto(user, createDto)
             .Bind(CreateInsertDto)
             .MapAsync(async ctx => await _repo.InsertEngineeringSymbolAsync(ctx.EngineeringSymbolDto).Try())
-            .IfFail(exception => new Result<string>(exception));
+            .IfFail(exception => new Result<string>(exception));*/
     
-    public TryAsync<bool> ReplaceSymbolAsync(EngineeringSymbolPutDto putDto) =>
+    public TryAsync<bool> ReplaceSymbolAsync(EngineeringSymbolCreateDto createDto) =>
         async () => new Result<bool>(false);
     //async () => await CreateUpdateContext(id, updateDto)
         //    .Bind(ValidateInput)

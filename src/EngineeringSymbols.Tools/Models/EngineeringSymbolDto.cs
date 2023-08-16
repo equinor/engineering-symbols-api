@@ -24,7 +24,6 @@ public record EngineeringSymbolDto(
     DateTimeOffset DateTimeUpdated,
     DateTimeOffset DateTimePublished,
     string Owner,
-    string Filename,
     string Geometry,
     double Width,
     double Height,
@@ -37,21 +36,8 @@ public record EngineeringSymbolCreateDto(
     string Key,
     string Description,
     string Owner,
-    string Filename,
     string Geometry,
     double Width,
     double Height,
     List<EngineeringSymbolConnectorDto> Connectors);
-
-public record EngineeringSymbolPutDto(
-    string Id,
-    string Key,
-    string Status,
-    string Description,
-    string Owner,
-    string Filename,
-    string Geometry,
-    double Width,
-    double Height,
-    List<EngineeringSymbolConnectorDto> Connectors
-);
+    

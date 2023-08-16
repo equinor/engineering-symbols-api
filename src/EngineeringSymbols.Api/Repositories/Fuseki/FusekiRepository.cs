@@ -1,4 +1,5 @@
 
+using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.RdfParser;
@@ -89,7 +90,16 @@ public class FusekiRepository : IEngineeringSymbolRepository
         {
             var symbolId = Guid.NewGuid().ToString();
 
-            return await EngineeringSymbolValidation.Validate(symbol with {Id = symbolId, DateTimeCreated = DateTimeOffset.Now})
+            var query = SparqlQueries.InsertEngineeringSymbolQuery(
+                (symbol with {Id = symbolId, DateTimeCreated = DateTimeOffset.Now}).ToEngineeringSymbol());
+            
+            _logger.LogInformation("Sparql Query:\n{SparqlQuery}", query);
+                    
+            var httpResponse = await _fuseki.UpdateAsync(query);
+                    
+            return httpResponse.IsSuccessStatusCode ? symbolId : FusekiRequestErrorResult<string>(httpResponse, query);
+
+            /*return await (symbol with {Id = symbolId, DateTimeCreated = DateTimeOffset.Now}).Validate()
                 .MatchAsync(async s => 
                 {
                     var query = SparqlQueries.InsertEngineeringSymbolQuery(s);
@@ -100,7 +110,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
                     
                     return httpResponse.IsSuccessStatusCode ? symbolId : FusekiRequestErrorResult<string>(httpResponse, query);
                     
-                }, Fail: seq => new Result<string>(new ValidationException(seq)));
+                }, Fail: seq => new Result<string>(new ValidationException(seq)));*/
         };
 
     

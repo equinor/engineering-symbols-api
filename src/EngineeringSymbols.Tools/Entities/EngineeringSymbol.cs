@@ -9,7 +9,6 @@ public record EngineeringSymbol(
     DateTimeOffset DateTimeUpdated,
     DateTimeOffset DateTimePublished,
     string Owner,
-    string Filename,
     string Geometry,
     double Width,
     double Height,

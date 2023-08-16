@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Xml.Linq;
+using EngineeringSymbols.Tools.Constants;
 
 namespace EngineeringSymbols.Tools.SvgParser;
 
@@ -21,9 +22,9 @@ internal static class SvgCrawler
 			case "svg":
 				element.TransformSvgElement(ctx);
 				break;
-			//case "metadata":
-			//	element.TransformMetadataElement(ctx);
-			//	break;
+			case "metadata":
+				element.TransformMetadataElement(ctx);
+				break;
 			case "path":
 				element.TransformPathElement(ctx);
 				break;
@@ -83,25 +84,23 @@ internal static class SvgCrawler
 		}
 	}
 
-	// private static void TransformMetadataElement(this XElement element, SvgParserContext ctx)
-	// {
-	// 	element.RemoveStyling();
-	//
-	// 	var metadata = element.Elements();
-	//
-	// 	foreach (var el in metadata)
-	// 	{
-	// 		// Assume that all versions has the "key" property
-	// 		if(el.Name.NamespaceName != "http://rdf.equinor.com/ontology/engineering-symbol/v1#") continue;
-	//
-	// 		switch (el.Name.LocalName)
-	// 		{
-	// 			case "key":
-	// 				ExtractMetadataKey(el.Value, ctx);
-	// 				break;
-	// 		}
-	// 	}
-	//}
+	 private static void TransformMetadataElement(this XElement element, SvgParserContext ctx)
+	 {
+		 var metadata = element.Elements();
+	
+	 	foreach (var el in metadata)
+	 	{
+		    // Assume that all versions has the "key" property
+	 		if(el.Name.NamespaceName != RdfConst.EngSymOntologyIri) continue;
+	
+	 		switch (el.Name.LocalName)
+	 		{
+	 			case "key":
+		            ctx.ExtractedData.Key = el.Value;
+		            break;
+	 		}
+	 	}
+	}
 	
 	/*private static void ExtractMetadataKey(string key, SvgParserContext ctx)
 	{
@@ -116,8 +115,9 @@ internal static class SvgCrawler
 					ctx.AddParseError(SvgParseCategory.Key, validationError.Value);
 				}
 			});
-	}
+	}*/
 	
+	/*
 	private static void TransformGElement(this XElement element, SvgParserContext ctx)
 	{
 		element.RemoveStyling();
@@ -141,7 +141,15 @@ internal static class SvgCrawler
 		{
 			ctx.AddParseError(SvgParseCategory.Geometry,$"'transform' attribute on <path> element is not allowed");
 			return;
-		} 
+		}
+		
+		var fillRule = element.Attribute("fill-rule")?.Value;
+
+		if (fillRule != null && fillRule != "nonzero")
+		{
+			ctx.AddParseError(SvgParseCategory.Geometry,$"'fill-rule' attribute value on <path> can only be 'nonzero'");
+			return;
+		}
 		
 		//if (id == "symbol" || parentId == "symbol")
 		//{

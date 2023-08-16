@@ -14,7 +14,6 @@ public static class RdfConst
     
     public const string SymbolTypeIri = EngSymOntologyIri + "Symbol";
     public const string ConnectorTypeIri = EngSymOntologyIri + "Connector";
- 
     
     public const string SymbolIri = BaseIri + "/engineering-symbols/";
     

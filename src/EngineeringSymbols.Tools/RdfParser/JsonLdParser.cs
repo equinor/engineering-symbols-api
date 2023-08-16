@@ -101,7 +101,6 @@ public static class JsonLdParser
             DateTimeUpdated: GetDateTimeOffsetValue(obj, ESProp.HasDateUpdatedIriPrefix),
             DateTimePublished: GetDateTimeOffsetValue(obj, ESProp.HasDatePublishedIriPrefix),
             Owner: GetStringValue(obj,  ESProp.HasOwnerIriPrefix),
-            Filename: GetStringValue(obj,  ESProp.HasSourceFilenameIriPrefix),
             Geometry: GetStringValue(obj,  ESProp.HasGeometryIriPrefix),
             Width: GetDoubleValue(obj, ESProp.HasWidthIriPrefix),
             Height: GetDoubleValue(obj,  ESProp.HasHeightIriPrefix),

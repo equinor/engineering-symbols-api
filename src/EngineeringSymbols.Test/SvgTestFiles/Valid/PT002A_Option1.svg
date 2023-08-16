@@ -1,6 +1,6 @@
 <svg width="96" height="216" viewBox="0 0 96 216" fill="none" xmlns="http://www.w3.org/2000/svg">
     <!-- THIS FILE SHOULD BE VALID -->
-    <metadata xmlns:es="http://rdf.equinor.com/ontology/engineering-symbol/v1#">
+    <metadata xmlns:es="https://rdf.equinor.com/ontology/engineering-symbol/v1#">
         <es:key>PT002A_Option1</es:key>
     </metadata>
     <g id="PT002A_Option1">

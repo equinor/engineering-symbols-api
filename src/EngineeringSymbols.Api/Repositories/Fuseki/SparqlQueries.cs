@@ -180,7 +180,6 @@ public static class SparqlQueries
                         {{sub}} {{ESProp.HasWidthIriPrefix}} "{{symbol.Width.ToString(nfi)}}"^^xsd:integer .
                         {{sub}} {{ESProp.HasHeightIriPrefix}} "{{symbol.Height.ToString(nfi)}}"^^xsd:integer .
                         {{sub}} {{ESProp.HasOwnerIriPrefix}} "{{symbol.Owner}}"^^xsd:string .
-                        {{sub}} {{ESProp.HasSourceFilenameIriPrefix}} "{{symbol.Filename}}"^^xsd:string .
                 {{string.Join(Environment.NewLine, connectorTurtle)}}
                     }
                 }

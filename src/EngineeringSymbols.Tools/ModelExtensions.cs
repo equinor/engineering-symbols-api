@@ -14,8 +14,7 @@ public static class ModelExtensions
             DateTimeOffset.Now,
             DateTimeOffset.MinValue, 
             DateTimeOffset.MinValue, 
-            dto.Owner, 
-            dto.Filename, 
+            dto.Owner,
             dto.Geometry,
             dto.Width,
             dto.Height,
@@ -39,8 +38,7 @@ public static class ModelExtensions
             dto.DateTimeCreated,
             dto.DateTimeUpdated, 
             dto.DateTimePublished, 
-            dto.Owner, 
-            dto.Filename, 
+            dto.Owner,
             dto.Geometry,
             dto.Width,
             dto.Height,
@@ -53,14 +51,13 @@ public static class ModelExtensions
             );
     }
     
-    public static EngineeringSymbolCreateDto ToCreateDto(this EngineeringSymbolSvgParsed sym, string key, string userId, string description = "None", string? filename = null)
+    public static EngineeringSymbolCreateDto ToCreateDto(this EngineeringSymbolSvgParsed sym, string userId, string description = "None")
     {
         return new EngineeringSymbolCreateDto
         (
-            Key: key,
+            Key: sym.Key,
             Description: description,
             Owner: userId,
-            Filename: filename ?? sym.Filename,
             Geometry: sym.Geometry,
             Width: sym.Width,
             Height: sym.Height,
@@ -78,7 +75,6 @@ public static class ModelExtensions
             DateTimeUpdated: symbol.DateTimeUpdated,
             DateTimePublished: symbol.DateTimePublished,
             Owner: symbol.Owner,
-            Filename: symbol.Filename,
             Geometry: symbol.Geometry,
             Width: symbol.Width,
             Height: symbol.Height,
@@ -99,7 +95,6 @@ public static class ModelExtensions
             DateTimeUpdated: DateTimeOffset.MinValue,
             DateTimePublished: DateTimeOffset.MinValue,
             Owner: symbol.Owner,
-            Filename: symbol.Filename,
             Geometry: symbol.Geometry,
             Width: symbol.Width,
             Height: symbol.Height,

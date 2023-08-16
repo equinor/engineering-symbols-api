@@ -1,120 +1,107 @@
 using System.Security.Claims;
 using System.Security.Principal;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser;
+using EngineeringSymbols.Tools.Validation;
+using Newtonsoft.Json;
 
 
 namespace EngineeringSymbols.Api.Services.EngineeringSymbolService;
 
 public static class CreateSymbol
 {
-    public record InsertContext
+
+    public enum InsertContentType
     {
-        public IFormFile File { get; init; }
-        public string Key { get; init; }
-        public string User { get; init; }
-        public string FileId { get; init; } = "Unknown";
-        public string FileContent { get; init; } = "";
-        public EngineeringSymbolCreateDto EngineeringSymbolCreateDto { get; init; }
-        
-        public EngineeringSymbolDto EngineeringSymbolDto { get; init; }
-        
-        public string CreatedUri { get; init; } = "UnknownUri";
+        SvgString,
+        Json
     }
     
-    public static TryAsync<InsertContext> CreateInsertContextFromFile(IPrincipal user, IFormFile file) => 
+    public record InsertContext
+    {
+        public bool ValidationOnly { get; set; }
+        public InsertContentType ContentType { get; set; }
+        public string Content { get; init; }
+        public string User { get; init; }
+        public EngineeringSymbolCreateDto EngineeringSymbolCreateDto { get; init; }
+        public EngineeringSymbolDto EngineeringSymbolDto { get; init; }
+        public string CreatedUri { get; init; } = "UnknownUri";
+    }
+
+    public static TryAsync<InsertContext> CreateInsertContext(IPrincipal user, InsertContentType contentType, string content, bool validationOnly) => 
         TryAsync(() =>
         {
-            var fileId = file.FileName;
-            
-            var key = Path.GetFileNameWithoutExtension(fileId);
-            var extension = Path.GetExtension(fileId);
-            
             var userId = user.Identity?.Name;
 
             if (userId == null)
             {
                 throw new ValidationException("UserId was null");
             }
-
-            if (!string.Equals(extension, ".svg", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ValidationException("Only SVG files are supported");
-            }
-
-            return Task.FromResult(new InsertContext { File=file, Key = key, User = userId, FileId = fileId} );
+            
+            return Task.FromResult(new InsertContext { User = userId, ContentType = contentType, Content = content, ValidationOnly = validationOnly} );
         });
     
-    
-    public static TryAsync<InsertContext> CreateInsertContextFromDto(IPrincipal user, EngineeringSymbolCreateDto createDto) => 
+    public static TryAsync<InsertContext> ParseContent(InsertContext ctx) => 
         TryAsync(() =>
         {
-            var userId = user.Identity?.Name;
-            if (userId == null)
+            switch (ctx.ContentType)
             {
-                throw new ValidationException("UserId was null");
+                case InsertContentType.Json:
+                {
+                    EngineeringSymbolCreateDto? dto = null;
+                    
+                    try
+                    {
+                        dto = JsonConvert.DeserializeObject<EngineeringSymbolCreateDto>(ctx.Content);
+                        //dto = JsonSerializer.Deserialize<EngineeringSymbolCreateDto>(ctx.Content);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+            
+                    if (dto == null)
+                    {
+                        throw new ValidationException("Failed to deserialize JSON object.");
+                    }
+
+                    return Task.FromResult(ctx with { EngineeringSymbolCreateDto = dto });
+                }
+                case InsertContentType.SvgString:
+                    return SvgParser.FromString(ctx.Content)
+                        .Match(
+                            Succ: result => 
+                            { 
+                                if (result.ParseErrors.Count > 0)
+                                    throw new ValidationException(
+                                        result.ParseErrors.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray()));
+                        
+                                if (result.EngineeringSymbolSvgParsed == null)
+                                    throw new ValidationException("SVG parse error");
+                        
+                                return Task.FromResult(ctx with { EngineeringSymbolCreateDto = result.EngineeringSymbolSvgParsed.ToCreateDto(ctx.User) });
+                            }, 
+                            Fail: exception => throw exception);
+                default:
+                    throw new ValidationException("Failed to parse symbol.");
             }
-
-            return Task.FromResult(new InsertContext { Key = createDto.Key, User = userId,  EngineeringSymbolCreateDto = createDto} );
         });
-    
-    public static TryAsync<InsertContext> ReadFileToString(InsertContext ctx) => 
-        TryAsync(async () =>
-        {
-            const long maxSize = 500; // KiB
-            
-            var length = ctx.File.Length;
-            if (length is <= 0 or > maxSize * 1024)
-                throw new ValidationException($"File size is 0 or greater than {maxSize} KiB");
-
-            var fileContent = await ReadFileContentToString(ctx.File);
-            
-            return ctx with { FileContent = fileContent };
-        });
-
-    public static TryAsync<InsertContext> ParseSvgString(InsertContext ctx) =>
-        TryAsync(() =>
-            SvgParser.FromString(ctx.FileContent)
-                .Match(
-                    Succ: result => 
-                    { 
-                        if (result.ParseErrors.Count > 0)
-                            throw new ValidationException(
-                                result.ParseErrors.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray()));
-                        
-                        if (result.EngineeringSymbolSvgParsed == null)
-                            throw new ValidationException("SVG parse error");
-                        
-                        return Task.FromResult(ctx with
-                        {
-                            EngineeringSymbolCreateDto = result.EngineeringSymbolSvgParsed
-                                .ToCreateDto(ctx.Key, ctx.User, "", ctx.FileId)
-                        });
-                    }, 
-                    Fail: exception => throw exception));
     
     
     public static TryAsync<InsertContext> CreateInsertDto(InsertContext ctx) => 
         TryAsync(async () => ctx with {EngineeringSymbolDto = ctx.EngineeringSymbolCreateDto.ToDto()});
     
-    private static async Task<string> ReadFileContentToString(IFormFile file)
-    {
-        string result;
-        
-        try
+    
+    public static TryAsync<InsertContext> ValidateEngineeringSymbol(InsertContext ctx) => 
+        TryAsync(async () =>
         {
-            await using var fileStream = file.OpenReadStream();
-            var bytes = new byte[file.Length];
-            var a = await fileStream.ReadAsync(bytes, 0, (int)file.Length);
-            result = System.Text.Encoding.UTF8.GetString(bytes);
-        }
-        catch (Exception)
-        {
-            // TODO: log ex here?
-            throw new ValidationException("Failed to read file contents");
-        }
 
-        return result;
-    }
+            ctx.EngineeringSymbolCreateDto.Validate()
+                .IfFail(errors => throw new ValidationException(errors));
+                
+            return ctx;
+        });
 }
