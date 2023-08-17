@@ -5,9 +5,7 @@ namespace EngineeringSymbols.Tools.Models;
 
 [JsonDerivedType(typeof(EngineeringSymbolDto))]
 [JsonDerivedType(typeof(EngineeringSymbolPublicDto))]
-public interface IEngineeringSymbolResponse
-{
-}
+public record EngineeringSymbolResponse;
 
 public record EngineeringSymbolPublicDto(
     string Id,
@@ -18,7 +16,7 @@ public record EngineeringSymbolPublicDto(
     double Width,
     double Height,
     List<EngineeringSymbolConnectorPublicDto> Connectors
-) : IEngineeringSymbolResponse;
+) : EngineeringSymbolResponse;
 
 public record EngineeringSymbolConnectorPublicDto(string Id, Point RelativePosition, int Direction);
 
@@ -35,7 +33,7 @@ public record EngineeringSymbolDto(
     double Width,
     double Height,
     List<EngineeringSymbolConnectorDto> Connectors
-) : IEngineeringSymbolResponse;
+) : EngineeringSymbolResponse;
 
 public record EngineeringSymbolConnectorDto(string Id, Point RelativePosition, int Direction);
 

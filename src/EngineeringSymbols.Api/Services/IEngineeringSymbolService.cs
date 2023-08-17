@@ -6,10 +6,10 @@ namespace EngineeringSymbols.Api.Services;
 
 public interface IEngineeringSymbolService
 {
-	TryAsync<IEnumerable<IEngineeringSymbolResponse>> GetSymbolsAsync(bool allVersions = false, bool publicVersion = true);
-	TryAsync<IEngineeringSymbolResponse> GetSymbolByIdOrKeyAsync(string idOrKey, bool publicVersion = true);
-	TryAsync<string> CreateSymbolAsync(ClaimsPrincipal user, CreateSymbol.InsertContentType contentType, string content,
-		bool validationOnly);
-	TryAsync<bool> ReplaceSymbolAsync(EngineeringSymbolCreateDto createDto);
+	TryAsync<IEnumerable<EngineeringSymbolResponse>> GetSymbolsAsync(bool allVersions = false, bool publicVersion = true);
+	TryAsync<IEnumerable<EngineeringSymbolResponse>> GetSymbolByIdOrKeyAsync(string idOrKey, bool publicVersion = true);
+	TryAsync<string> CreateSymbolAsync(EngineeringSymbolCreateDto createDto, bool validationOnly);
+	TryAsync<bool> UpdateSymbolAsync(EngineeringSymbolCreateDto createDto, bool isSuperAdmin = false);
+	TryAsync<bool> UpdateSymbolStatusAsync(string id);
 	TryAsync<bool> DeleteSymbolAsync(string id);
 }
