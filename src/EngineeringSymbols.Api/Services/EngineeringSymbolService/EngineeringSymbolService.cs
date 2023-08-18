@@ -29,7 +29,8 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                 symbol => publicVersion ? (EngineeringSymbolResponse) symbol.ToPublicDto() : symbol.ToDto()));
     }
 
-    public TryAsync<IEnumerable<EngineeringSymbolResponse>> GetSymbolByIdOrKeyAsync(string idOrKey, bool publicVersion = true)
+    public TryAsync<IEnumerable<EngineeringSymbolResponse>> GetSymbolByIdOrKeyAsync(string idOrKey,
+        bool publicVersion = true)
     {
         return async () =>
         {
@@ -58,14 +59,15 @@ public class EngineeringSymbolService : IEngineeringSymbolService
             }
 
             if (result == default)
-                return new Result<IEnumerable<EngineeringSymbolResponse>>(new ValidationException(new Dictionary<string, string[]>
-                {
-                    {"idOrKey", new[] {"Provided symbol identifier 'idOrKey' is not a valid GUID or Symbol Key"}}
-                }));
+                return new Result<IEnumerable<EngineeringSymbolResponse>>(new ValidationException(
+                    new Dictionary<string, string[]>
+                    {
+                        {"idOrKey", new[] {"Provided symbol identifier 'idOrKey' is not a valid GUID or Symbol Key"}}
+                    }));
 
             return result.Map(symbols =>
-                publicVersion 
-                    ? (IEnumerable<EngineeringSymbolResponse>) symbols.Map(s => s.ToPublicDto()) 
+                publicVersion
+                    ? (IEnumerable<EngineeringSymbolResponse>) symbols.Map(s => s.ToPublicDto())
                     : symbols.Map(s => s.ToDto()));
         };
     }
@@ -83,17 +85,27 @@ public class EngineeringSymbolService : IEngineeringSymbolService
     }
 
 
-    public TryAsync<bool> UpdateSymbolAsync(EngineeringSymbolCreateDto createDto,
+    public TryAsync<bool> UpdateSymbolAsync(string id, EngineeringSymbolCreateDto createDto,
         bool isSuperAdmin = false)
     {
-        return async () => new Result<bool>(false);
+        return async () => await GetSymbolByIdOrKeyAsync(id, publicVersion: false)
+            .Map(symbols =>
+            {
+                var symbol = (EngineeringSymbolDto) symbols.ToArray().First();
+                
+                return createDto.ToDto() with
+                {
+                    Id = symbol.Id,
+                    DateTimeCreated = symbol.DateTimeCreated,
+                    DateTimeUpdated = DateTimeOffset.Now,
+                    DateTimePublished = symbol.DateTimePublished,
+                    Status = symbol.Status
+                };
+            })
+            .MapAsync(async dto => await _repo.ReplaceEngineeringSymbolAsync(dto).Try())
+            .IfFail(exception => new Result<bool>(exception));
     }
 
-
-    //async () => await CreateUpdateContext(id, updateDto)
-    //    .Bind(ValidateInput)
-    //    .MapAsync(async ctx => await _repo.UpdateEngineeringSymbolAsync(ctx.Id, ctx.UpdateDto).Try())
-    //    .IfFail(exception => new Result<bool>(exception));
 
     public TryAsync<bool> UpdateSymbolStatusAsync(string id)
     {

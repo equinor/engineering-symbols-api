@@ -24,41 +24,62 @@ internal delegate Task<IResult> CreateEngineeringSymbolHandler(IEngineeringSymbo
 
 public static class EndpointsInfrastructure
 {
-    public const string SymbolTags = "Symbols";
+    public const string SymbolTagsPublic = "Anonymous";
+    public const string SymbolTagsManagement = "Authorization";
 
     public static Func<Exception, IResult> OnFail(ILogger logger) => exception => OnFailure(exception, logger);
     
     public static WebApplication AddEndpoints(this WebApplication app)
     {
-        var symbols = app.MapGroup("/symbols");
+        var anonymous = app.MapGroup("/symbols");
 
-        symbols.MapGet("/", async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, bool? allVersions)
+        anonymous.MapGet("/", async (IEngineeringSymbolService symbolService, bool? allVersions)
                 => await symbolService
-                    .GetSymbolsAsync(allVersions ?? false, publicVersion: !user.IsContributorOrAdmin())
+                    .GetSymbolsAsync(allVersions ?? false)
                     .Match(TypedResults.Ok, OnFail(app.Logger)))
-            .WithTags(SymbolTags)
-            .WithMetadata(new SwaggerOperationAttribute("Get all Engineering Symbols (PUBLIC)",
-                "Get all Engineering Symbols. If query parameter 'allVersions' is missing or 'false' only the latest version of a symbol is returned, otherwise all versions of every symbol is returned. Only published symbols will be returned for anonymous requests."))
+            .WithTags(SymbolTagsPublic)
+            .WithMetadata(new SwaggerOperationAttribute("Get all published Engineering Symbols",
+                "Get all published Engineering Symbols. If query parameter 'allVersions' is missing or 'false' only the latest version of a symbol is returned, otherwise all versions of every symbol is returned. Only published symbols will be returned for anonymous requests."))
             .Produces<List<EngineeringSymbolPublicDto>>()
-            .Produces<List<EngineeringSymbolDto>>()
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
 
-        symbols.MapGet("/{idOrKey}",
+        anonymous.MapGet("/{idOrKey}",
                 async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrKey)
                     => await symbolService
                         .GetSymbolByIdOrKeyAsync(idOrKey, publicVersion: !user.IsContributorOrAdmin())
                         .Match(TypedResults.Ok, OnFail(app.Logger)))
-            .WithTags(SymbolTags)
-            .WithMetadata(new SwaggerOperationAttribute("Get an Engineering Symbol by Id or Key (PUBLIC)",
-                "Get an Engineering Symbol by Id or Key. Only published symbols will be returned for anonymous requests."))
-            .Produces<EngineeringSymbolPublicDto>()
-            .Produces<EngineeringSymbolDto>()
+            .WithTags(SymbolTagsPublic)
+            .WithMetadata(new SwaggerOperationAttribute("Get a published Engineering Symbol by Id or Key",
+                "Get a published Engineering Symbol by Id or Key. All versions are returned if Key is specified. Only published symbols will be returned for anonymous requests."))
+            .Produces<List<EngineeringSymbolPublicDto>>()
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
 
+        var management = app.MapGroup("manage/symbols");
 
-        symbols.MapPost("/", (CreateEngineeringSymbolHandler) (async (symbolService, request, user, validationOnly) =>
+        management.MapGet("/", async (IEngineeringSymbolService symbolService, bool? allVersions)
+                => await symbolService
+                    .GetSymbolsAsync(allVersions ?? false, publicVersion: false)
+                    .Match(TypedResults.Ok, OnFail(app.Logger)))
+            .WithTags(SymbolTagsManagement)
+            .WithMetadata(new SwaggerOperationAttribute("Get all Engineering Symbols",
+                "Get all Engineering Symbols. If query parameter 'allVersions' is missing or 'false' only the latest version of a symbol is returned, otherwise all versions of every symbol is returned."))
+            .Produces<List<EngineeringSymbolDto>>()
+            .RequireAuthorization(Policy.ContributorOrAdmin);
+        
+        management.MapGet("/{idOrKey}",
+                async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrKey)
+                    => await symbolService
+                        .GetSymbolByIdOrKeyAsync(idOrKey, publicVersion: !user.IsContributorOrAdmin())
+                        .Match(TypedResults.Ok, OnFail(app.Logger)))
+            .WithTags(SymbolTagsManagement)
+            .WithMetadata(new SwaggerOperationAttribute("Get an Engineering Symbol by Id or Key",
+                "Get an Engineering Symbol by Id or Key. All versions are returned if Key is specified."))
+            .Produces<List<EngineeringSymbolDto>>()
+            .RequireAuthorization(Policy.ContributorOrAdmin);
+        
+        management.MapPost("/", (CreateEngineeringSymbolHandler) (async (symbolService, request, user, validationOnly) =>
             {
                 var allowedContentTypes = new[] {ContentTypes.Json, ContentTypes.Svg};
 
@@ -93,16 +114,18 @@ public static class EndpointsInfrastructure
             .Accepts<string>(ContentTypes.Svg, ContentTypes.Json)
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status201Created)
-            .WithTags(SymbolTags)
+            .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Create an Engineering Symbol revision",
                 "Create Engineering Symbol revision. If query parameter 'validationOnly' is true, only a validation of the SVG file is performed, nothing will be stored in the database."))
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
         // Only for symbols that is in draft mode
-        symbols.MapPut("/{id}",
-                async (IEngineeringSymbolService symbolService, EngineeringSymbolCreateDto symbol) =>
-                    Results.Problem("Endpoint not implemented"))
-            .WithTags(SymbolTags)
+        management.MapPut("/{id}",
+                async (IEngineeringSymbolService symbolService, EngineeringSymbolCreateDto createDto, string id) 
+                    => await symbolService.UpdateSymbolAsync(id, createDto).Match(
+                        Succ: success => success ? TypedResults.Ok() : TypedResults.Problem("Updated failed"),
+                        Fail: OnFail(app.Logger)))
+            .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute(
                 "Update (replace) an Engineering Symbol revision by Id (Only when Status='Draft')",
                 "Update (replace) an Engineering Symbol by Id. Note that this will only work if the symbol has Status='Draft'. The value of the 'Status' field is ignored and 'Id' and 'Key' must match existing entry."))
@@ -110,20 +133,20 @@ public static class EndpointsInfrastructure
 
         // Only for super admins
         // Only for symbols with status != "Published"
-        symbols.MapPut("/{id}/status",
+        management.MapPut("/{id}/status",
                 async (IEngineeringSymbolService symbolService, string id) =>
                     Results.Problem("Endpoint not implemented"))
-            .WithTags(SymbolTags)
+            .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Set the Status of an Engineering Symbol revision",
                 "Set the Status of an Engineering Symbol"))
             .RequireAuthorization(Policy.OnlyAdmins);
 
-        symbols.MapDelete("/{id}", async (IEngineeringSymbolService symbolService, string id)
+        management.MapDelete("/{id}", async (IEngineeringSymbolService symbolService, string id)
                 => await symbolService
                     .DeleteSymbolAsync(id)
                     .Match(Succ: _ => TypedResults.NoContent(),
                         Fail: OnFail(app.Logger)))
-            .WithTags(SymbolTags)
+            .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Delete an Engineering Symbol revision",
                 "Delete an Engineering Symbol"))
             .RequireAuthorization(Policy.OnlyAdmins);

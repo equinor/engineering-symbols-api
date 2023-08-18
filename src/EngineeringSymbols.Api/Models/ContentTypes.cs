@@ -26,4 +26,5 @@ public static class ContentTypes
     public const string N3 = "text/n3";                           // Notation3 (N3) format
     public const string JsonLd = "application/ld+json";           // JSON-LD format
     public const string RdfThrift = "application/rdf+thrift";     // RDF Thrift format
+    public const string SparqlJson = "application/sparql-results+json";
 }

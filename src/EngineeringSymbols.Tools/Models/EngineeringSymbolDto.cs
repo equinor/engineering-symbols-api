@@ -45,4 +45,5 @@ public record EngineeringSymbolCreateDto(
     double Width,
     double Height,
     List<EngineeringSymbolConnectorDto> Connectors);
+
     

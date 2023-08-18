@@ -54,4 +54,14 @@ public class FusekiService : IFusekiService
 
 		return await _httpClient.SendAsync(request);
 	}
+	
+	public async Task<HttpResponseMessage> PutGraphAsync(string graph, string turtle)
+	{
+		var request = new HttpRequestMessage(HttpMethod.Put, new Uri("?graph=" + graph, UriKind.Relative))
+		{
+			Content = new StringContent(turtle, Encoding.UTF8, ContentTypes.Turtle),
+		};
+
+		return await _httpClient.SendAsync(request);
+	}
 }

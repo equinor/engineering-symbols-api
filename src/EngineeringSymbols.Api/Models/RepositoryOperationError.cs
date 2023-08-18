@@ -5,4 +5,5 @@ public enum RepositoryOperationError
     Unknown,
     EntityNotFound,
     EntityAlreadyExists,
+    UpdateFailed,
 }

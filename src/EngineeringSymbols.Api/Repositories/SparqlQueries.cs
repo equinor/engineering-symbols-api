@@ -22,6 +22,7 @@ public static class SparqlQueries
                                             GRAPH ?g { 
                                                 ?s2 {{ESProp.HasEngSymKeyIriPrefix}} ?key .
                                                 ?s2 {{ESProp.HasDateCreatedIriPrefix}} ?dc .
+                                                {{onlyPublishedConstraint}}
                                             }
                                         }
                                         GROUP BY ?key
@@ -185,7 +186,6 @@ public static class SparqlQueries
                 }
                 """;
     }
-
 
     public static string? UpdateEngineeringSymbolQuery(string id, EngineeringSymbolDto dto)
     {

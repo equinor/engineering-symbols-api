@@ -1,5 +1,6 @@
 
 using EngineeringSymbols.Tools;
+using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.RdfParser;
@@ -110,21 +111,18 @@ public class FusekiRepository : IEngineeringSymbolRepository
                 {
                     return new Result<bool>(new RepositoryException(RepositoryOperationError.EntityNotFound));
                 }
+                
+                var graph =  $"{RdfConst.SymbolIri}{dto.Id}";                
+                
+                var symbolGraphTurtle = SparqlQueries.InsertEngineeringSymbolQuery(dto.ToEngineeringSymbol());
+                
+                _logger.LogInformation("Put Graph:\n{SymbolGraphTurtle}", symbolGraphTurtle);
 
-                string query = null;  // SparqlQueries.UpdateEngineeringSymbolQuery(id, updateDto);
-
-                if (query == null)
-                {
-                    return new Result<bool>(new RepositoryException("Invalid update dto"));
-                }
-
-                _logger.LogInformation("Sparql Query:\n{SparqlQuery}", query);
-
-                var httpResponse = await _fuseki.UpdateAsync(query);
+                var httpResponse = await _fuseki.PutGraphAsync(graph, symbolGraphTurtle);
 
                 return httpResponse.IsSuccessStatusCode
                     ? true
-                    : FusekiRequestErrorResult<bool>(httpResponse, query);
+                    : FusekiRequestErrorResult<bool>(httpResponse, symbolGraphTurtle);
             }));
 
     public TryAsync<bool> DeleteEngineeringSymbolAsync(string id) => 
