@@ -15,7 +15,7 @@ public static class EndpointsCommon
                 TypedResults.ValidationProblem(ex.Errors, ex.Message, title: "Validation Error"))
             .With<SvgParseException>(ex =>
                 TypedResults.Problem(ex.Message, title: "SVG Parse Error", statusCode: StatusCodes.Status400BadRequest))
-            .With<RepositoryException>(OnRepositoryException)
+            .With<RepositoryException>(ex => OnRepositoryException(ex, logger))
             .Otherwise(ex =>
             {
                 logger?.LogError("Status500InternalServerError with exception: {Exception}", ex);
@@ -23,7 +23,7 @@ public static class EndpointsCommon
             });
     }
 
-    private static IResult OnRepositoryException(RepositoryException ex)
+    private static IResult OnRepositoryException(RepositoryException ex, ILogger? logger = null)
     {
         switch (ex.RepositoryOperationError)
         {
@@ -33,6 +33,7 @@ public static class EndpointsCommon
                 return TypedResults.UnprocessableEntity("Entity already exists");
             case RepositoryOperationError.Unknown:
             default:
+                logger?.LogError("Unknown RepositoryOperationError with exception: {Exception}", ex);
                 return TypedResults.Problem(ex.Message, statusCode: StatusCodes.Status500InternalServerError, title: "Repository Error");
         }
     }

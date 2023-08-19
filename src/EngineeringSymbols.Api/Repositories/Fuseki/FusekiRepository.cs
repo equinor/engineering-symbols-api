@@ -112,9 +112,9 @@ public class FusekiRepository : IEngineeringSymbolRepository
                     return new Result<bool>(new RepositoryException(RepositoryOperationError.EntityNotFound));
                 }
                 
-                var graph =  $"{RdfConst.SymbolIri}{dto.Id}";                
-                
-                var symbolGraphTurtle = SparqlQueries.InsertEngineeringSymbolQuery(dto.ToEngineeringSymbol());
+                var graph =  $"{RdfConst.SymbolIri}{dto.Id}";
+
+                var symbolGraphTurtle = dto.ToTurtle();
                 
                 _logger.LogInformation("Put Graph:\n{SymbolGraphTurtle}", symbolGraphTurtle);
 

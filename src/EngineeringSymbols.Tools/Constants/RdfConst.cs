@@ -6,14 +6,21 @@ public static class RdfConst
     
     public const string IndividualPrefix = "symbol";
     
+    public const string SymbolTypeName = "Symbol";
+    
+    public const string ConnectorTypeName = "Connector";
+    
     public const string EngSymOntologyPrefix = "es";
 
     // Predicate base IRIs
 
     public const string EngSymOntologyIri = BaseIri + "/ontology/engineering-symbol/v1#";
     
-    public const string SymbolTypeIri = EngSymOntologyIri + "Symbol";
-    public const string ConnectorTypeIri = EngSymOntologyIri + "Connector";
+    public const string SymbolTypeIri = EngSymOntologyIri + SymbolTypeName;
+    public const string ConnectorTypeIri = EngSymOntologyIri + ConnectorTypeName;
+    
+    public const string SymbolTypeIriPrefix = EngSymOntologyPrefix + ":" + SymbolTypeName;
+    public const string ConnectorTypeIriPrefix = EngSymOntologyPrefix + ":" + ConnectorTypeName;
     
     public const string SymbolIri = BaseIri + "/engineering-symbols/";
     

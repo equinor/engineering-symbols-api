@@ -46,4 +46,4 @@ public record EngineeringSymbolCreateDto(
     double Height,
     List<EngineeringSymbolConnectorDto> Connectors);
 
-    
+public record EngineeringSymbolStatusDto(string Status);    

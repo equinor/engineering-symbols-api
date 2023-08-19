@@ -107,9 +107,53 @@ public class EngineeringSymbolService : IEngineeringSymbolService
     }
 
 
-    public TryAsync<bool> UpdateSymbolStatusAsync(string id)
+    public TryAsync<bool> UpdateSymbolStatusAsync(string id, EngineeringSymbolStatusDto statusDto)
     {
-        throw new NotImplementedException();
+        return async () => await GetSymbolByIdOrKeyAsync(id, publicVersion: false)
+            .Map(symbols =>
+            {
+                if (!Enum.TryParse<EngineeringSymbolStatus>(statusDto.Status, out var status) || status == EngineeringSymbolStatus.None)
+                {
+                    var statusValues = Enum.GetValues(typeof(EngineeringSymbolStatus))
+                        .OfType<EngineeringSymbolStatus>()
+                        .Select(e => e.ToString()).ToList();
+                    
+                    var validValues = string.Join(", ", 
+                        statusValues.Where(s => s != "None").Select(s => $"'{s}'"));
+                    
+                    throw new ValidationException(new Dictionary<string, string[]>
+                    {
+                        { nameof(statusDto.Status), new[] { $"Invalid value. Valid values are: {validValues}." } },
+                    });
+                }
+                
+                var symbol = (EngineeringSymbolDto) symbols.ToArray().First();
+                
+                var es = symbol.ToEngineeringSymbol();
+                
+                if (es.Status == EngineeringSymbolStatus.Published)
+                {
+                    throw new ValidationException("Symbol has already been published.");
+                }
+
+                if (status == EngineeringSymbolStatus.Published)
+                {
+                    return symbol with
+                    {
+                        DateTimeUpdated = DateTimeOffset.Now,
+                        DateTimePublished = DateTimeOffset.Now,
+                        Status = EngineeringSymbolStatus.Published.ToString()
+                    };
+                }
+                
+                return symbol with
+                {
+                    DateTimeUpdated = DateTimeOffset.Now,
+                    Status = status.ToString()
+                };
+            })
+            .MapAsync(async dto => await _repo.ReplaceEngineeringSymbolAsync(dto).Try())
+            .IfFail(exception => new Result<bool>(exception));
     }
 
     public TryAsync<bool> DeleteSymbolAsync(string id)

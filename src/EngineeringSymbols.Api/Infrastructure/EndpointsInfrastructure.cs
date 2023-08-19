@@ -1,19 +1,11 @@
-using System.Net.Mime;
 using System.Security.Claims;
-using AngleSharp.Io;
 using EngineeringSymbols.Api.Endpoints;
 using EngineeringSymbols.Api.Infrastructure.Auth;
 using EngineeringSymbols.Api.Repositories.Fuseki;
 using EngineeringSymbols.Api.Services.EngineeringSymbolService;
 using EngineeringSymbols.Tools.Models;
-using LanguageExt.SomeHelp;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Web;
-using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 using static EngineeringSymbols.Api.Endpoints.EndpointsCommon;
 
@@ -121,7 +113,7 @@ public static class EndpointsInfrastructure
 
         // Only for symbols that is in draft mode
         management.MapPut("/{id}",
-                async (IEngineeringSymbolService symbolService, EngineeringSymbolCreateDto createDto, string id) 
+                async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolCreateDto createDto) 
                     => await symbolService.UpdateSymbolAsync(id, createDto).Match(
                         Succ: success => success ? TypedResults.Ok() : TypedResults.Problem("Updated failed"),
                         Fail: OnFail(app.Logger)))
@@ -134,8 +126,11 @@ public static class EndpointsInfrastructure
         // Only for super admins
         // Only for symbols with status != "Published"
         management.MapPut("/{id}/status",
-                async (IEngineeringSymbolService symbolService, string id) =>
-                    Results.Problem("Endpoint not implemented"))
+                async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolStatusDto statusDto) 
+                    => await symbolService.UpdateSymbolStatusAsync(id, statusDto)
+                        .Match(
+                            Succ: success => success ? TypedResults.Ok() : TypedResults.Problem("Updated failed"),
+                            Fail: OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Set the Status of an Engineering Symbol revision",
                 "Set the Status of an Engineering Symbol"))
