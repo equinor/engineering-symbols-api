@@ -1,4 +1,5 @@
 using FluentValidation;
+using J2N;
 
 namespace EngineeringSymbols.Tools.Validation;
 
@@ -6,6 +7,8 @@ public static class EngineeringSymbolFieldValidators
 {
     public static readonly char[] TextWhiteList = {'-', '_', '.', ',', '!', '?'};
 
+    public const int BaseSvgSize = 24;
+    
     public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolId<T>(this IRuleBuilder<T, string> ruleBuilder) {
         return ruleBuilder
             .Must(s => Guid.TryParse(s, out _))
@@ -69,15 +72,19 @@ public static class EngineeringSymbolFieldValidators
     public static IRuleBuilderOptions<T, double> MustBeValidEngineeringSymbolWidth<T>(this IRuleBuilder<T, double> ruleBuilder) {
         return ruleBuilder
             .NotNull()
-            .Must(w => w % 24 == 0)
-            .WithMessage($"SVG 'width' is not a multiple of 24");
+            .GreaterThanOrEqualTo(BaseSvgSize)
+            .WithMessage($"'Width' must not be empty, or have a value less than {BaseSvgSize}.")
+            .Must(w => w % BaseSvgSize == 0)
+            .WithMessage($"'Width' is not a multiple of {BaseSvgSize}");
     }
     
     public static IRuleBuilderOptions<T, double> MustBeValidEngineeringSymbolHeight<T>(this IRuleBuilder<T, double> ruleBuilder) {
         return ruleBuilder
             .NotNull()
-            .Must(h => h % 24 == 0)
-            .WithMessage($"SVG 'height' is not a multiple of 24");
+            .GreaterThanOrEqualTo(BaseSvgSize)
+            .WithMessage($"'Height' must not be empty, or have a value less than {BaseSvgSize}.")
+            .Must(h => h % BaseSvgSize == 0)
+            .WithMessage($"'Height' is not a multiple of {BaseSvgSize}");
     }
     
     public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolConnectorId<T>(this IRuleBuilder<T, string> ruleBuilder) {

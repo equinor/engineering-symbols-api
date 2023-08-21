@@ -6,7 +6,7 @@ using EngineeringSymbols.Api.Services.EngineeringSymbolService;
 using EngineeringSymbols.Tools.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-
+using Swashbuckle.AspNetCore.Filters;
 using static EngineeringSymbols.Api.Endpoints.EndpointsCommon;
 
 namespace EngineeringSymbols.Api.Infrastructure;
@@ -95,7 +95,8 @@ public static class EndpointsInfrastructure
                     content = await stream.ReadToEndAsync();
                 }
 
-                return await ContentParser.ParseSymbolCreateContent(request.ContentType, content).MatchAsync(
+                return await ContentParser.ParseSymbolCreateContent(request.ContentType, content)
+                    .MatchAsync(
                     async dto => await symbolService
                         .CreateSymbolAsync(dto with{Owner = userId}, validationOnly ?? false)
                         .Match(

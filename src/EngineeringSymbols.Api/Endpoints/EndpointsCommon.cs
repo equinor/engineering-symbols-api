@@ -14,7 +14,7 @@ public static class EndpointsCommon
             .With<ValidationException>(ex =>
                 TypedResults.ValidationProblem(ex.Errors, ex.Message, title: "Validation Error"))
             .With<SvgParseException>(ex =>
-                TypedResults.Problem(ex.Message, title: "SVG Parse Error", statusCode: StatusCodes.Status400BadRequest))
+                TypedResults.Problem(ex.Message, title: "SVG Parse Error"))
             .With<RepositoryException>(ex => OnRepositoryException(ex, logger))
             .Otherwise(ex =>
             {
@@ -31,6 +31,7 @@ public static class EndpointsCommon
                 return TypedResults.NotFound();
             case RepositoryOperationError.EntityAlreadyExists:
                 return TypedResults.UnprocessableEntity("Entity already exists");
+            case RepositoryOperationError.UpdateFailed:
             case RepositoryOperationError.Unknown:
             default:
                 logger?.LogError("Unknown RepositoryOperationError with exception: {Exception}", ex);

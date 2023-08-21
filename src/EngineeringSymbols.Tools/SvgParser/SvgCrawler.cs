@@ -104,7 +104,6 @@ internal static class SvgCrawler
 		if (transform != null)
 		{
 			ctx.AddParseError(SvgParseCategory.Geometry,$"'transform' attribute on <path> element is not allowed");
-			return;
 		}
 		
 		var fillRule = element.Attribute("fill-rule")?.Value;
@@ -112,7 +111,6 @@ internal static class SvgCrawler
 		if (fillRule != null && fillRule != "nonzero")
 		{
 			ctx.AddParseError(SvgParseCategory.Geometry,$"'fill-rule' attribute value on <path> can only be 'nonzero'");
-			return;
 		}
 		
 		var pathData = element.Attribute("d")?.Value;

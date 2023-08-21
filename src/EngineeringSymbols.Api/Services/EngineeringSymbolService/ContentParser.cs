@@ -1,6 +1,7 @@
 using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser;
+using EngineeringSymbols.Tools.Validation;
 using Newtonsoft.Json;
 
 namespace EngineeringSymbols.Api.Services.EngineeringSymbolService;
@@ -23,27 +24,29 @@ public static class ContentParser
                 return new ValidationException($"Content size is 0 or greater than {maxSize} KiB");
             }
 
+            Either<Exception, EngineeringSymbolCreateDto> parsedDto = Left(new Exception("Failed to deserialize symbol content"));
+            
             switch (contentType)
             {
                 case ContentTypes.Json:
                 {
-                    EngineeringSymbolCreateDto? dto = null;
-
                     try
                     {
-                        dto = JsonConvert.DeserializeObject<EngineeringSymbolCreateDto>(content);
-                        //dto = JsonSerializer.Deserialize<EngineeringSymbolCreateDto>(ctx.Content);
+                        var obj = JsonConvert.DeserializeObject<EngineeringSymbolCreateDto>(content);
+
+                        if (obj != null)
+                            parsedDto = obj;
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-                        return new ValidationException($"Failed to deserialize JSON content.");
+                        parsedDto = new ValidationException($"Failed to deserialize JSON content.");
                     }
-                    
-                    return dto;
+
+                    break;
                 }
                 case ContentTypes.Svg:
-                    return SvgParser.FromString(content)
+                    parsedDto = SvgParser.FromString(content)
                         .Match<Either<Exception,EngineeringSymbolCreateDto>>(
                             Succ: result =>
                             {
@@ -58,8 +61,20 @@ public static class ContentParser
                                 return result.EngineeringSymbolSvgParsed.ToCreateDto("");
                             },
                             Fail: exception => exception);
+                    break;
                 default:
-                    return new ValidationException("Failed to deserialize symbol content. Invalid Content-Type");
+                    parsedDto = new ValidationException("Failed to deserialize symbol content. Invalid Content-Type");
+                    break;
             }
+        
+            return parsedDto.Match<Either<Exception,EngineeringSymbolCreateDto>>(dto =>
+                {
+                    var validationResult = new EngineeringSymbolCreateDtoValidator().Validate(dto);
+
+                    return validationResult.IsValid 
+                        ? dto
+                        : new ValidationException(validationResult.ToDictionary());
+                },
+                ex => ex);
     }
 }
