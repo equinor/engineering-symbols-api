@@ -103,8 +103,8 @@ public static class EndpointsInfrastructure
                                 .Match(
                                     Succ: guid =>
                                         validationOnly is true ? TypedResults.Ok() : TypedResults.Created(guid),
-                                    Fail: OnFail(app.Logger))
-                            , Left: OnFail(app.Logger));
+                                    Fail: OnFail(app.Logger)),
+                            Left: OnFail(app.Logger));
                 }))
             .Accepts<string>(ContentTypes.Svg, ContentTypes.Json)
             .Produces(StatusCodes.Status200OK)
