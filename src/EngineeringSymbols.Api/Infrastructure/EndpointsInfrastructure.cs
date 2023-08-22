@@ -20,7 +20,7 @@ public static class EndpointsInfrastructure
     public const string SymbolTagsManagement = "Authorization";
 
     public static Func<Exception, IResult> OnFail(ILogger logger) => exception => OnFailure(exception, logger);
-    
+
     public static WebApplication AddEndpoints(this WebApplication app)
     {
         var anonymous = app.MapGroup("/symbols");
@@ -59,7 +59,7 @@ public static class EndpointsInfrastructure
                 "Get all Engineering Symbols. If query parameter 'allVersions' is missing or 'false' only the latest version of a symbol is returned, otherwise all versions of every symbol is returned."))
             .Produces<List<EngineeringSymbolDto>>()
             .RequireAuthorization(Policy.ContributorOrAdmin);
-        
+
         management.MapGet("/{idOrKey}",
                 async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrKey)
                     => await symbolService
@@ -70,40 +70,42 @@ public static class EndpointsInfrastructure
                 "Get an Engineering Symbol by Id or Key. All versions are returned if Key is specified."))
             .Produces<List<EngineeringSymbolDto>>()
             .RequireAuthorization(Policy.ContributorOrAdmin);
-        
-        management.MapPost("/", (CreateEngineeringSymbolHandler) (async (symbolService, request, user, validationOnly) =>
-            {
-                var allowedContentTypes = new[] {ContentTypes.Json, ContentTypes.Svg};
 
-                if (request.ContentType is null || !allowedContentTypes.Contains(request.ContentType))
+        management.MapPost("/",
+                (CreateEngineeringSymbolHandler) (async (symbolService, request, user, validationOnly) =>
                 {
-                    return TypedResults.BadRequest(
-                        $"Unsupported Content-Type. Expected ${string.Join(" or ", allowedContentTypes)}, but got {request.ContentType}");
-                }
+                    var allowedContentTypes = new[] {ContentTypes.Json, ContentTypes.Svg};
 
-                var userId = user.Identity?.Name;
+                    if (request.ContentType is null || !allowedContentTypes.Contains(request.ContentType))
+                    {
+                        return TypedResults.BadRequest(
+                            $"Unsupported Content-Type. Expected ${string.Join(" or ", allowedContentTypes)}, but got {request.ContentType}");
+                    }
 
-                if (userId is null)
-                {
-                    return TypedResults.BadRequest("Failed to determine UserId");
-                }
+                    var userId = user.Identity?.Name;
 
-                string content;
+                    if (userId is null)
+                    {
+                        return TypedResults.BadRequest("Failed to determine UserId");
+                    }
 
-                using (var stream = new StreamReader(request.Body))
-                {
-                    content = await stream.ReadToEndAsync();
-                }
+                    string content;
 
-                return await ContentParser.ParseSymbolCreateContent(request.ContentType, content)
-                    .MatchAsync(
-                    async dto => await symbolService
-                        .CreateSymbolAsync(dto with{Owner = userId}, validationOnly ?? false)
-                        .Match(
-                            Succ: guid => validationOnly is true ? TypedResults.Ok() : TypedResults.Created(guid),
-                            Fail: OnFail(app.Logger))
-                    , Left: OnFail(app.Logger));
-            }))
+                    using (var stream = new StreamReader(request.Body))
+                    {
+                        content = await stream.ReadToEndAsync();
+                    }
+
+                    return await ContentParser.ParseSymbolCreateContent(request.ContentType, content)
+                        .MatchAsync(
+                            RightAsync: async dto => await symbolService
+                                .CreateSymbolAsync(dto with {Owner = userId}, validationOnly ?? false)
+                                .Match(
+                                    Succ: guid =>
+                                        validationOnly is true ? TypedResults.Ok() : TypedResults.Created(guid),
+                                    Fail: OnFail(app.Logger))
+                            , Left: OnFail(app.Logger));
+                }))
             .Accepts<string>(ContentTypes.Svg, ContentTypes.Json)
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status201Created)
@@ -114,7 +116,7 @@ public static class EndpointsInfrastructure
 
         // Only for symbols that is in draft mode
         management.MapPut("/{id}",
-                async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolCreateDto createDto) 
+                async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolCreateDto createDto)
                     => await symbolService.UpdateSymbolAsync(id, createDto).Match(
                         Succ: success => success ? TypedResults.Ok() : TypedResults.Problem("Updated failed"),
                         Fail: OnFail(app.Logger)))
@@ -127,7 +129,7 @@ public static class EndpointsInfrastructure
         // Only for super admins
         // Only for symbols with status != "Published"
         management.MapPut("/{id}/status",
-                async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolStatusDto statusDto) 
+                async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolStatusDto statusDto)
                     => await symbolService.UpdateSymbolStatusAsync(id, statusDto)
                         .Match(
                             Succ: success => success ? TypedResults.Ok() : TypedResults.Problem("Updated failed"),
@@ -140,8 +142,7 @@ public static class EndpointsInfrastructure
         management.MapDelete("/{id}", async (IEngineeringSymbolService symbolService, string id)
                 => await symbolService
                     .DeleteSymbolAsync(id)
-                    .Match(Succ: _ => TypedResults.NoContent(),
-                        Fail: OnFail(app.Logger)))
+                    .Match(_ => TypedResults.NoContent(), OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Delete an Engineering Symbol revision",
                 "Delete an Engineering Symbol"))

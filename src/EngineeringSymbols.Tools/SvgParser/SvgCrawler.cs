@@ -62,7 +62,11 @@ internal static class SvgCrawler
 		{
 			var viewBoxElements = viewBox
 				.Split(" ")
-				.Map(el =>Try(() => double.Parse(el, NumberStyles.Any, CultureInfo.InvariantCulture)).Try().Map(res => res).IfFail(-1d))
+				.Map(el => 
+					Try(() => double.Parse(el, NumberStyles.Any, CultureInfo.InvariantCulture))
+						.Try()
+						.Map(res => res)
+						.IfFail(-1d))
 				.ToList();
 
 			if (viewBoxElements.Contains(-1d))
@@ -74,7 +78,11 @@ internal static class SvgCrawler
 			}
 			else if(viewBoxElements[0] != 0 || viewBoxElements[1] != 0 || viewBoxElements[2] != widthParsed || viewBoxElements[3] != heightParsed)
 			{
-				ctx.AddParseError(SvgParseCategory.Dimensions,$"viewBox attribute value error in <svg> element. Expected '0 0 {widthParsed} {heightParsed}', but got '{viewBoxElements[0]} {viewBoxElements[1]} {viewBoxElements[2]} {viewBoxElements[3]}.'");
+				var msgDetails = heightParsed != 0 && widthParsed != 0
+					? $"Expected '0 0 {widthParsed} {heightParsed}', but got '{viewBoxElements[0]} {viewBoxElements[1]} {viewBoxElements[2]} {viewBoxElements[3]}.'"
+					: "";
+				
+				ctx.AddParseError(SvgParseCategory.Dimensions,$"viewBox attribute value error in <svg> element. " + msgDetails);
 			}
 		}
 	}
