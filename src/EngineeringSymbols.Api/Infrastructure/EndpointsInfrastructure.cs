@@ -39,7 +39,7 @@ public static class EndpointsInfrastructure
         anonymous.MapGet("/{idOrKey}",
                 async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrKey)
                     => await symbolService
-                        .GetSymbolByIdOrKeyAsync(idOrKey, publicVersion: !user.IsContributorOrAdmin())
+                        .GetSymbolByIdOrKeyAsync(idOrKey)
                         .Match(TypedResults.Ok, OnFail(app.Logger)))
             .WithTags(SymbolTagsPublic)
             .WithMetadata(new SwaggerOperationAttribute("Get a published Engineering Symbol by Id or Key",
@@ -63,7 +63,7 @@ public static class EndpointsInfrastructure
         management.MapGet("/{idOrKey}",
                 async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrKey)
                     => await symbolService
-                        .GetSymbolByIdOrKeyAsync(idOrKey, publicVersion: !user.IsContributorOrAdmin())
+                        .GetSymbolByIdOrKeyAsync(idOrKey, publicVersion: false)
                         .Match(TypedResults.Ok, OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Get an Engineering Symbol by Id or Key",
