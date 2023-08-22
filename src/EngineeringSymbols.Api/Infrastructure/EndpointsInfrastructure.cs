@@ -71,6 +71,7 @@ public static class EndpointsInfrastructure
             .Produces<List<EngineeringSymbolDto>>()
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
+        
         management.MapPost("/",
                 (CreateEngineeringSymbolHandler) (async (symbolService, request, user, validationOnly) =>
                 {
@@ -90,12 +91,18 @@ public static class EndpointsInfrastructure
                     }
 
                     string content;
-
-                    using (var stream = new StreamReader(request.Body))
+                    
+                    try
                     {
+                        using var stream = new StreamReader(request.Body);
                         content = await stream.ReadToEndAsync();
                     }
-
+                    catch (Exception e)
+                    {
+                        app.Logger.LogError("Failed to read request content with exception: {EMessage}", e.Message);
+                        return TypedResults.BadRequest("Failed to read request content.");
+                    }
+                    
                     return await ContentParser.ParseSymbolCreateContent(request.ContentType, content)
                         .MatchAsync(
                             RightAsync: async dto => await symbolService
