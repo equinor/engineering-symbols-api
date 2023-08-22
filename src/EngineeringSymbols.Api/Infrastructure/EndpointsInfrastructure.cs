@@ -7,6 +7,7 @@ using EngineeringSymbols.Tools.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
+using static EngineeringSymbols.Api.Endpoints.EndpointHelpers;
 using static EngineeringSymbols.Api.Endpoints.EndpointsCommon;
 
 namespace EngineeringSymbols.Api.Infrastructure;
@@ -71,54 +72,22 @@ public static class EndpointsInfrastructure
             .Produces<List<EngineeringSymbolDto>>()
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
-        
+
         management.MapPost("/",
                 (CreateEngineeringSymbolHandler) (async (symbolService, request, user, validationOnly) =>
-                {
-                    var allowedContentTypes = new[] {ContentTypes.Json, ContentTypes.Svg};
-
-                    if (request.ContentType is null || !allowedContentTypes.Contains(request.ContentType))
-                    {
-                        return TypedResults.BadRequest(
-                            $"Unsupported Content-Type. Expected ${string.Join(" or ", allowedContentTypes)}, but got {request.ContentType}");
-                    }
-
-                    var userId = user.Identity?.Name;
-
-                    if (userId is null)
-                    {
-                        return TypedResults.BadRequest("Failed to determine UserId");
-                    }
-
-                    string content;
-                    
-                    try
-                    {
-                        using var stream = new StreamReader(request.Body);
-                        content = await stream.ReadToEndAsync();
-                    }
-                    catch (Exception e)
-                    {
-                        app.Logger.LogError("Failed to read request content with exception: {EMessage}", e.Message);
-                        return TypedResults.BadRequest("Failed to read request content.");
-                    }
-                    
-                    return await ContentParser.ParseSymbolCreateContent(request.ContentType, content)
-                        .MatchAsync(
-                            RightAsync: async dto => await symbolService
-                                .CreateSymbolAsync(dto with {Owner = userId}, validationOnly ?? false)
-                                .Match(
-                                    Succ: guid =>
-                                        validationOnly is true ? TypedResults.Ok() : TypedResults.Created(guid),
-                                    Fail: OnFail(app.Logger)),
-                            Left: OnFail(app.Logger));
-                }))
+                    await GetSymbolCreateContentFromRequest(request)
+                        .Bind(content => ParseSymbolCreateContent(request.ContentType, content))
+                        .Bind(dto => symbolService.CreateSymbolAsync(dto with {Owner = user.Identity?.Name}, validationOnly ?? false))
+                        .Match(
+                            Succ: guid => validationOnly is true ? TypedResults.Ok() : TypedResults.Created(guid),
+                            Fail: OnFail(app.Logger))
+                ))
             .Accepts<string>(ContentTypes.Svg, ContentTypes.Json)
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status201Created)
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Create an Engineering Symbol revision",
-                "Create Engineering Symbol revision. If query parameter 'validationOnly' is true, only a validation of the SVG file is performed, nothing will be stored in the database."))
+                "Create Engineering Symbol revision. If query parameter 'validationOnly' is true, only a validation of the SVG file or JSON symbol object is performed, nothing will be stored in the database."))
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
         // Only for symbols that is in draft mode
@@ -130,7 +99,7 @@ public static class EndpointsInfrastructure
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute(
                 "Update (replace) an Engineering Symbol revision by Id (Only when Status='Draft')",
-                "Update (replace) an Engineering Symbol by Id. Note that this will only work if the symbol has Status='Draft'. The value of the 'Status' field is ignored and 'Id' and 'Key' must match existing entry."))
+                "Update (replace) an Engineering Symbol by Id. Note that this will only work if the symbol has Status='Draft'."))
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
         // Only for super admins
@@ -143,7 +112,7 @@ public static class EndpointsInfrastructure
                             Fail: OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Set the Status of an Engineering Symbol revision",
-                "Set the Status of an Engineering Symbol"))
+                "Set the Status of an Engineering Symbol revision"))
             .RequireAuthorization(Policy.OnlyAdmins);
 
         management.MapDelete("/{id}", async (IEngineeringSymbolService symbolService, string id)
@@ -152,7 +121,7 @@ public static class EndpointsInfrastructure
                     .Match(_ => TypedResults.NoContent(), OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Delete an Engineering Symbol revision",
-                "Delete an Engineering Symbol"))
+                "Delete an Engineering Symbol revision"))
             .RequireAuthorization(Policy.OnlyAdmins);
 
 
