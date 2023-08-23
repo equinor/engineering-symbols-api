@@ -20,15 +20,21 @@ public static class JsonLdParser
         
         var symbols = new List<EngineeringSymbol>();
 
+        // We have 2 cases
+        //
+        // 1: a single graph this will result in top level @id
+        // 2: multiple graphs, this will result in top level @graph
+        
         if (symbolsJsonDom.ContainsKey("@id") && symbolsJsonDom.ContainsKey("@graph"))
         {
+            // We have a single symbol/graph
             symbols.Add(JsonObjectToEngineeringSymbol(symbolsJsonDom));
         }
         else if (symbolsJsonDom.ContainsKey("@graph"))
         {
             if (symbolsJsonDom["@graph"] is not JsonArray symbolGraphs)
             {
-                throw new Exception("");
+                throw new Exception("Expected '@graph' field to be of type JsonArray");
             }
 
             symbols.AddRange(
