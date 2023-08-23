@@ -14,8 +14,10 @@ public static class EndpointsCommon
             .With<ValidationException>(ex =>
                 TypedResults.ValidationProblem(ex.Errors, ex.Message, title: "Validation Error"))
             .With<SvgParseException>(ex =>
-                TypedResults.Problem(ex.Message, title: "SVG Parse Error", statusCode: StatusCodes.Status400BadRequest))
-            .With<RepositoryException>(OnRepositoryException)
+                TypedResults.Problem(ex.Message, title: "SVG Parse Error"))
+            .With<RepositoryException>(ex => OnRepositoryException(ex, logger))
+            .With<BadHttpRequestException>(ex =>
+                TypedResults.Problem(ex.Message, statusCode: ex.StatusCode))
             .Otherwise(ex =>
             {
                 logger?.LogError("Status500InternalServerError with exception: {Exception}", ex);
@@ -23,7 +25,7 @@ public static class EndpointsCommon
             });
     }
 
-    private static IResult OnRepositoryException(RepositoryException ex)
+    private static IResult OnRepositoryException(RepositoryException ex, ILogger? logger = null)
     {
         switch (ex.RepositoryOperationError)
         {
@@ -31,36 +33,11 @@ public static class EndpointsCommon
                 return TypedResults.NotFound();
             case RepositoryOperationError.EntityAlreadyExists:
                 return TypedResults.UnprocessableEntity("Entity already exists");
+            case RepositoryOperationError.UpdateFailed:
             case RepositoryOperationError.Unknown:
             default:
+                logger?.LogError("Unknown RepositoryOperationError with exception: {Exception}", ex);
                 return TypedResults.Problem(ex.Message, statusCode: StatusCodes.Status500InternalServerError, title: "Repository Error");
         }
-    }
-
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="file"></param>
-    /// <returns></returns>
-    /// <exception cref="ValidationException"></exception>
-    public static async Task<string> ReadFileContentToString(IFormFile file)
-    {
-        string result;
-        
-        try
-        {
-            await using var fileStream = file.OpenReadStream();
-            var bytes = new byte[file.Length];
-            var a = await fileStream.ReadAsync(bytes, 0, (int)file.Length);
-            result = System.Text.Encoding.UTF8.GetString(bytes);
-        }
-        catch (Exception)
-        {
-            // TODO: log ex here?
-            throw new ValidationException("Failed to read file contents");
-        }
-
-        return result;
     }
 }

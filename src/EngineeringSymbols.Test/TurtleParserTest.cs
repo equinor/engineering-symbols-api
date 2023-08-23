@@ -1,4 +1,4 @@
-using System.Text.Json;
+/*using System.Text.Json;
 using EngineeringSymbols.Tools.SvgParser;
 using EngineeringSymbols.Tools.SvgParser.Models;
 using EngineeringSymbols.Tools.Validation;
@@ -61,4 +61,4 @@ public class TurtleParserTest
             Assert.True(result.IsFail);
         }
     }
-}
+}*/

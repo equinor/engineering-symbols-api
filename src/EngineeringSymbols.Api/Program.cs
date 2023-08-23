@@ -1,7 +1,6 @@
 using EngineeringSymbols.Api.Infrastructure;
 using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Api.Repositories.Fuseki;
-using EngineeringSymbols.Api.Services.EngineeringSymbolService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 

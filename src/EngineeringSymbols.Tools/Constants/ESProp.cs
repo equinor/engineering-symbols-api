@@ -10,9 +10,17 @@ public static class ESProp
     public const string HasLabelIri = $"{RdfConst.RdfsIri}{HasLabel}";
     public const string HasLabelIriPrefix = $"rdfs:{HasLabel}";
     
+    public const string HasEngSymId = "id";
+    public const string HasEngSymIdIri = $"{RdfConst.EngSymOntologyIri}{HasEngSymId}";
+    public const string HasEngSymIdIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasEngSymId}";
+    
     public const string HasEngSymKey = "key";
     public const string HasEngSymKeyIri = $"{RdfConst.EngSymOntologyIri}{HasEngSymKey}";
     public const string HasEngSymKeyIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasEngSymKey}";
+    
+    public const string HasStatus = "status";
+    public const string HasStatusIri = $"{RdfConst.EngSymOntologyIri}{HasStatus}";
+    public const string HasStatusIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasStatus}";
     
     public const string HasName = "hasName";
     public const string HasNameIri = $"{RdfConst.EngSymOntologyIri}{HasName}";
@@ -58,6 +66,10 @@ public static class ESProp
     public const string HasDateUpdatedIri = $"{RdfConst.EngSymOntologyIri}{HasDateUpdated}";
     public const string HasDateUpdatedIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasDateUpdated}";
     
+    public const string HasDatePublished = "datePublished";
+    public const string HasDatePublishedIri = $"{RdfConst.EngSymOntologyIri}{HasDatePublished}";
+    public const string HasDatePublishedIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasDatePublished}";
+    
     public const string HasPositionX = "positionX";
     public const string HasPositionXIri = $"{RdfConst.EngSymOntologyIri}{HasPositionX}";
     public const string HasPositionXIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasPositionX}";
@@ -67,6 +79,6 @@ public static class ESProp
     public const string HasPositionYIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasPositionY}";
     
     public const string HasDirection = "direction";
-    public const string HasDirectionYIri = $"{RdfConst.EngSymOntologyIri}{HasDirection}";
-    public const string HasDirectionYIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasDirection}";
+    public const string HasDirectionIri = $"{RdfConst.EngSymOntologyIri}{HasDirection}";
+    public const string HasDirectionIriPrefix = $"{RdfConst.EngSymOntologyPrefix}:{HasDirection}";
 }
