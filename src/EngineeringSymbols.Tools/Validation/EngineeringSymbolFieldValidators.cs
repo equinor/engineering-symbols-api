@@ -1,5 +1,4 @@
 using FluentValidation;
-using J2N;
 
 namespace EngineeringSymbols.Tools.Validation;
 
@@ -22,7 +21,6 @@ public static class EngineeringSymbolFieldValidators
             .MinimumLength(4)
             .MaximumLength(64)
             .Must(s => !EngineeringSymbolValidation.ContainsIllegalChars(s, new[] {'-', '_'}));
-        //.WithMessage("Is not a valid Engineering Symbol Key");
     }
     
     public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolStatus<T>(this IRuleBuilder<T, string> ruleBuilder) {
@@ -41,7 +39,6 @@ public static class EngineeringSymbolFieldValidators
     public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolDescription<T>(this IRuleBuilder<T, string> ruleBuilder) {
         return ruleBuilder
             .NotNull()
-            //.MinimumLength(4)
             .MaximumLength(250)
             .Must(s => !EngineeringSymbolValidation.ContainsIllegalChars(s, TextWhiteList))
             .WithMessage("Invalid value.");

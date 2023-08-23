@@ -60,7 +60,7 @@ public static class SvgParser
 		return () =>
 		{
 			if (ctx.SvgRootElement == null  || ctx.SvgRootElement.Name.LocalName != "svg")
-				throw new SvgParseException("Invalid SVG content");
+				return new Result<SvgParserContext>(new SvgParseException("Invalid SVG content"));
 			
 			return ctx;
 		};
@@ -68,12 +68,8 @@ public static class SvgParser
 	
 	private static Try<SvgParserContext> ParseSvgData(SvgParserContext ctx)
 	{
-		return () =>
-		{
-			if (ctx.SvgRootElement == null)
-				throw new SvgParseException("SvgRootElement was null");
-
-			return SvgCrawler.ValidateAndExtractData(ctx.SvgRootElement, ctx);
-		};
+		return () => ctx.SvgRootElement == null
+			? new Result<SvgParserContext>(new SvgParseException("SvgRootElement was null"))
+			: SvgCrawler.ValidateAndExtractData(ctx.SvgRootElement, ctx);
 	}
 }

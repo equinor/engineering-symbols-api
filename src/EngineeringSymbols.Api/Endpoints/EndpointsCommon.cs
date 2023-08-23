@@ -16,6 +16,8 @@ public static class EndpointsCommon
             .With<SvgParseException>(ex =>
                 TypedResults.Problem(ex.Message, title: "SVG Parse Error"))
             .With<RepositoryException>(ex => OnRepositoryException(ex, logger))
+            .With<BadHttpRequestException>(ex =>
+                TypedResults.Problem(ex.Message, statusCode: ex.StatusCode))
             .Otherwise(ex =>
             {
                 logger?.LogError("Status500InternalServerError with exception: {Exception}", ex);

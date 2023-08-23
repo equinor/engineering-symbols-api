@@ -2,11 +2,9 @@ using System.Security.Claims;
 using EngineeringSymbols.Api.Endpoints;
 using EngineeringSymbols.Api.Infrastructure.Auth;
 using EngineeringSymbols.Api.Repositories.Fuseki;
-using EngineeringSymbols.Api.Services.EngineeringSymbolService;
 using EngineeringSymbols.Tools.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using Swashbuckle.AspNetCore.Filters;
 using static EngineeringSymbols.Api.Endpoints.EndpointHelpers;
 using static EngineeringSymbols.Api.Endpoints.EndpointsCommon;
 
@@ -25,10 +23,10 @@ public static class EndpointsInfrastructure
     public static WebApplication AddEndpoints(this WebApplication app)
     {
         var anonymous = app.MapGroup("/symbols");
-
-        anonymous.MapGet("/", async (IEngineeringSymbolService symbolService, bool? allVersions)
+        
+        anonymous.MapGet("/", async (IEngineeringSymbolService symbolService, bool? onlyLatestVersion)
                 => await symbolService
-                    .GetSymbolsAsync(allVersions ?? false)
+                    .GetSymbolsAsync(onlyLatestVersion ?? true, publicVersion: true)
                     .Match(TypedResults.Ok, OnFail(app.Logger)))
             .WithTags(SymbolTagsPublic)
             .WithMetadata(new SwaggerOperationAttribute("Get all published Engineering Symbols",
@@ -37,10 +35,11 @@ public static class EndpointsInfrastructure
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
 
+        
         anonymous.MapGet("/{idOrKey}",
                 async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrKey)
                     => await symbolService
-                        .GetSymbolByIdOrKeyAsync(idOrKey)
+                        .GetSymbolByIdOrKeyAsync(idOrKey, publicVersion: true)
                         .Match(TypedResults.Ok, OnFail(app.Logger)))
             .WithTags(SymbolTagsPublic)
             .WithMetadata(new SwaggerOperationAttribute("Get a published Engineering Symbol by Id or Key",
@@ -49,11 +48,12 @@ public static class EndpointsInfrastructure
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
 
+        
         var management = app.MapGroup("manage/symbols");
-
-        management.MapGet("/", async (IEngineeringSymbolService symbolService, bool? allVersions)
+        
+        management.MapGet("/", async (IEngineeringSymbolService symbolService, bool? onlyLatestVersion)
                 => await symbolService
-                    .GetSymbolsAsync(allVersions ?? false, publicVersion: false)
+                    .GetSymbolsAsync(onlyLatestVersion ?? true, publicVersion: false)
                     .Match(TypedResults.Ok, OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Get all Engineering Symbols",
@@ -61,6 +61,7 @@ public static class EndpointsInfrastructure
             .Produces<List<EngineeringSymbolDto>>()
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
+        
         management.MapGet("/{idOrKey}",
                 async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrKey)
                     => await symbolService
@@ -90,7 +91,7 @@ public static class EndpointsInfrastructure
                 "Create Engineering Symbol revision. If query parameter 'validationOnly' is true, only a validation of the SVG file or JSON symbol object is performed, nothing will be stored in the database."))
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
-        // Only for symbols that is in draft mode
+
         management.MapPut("/{id}",
                 async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolCreateDto createDto)
                     => await symbolService.UpdateSymbolAsync(id, createDto).Match(
@@ -102,8 +103,7 @@ public static class EndpointsInfrastructure
                 "Update (replace) an Engineering Symbol by Id. Note that this will only work if the symbol has Status='Draft'."))
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
-        // Only for super admins
-        // Only for symbols with status != "Published"
+
         management.MapPut("/{id}/status",
                 async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolStatusDto statusDto)
                     => await symbolService.UpdateSymbolStatusAsync(id, statusDto)
@@ -115,6 +115,7 @@ public static class EndpointsInfrastructure
                 "Set the Status of an Engineering Symbol revision"))
             .RequireAuthorization(Policy.OnlyAdmins);
 
+        
         management.MapDelete("/{id}", async (IEngineeringSymbolService symbolService, string id)
                 => await symbolService
                     .DeleteSymbolAsync(id)

@@ -7,7 +7,7 @@ namespace EngineeringSymbols.Api.Repositories;
 
 public static class SparqlQueries
 {
-    public static string GetAllSymbolsConstructQuery(bool distinct = false, bool onlyPublished = true)
+    public static string GetAllSymbolsConstructQuery(bool onlyLatestVersion = false, bool onlyPublished = true)
     {
         var onlyPublishedConstraint = onlyPublished
             ? $$"""
@@ -15,19 +15,21 @@ public static class SparqlQueries
             """
             : "";
         
-        var distinctSubQuery = distinct ? $$"""
-                                    {
-                                        SELECT ?key (MAX(?dc) AS ?dateCreated) (COUNT(?g) AS ?numVersions)
-                                        WHERE {
-                                            GRAPH ?g { 
-                                                ?s2 {{ESProp.HasEngSymKeyIriPrefix}} ?key .
-                                                ?s2 {{ESProp.HasDateCreatedIriPrefix}} ?dc .
-                                                {{onlyPublishedConstraint}}
-                                            }
-                                        }
-                                        GROUP BY ?key
-                                    }
-                                """ : "";
+        var onlyLatestVersionSubQuery = onlyLatestVersion 
+            ? $$"""
+                  {
+                      SELECT ?key (MAX(?dc) AS ?dateCreated) (COUNT(?g) AS ?numVersions)
+                      WHERE {
+                          GRAPH ?g {
+                              ?s2 {{ESProp.HasEngSymKeyIriPrefix}} ?key .
+                              ?s2 {{ESProp.HasDateCreatedIriPrefix}} ?dc .
+                              {{onlyPublishedConstraint}}
+                          }
+                      }
+                      GROUP BY ?key
+                  }
+              """ 
+            : "";
         
         return $$"""
                 {{RdfConst.XsdPrefix}}
@@ -46,7 +48,7 @@ public static class SparqlQueries
                         ?s1 {{ESProp.HasDateCreatedIriPrefix}} ?dateCreated .
                 {{onlyPublishedConstraint}}
                     }
-                {{distinctSubQuery}}
+                {{onlyLatestVersionSubQuery}}
                 }
                 """;
     }

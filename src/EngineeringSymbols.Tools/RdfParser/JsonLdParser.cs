@@ -13,6 +13,11 @@ public static class JsonLdParser
     {
         var symbolsJsonDom = JsonSerializer.Deserialize<JsonObject>(jsonLdString);
 
+        if (symbolsJsonDom is null)
+        {
+            throw new ArgumentException("Failed to deserialize JSON LD string.");
+        }
+        
         var symbols = new List<EngineeringSymbol>();
 
         if (symbolsJsonDom.ContainsKey("@id") && symbolsJsonDom.ContainsKey("@graph"))
@@ -26,12 +31,10 @@ public static class JsonLdParser
                 throw new Exception("");
             }
 
-            foreach (var symbolGraph in symbolGraphs)
-            {
-                if (symbolGraph == null) continue;
-
-                symbols.Add(JsonObjectToEngineeringSymbol(symbolGraph));
-            }
+            symbols.AddRange(
+                from symbolGraph in symbolGraphs 
+                where symbolGraph != null 
+                select JsonObjectToEngineeringSymbol(symbolGraph));
         }
 
         return symbols;

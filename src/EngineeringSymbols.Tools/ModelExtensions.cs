@@ -6,21 +6,21 @@ namespace EngineeringSymbols.Tools;
 
 public static class ModelExtensions
 {
-    public static EngineeringSymbol ToEngineeringSymbol(this EngineeringSymbolCreateDto dto, string id)
+    public static EngineeringSymbol ToInsertEntity(this EngineeringSymbolCreateDto dto)
     {
         return new EngineeringSymbol(
-            id, 
-            dto.Key, 
-            EngineeringSymbolStatus.None, 
-            dto.Description, 
-            DateTimeOffset.Now,
-            DateTimeOffset.MinValue, 
-            DateTimeOffset.MinValue, 
-            dto.Owner,
-            dto.Geometry,
-            dto.Width,
-            dto.Height,
-            dto.Connectors.Map(connectorDto 
+            Id: Guid.NewGuid().ToString(), 
+            Key: dto.Key, 
+            Status: EngineeringSymbolStatus.Draft, 
+            Description: dto.Description, 
+            DateTimeCreated: DateTimeOffset.Now,
+            DateTimeUpdated: DateTimeOffset.MinValue, 
+            DateTimePublished: DateTimeOffset.MinValue, 
+            Owner: dto.Owner,
+            Geometry: dto.Geometry,
+            Width: dto.Width,
+            Height: dto.Height,
+            Connectors: dto.Connectors.Map(connectorDto 
                     => new EngineeringSymbolConnector(
                         connectorDto.Id,
                         connectorDto.RelativePosition,
@@ -33,18 +33,18 @@ public static class ModelExtensions
         var status = Enum.Parse<EngineeringSymbolStatus>(dto.Status);
 
         return new EngineeringSymbol(
-            dto.Id, 
-            dto.Key, 
-            status, 
-            dto.Description, 
-            dto.DateTimeCreated,
-            dto.DateTimeUpdated, 
-            dto.DateTimePublished, 
-            dto.Owner,
-            dto.Geometry,
-            dto.Width,
-            dto.Height,
-            dto.Connectors.Map(connectorDto 
+            Id: dto.Id, 
+            Key: dto.Key, 
+            Status: status, 
+            Description: dto.Description, 
+            DateTimeCreated: dto.DateTimeCreated,
+            DateTimeUpdated: dto.DateTimeUpdated, 
+            DateTimePublished: dto.DateTimePublished, 
+            Owner: dto.Owner,
+            Geometry: dto.Geometry,
+            Width: dto.Width,
+            Height: dto.Height,
+            Connectors: dto.Connectors.Map(connectorDto 
                 => new EngineeringSymbolConnector(
                     connectorDto.Id,
                     connectorDto.RelativePosition,
@@ -81,7 +81,10 @@ public static class ModelExtensions
             Width: symbol.Width,
             Height: symbol.Height,
             Connectors: symbol.Connectors.Map(connector => 
-                    new EngineeringSymbolConnectorDto(connector.Id, connector.RelativePosition, connector.Direction))
+                    new EngineeringSymbolConnectorDto(
+                        Id: connector.Id, 
+                        RelativePosition: connector.RelativePosition, 
+                        Direction: connector.Direction))
                 .ToList()
         );
     }
@@ -91,7 +94,7 @@ public static class ModelExtensions
         return new EngineeringSymbolDto(
             Id: string.Empty,
             Key: symbol.Key,
-            Status: EngineeringSymbolStatus.Draft.ToString(),
+            Status: EngineeringSymbolStatus.None.ToString(),
             Description: symbol.Description,
             DateTimeCreated: DateTimeOffset.MinValue,
             DateTimeUpdated: DateTimeOffset.MinValue,
@@ -101,7 +104,10 @@ public static class ModelExtensions
             Width: symbol.Width,
             Height: symbol.Height,
             Connectors: symbol.Connectors.Map(connector => 
-                new EngineeringSymbolConnectorDto(connector.Id, connector.RelativePosition, connector.Direction))
+                new EngineeringSymbolConnectorDto(
+                    Id: connector.Id,
+                    RelativePosition: connector.RelativePosition,
+                    Direction: connector.Direction))
                 .ToList());
     }
     
@@ -116,9 +122,9 @@ public static class ModelExtensions
             Width: symbol.Width,
             Height: symbol.Height,
             Connectors: symbol.Connectors.Map(connector => new EngineeringSymbolConnectorPublicDto(
-                connector.Id,
-                connector.RelativePosition,
-                connector.Direction)).ToList());
+                Id: connector.Id,
+                RelativePosition: connector.RelativePosition,
+                Direction: connector.Direction)).ToList());
     }
 
     public static string GetConnectorIriPrefix(string symbolId, string name)
@@ -152,7 +158,6 @@ public static class ModelExtensions
         return $$"""
                   {{RdfConst.AllPrefixes}}
                   <{{RdfConst.IndividualPrefix}}:{{symbol.Id}}>
-                  
                     a {{RdfConst.SymbolTypeIriPrefix}} ;
                     {{ESProp.HasEngSymIdIriPrefix}} "{{symbol.Id}}"^^xsd:string ;
                     {{ESProp.HasEngSymKeyIriPrefix}} "{{symbol.Key}}"^^xsd:string ;

@@ -23,12 +23,8 @@ public class EngineeringSymbolDtoValidator : AbstractValidator<EngineeringSymbol
         RuleFor(symbol => symbol.DateTimeCreated).MustBeValidEngineeringSymbolDateCreated();
 
         RuleFor(symbol => symbol.DateTimeUpdated).MustBeValidEngineeringSymbolDateUpdated();
-            //.Must((dto, dateUpdated) => dateUpdated > dto.DateTimeCreated)
-            //.When(dto => dto.DateTimeUpdated != DateTimeOffset.MinValue);
 
         RuleFor(symbol => symbol.DateTimePublished).MustBeValidEngineeringSymbolDatePublished();
-            //.Must((dto, datePublished) => datePublished > dto.DateTimeCreated)
-            //.When(dto => dto.DateTimePublished != DateTimeOffset.MinValue);
 
         RuleFor(symbol => symbol.Geometry).MustBeValidEngineeringSymbolGeometry();
 

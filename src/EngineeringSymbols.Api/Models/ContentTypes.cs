@@ -4,10 +4,7 @@ public static class ContentTypes
 {
     // Text types
     public const string Plain = "text/plain";
-    public const string Html = "text/html";
-    public const string Css = "text/css";
-    public const string JavaScript = "application/javascript";
-
+    
     // Application types
     public const string Json = "application/json";
     public const string Xml = "application/xml";
@@ -15,9 +12,6 @@ public static class ContentTypes
 
     // Image types
     public const string Svg = "image/svg+xml";
-    public const string Jpeg = "image/jpeg";
-    public const string Png = "image/png";
-    public const string Gif = "image/gif";
 
     // RDF types
     public const string RdfXml = "application/rdf+xml";          // RDF/XML format

@@ -2,6 +2,7 @@ using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser;
 using EngineeringSymbols.Tools.Validation;
+using Microsoft.AspNetCore.Http.Features;
 using Newtonsoft.Json;
 
 namespace EngineeringSymbols.Api.Endpoints;
@@ -19,6 +20,22 @@ public static class EndpointHelpers
                     $"Unsupported Content-Type. Expected ${string.Join(" or ", allowedContentTypes)}, but got {request.ContentType}"));
             }
 
+            const long maxSizeInKiB = 500;
+            var bodySizeFeature = request.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
+            
+            if (bodySizeFeature is not null)
+            {
+                // NOTE: This will throw BadHttpRequestException 413 on stream.ReadToEndAsync() if body
+                // size is too large
+                bodySizeFeature.MaxRequestBodySize = maxSizeInKiB * 1024;
+            }
+            
+            if (request.ContentLength == null || request.ContentLength / 1024 > maxSizeInKiB)
+            { 
+                return new Result<string>(new ValidationException(
+                    $"Content size is 0 or greater than {maxSizeInKiB} KiB"));
+            }
+
             using var stream = new StreamReader(request.Body);
             
             return await stream.ReadToEndAsync();
@@ -32,17 +49,7 @@ public static class EndpointHelpers
                 return new Result<EngineeringSymbolCreateDto>(
                     new ValidationException("Failed to deserialize symbol content."));
             }
-
-            const double maxSize = 500; // KiB
-            var byteSize = content.Length * 2; // Approx
-            var sizeInKiB = (double) byteSize / 1024;
-
-            if (sizeInKiB is > maxSize or 0)
-            {
-                return new Result<EngineeringSymbolCreateDto>(
-                    new ValidationException($"Content size is 0 or greater than {maxSize} KiB"));
-            }
-
+            
             Either<Exception, EngineeringSymbolCreateDto> parsedDto =
                 Left(new Exception("Failed to deserialize symbol content"));
 
