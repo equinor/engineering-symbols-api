@@ -59,34 +59,4 @@
         </Content>
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="SvgTestFiles\Invalid\Empty_file.svg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="SvgTestFiles\Invalid\INVALID_Root_Element.svg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="SvgTestFiles\Invalid\PV003B_Invalid_fill-rule.svg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="SvgTestFiles\Invalid\PV003B_Invalid_transform.svg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="SvgTestFiles\Invalid\PV003B_Invalid_viewbox.svg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="SvgTestFiles\Valid\ND0025.svg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="SvgTestFiles\Valid\PP007A.svg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="SvgTestFiles\Valid\PT002A_Option1.svg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="SvgTestFiles\Valid\PV003B.svg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
-
 </Project>
