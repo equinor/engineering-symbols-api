@@ -1,3 +1,4 @@
+using EngineeringSymbols.Api.Repositories.Fuseki;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 
@@ -11,4 +12,6 @@ public interface IEngineeringSymbolRepository
     TryAsync<string> InsertEngineeringSymbolAsync(EngineeringSymbolCreateDto symbol);
     TryAsync<bool> ReplaceEngineeringSymbolAsync(EngineeringSymbolDto symbol);
     TryAsync<bool> DeleteEngineeringSymbolAsync(string id);
+    TryAsync<FusekiRawResponse> FusekiQueryAsync(string query, string accept);
+    TryAsync<FusekiRawResponse> FusekiUpdateAsync(string query, string accept);
 }

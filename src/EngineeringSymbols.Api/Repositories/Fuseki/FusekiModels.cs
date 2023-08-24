@@ -28,3 +28,11 @@ public class FusekiAskResponse
     public FusekiHead Head { get; set; } = new();
     public bool Boolean { get; set; }
 }
+
+public class FusekiRawResponse
+{
+    public string ContentType { get; set; }
+    public string Content { get; set; }
+    
+    public int StatusCode { get; set; }
+}

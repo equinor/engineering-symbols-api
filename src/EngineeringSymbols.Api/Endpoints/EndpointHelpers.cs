@@ -106,4 +106,12 @@ public static class EndpointHelpers
                 },
                 ex => new Result<EngineeringSymbolCreateDto>(ex));
         };
-};
+
+    public static TryAsync<string> GetRequestBodyAsString(HttpRequest request)
+        => async () =>
+        {
+            using var stream = new StreamReader(request.Body);
+            var content = await stream.ReadToEndAsync();
+            return content;
+        };
+}

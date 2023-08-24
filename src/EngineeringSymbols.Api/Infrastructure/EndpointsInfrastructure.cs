@@ -1,6 +1,8 @@
 using System.Security.Claims;
+using Azure.Core;
 using EngineeringSymbols.Api.Endpoints;
 using EngineeringSymbols.Api.Infrastructure.Auth;
+using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Api.Repositories.Fuseki;
 using EngineeringSymbols.Tools.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +25,7 @@ public static class EndpointsInfrastructure
     public static WebApplication AddEndpoints(this WebApplication app)
     {
         var anonymous = app.MapGroup("/symbols");
-        
+
         anonymous.MapGet("/", async (IEngineeringSymbolService symbolService, bool? onlyLatestVersion)
                 => await symbolService
                     .GetSymbolsAsync(onlyLatestVersion ?? true, publicVersion: true)
@@ -35,7 +37,7 @@ public static class EndpointsInfrastructure
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
 
-        
+
         anonymous.MapGet("/{idOrKey}",
                 async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrKey)
                     => await symbolService
@@ -48,9 +50,9 @@ public static class EndpointsInfrastructure
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
 
-        
+
         var management = app.MapGroup("manage/symbols");
-        
+
         management.MapGet("/", async (IEngineeringSymbolService symbolService, bool? onlyLatestVersion)
                 => await symbolService
                     .GetSymbolsAsync(onlyLatestVersion ?? true, publicVersion: false)
@@ -61,7 +63,7 @@ public static class EndpointsInfrastructure
             .Produces<List<EngineeringSymbolDto>>()
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
-        
+
         management.MapGet("/{idOrKey}",
                 async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrKey)
                     => await symbolService
@@ -78,7 +80,8 @@ public static class EndpointsInfrastructure
                 (CreateEngineeringSymbolHandler) (async (symbolService, request, user, validationOnly) =>
                     await GetSymbolCreateContentFromRequest(request)
                         .Bind(content => ParseSymbolCreateContent(request.ContentType, content))
-                        .Bind(dto => symbolService.CreateSymbolAsync(dto with {Owner = user.Identity?.Name}, validationOnly ?? false))
+                        .Bind(dto => symbolService.CreateSymbolAsync(dto with {Owner = user.Identity?.Name ?? ""},
+                            validationOnly ?? false))
                         .Match(
                             Succ: guid => validationOnly is true ? TypedResults.Ok() : TypedResults.Created(guid),
                             Fail: OnFail(app.Logger))
@@ -115,7 +118,7 @@ public static class EndpointsInfrastructure
                 "Set the Status of an Engineering Symbol revision"))
             .RequireAuthorization(Policy.OnlyAdmins);
 
-        
+
         management.MapDelete("/{id}", async (IEngineeringSymbolService symbolService, string id)
                 => await symbolService
                     .DeleteSymbolAsync(id)
@@ -125,18 +128,29 @@ public static class EndpointsInfrastructure
                 "Delete an Engineering Symbol revision"))
             .RequireAuthorization(Policy.OnlyAdmins);
 
+        var fuseki = app.MapGroup("/fuseki");
 
-        if (!app.Environment.IsDevelopment()) return app;
-
-        app.MapPost("/dev-fuseki/query", DevFuseki.Query)
-            .WithMetadata(new SwaggerOperationAttribute("Query local fuseki", "Query local fuseki"))
+        fuseki.MapPost("/query", async (HttpRequest request, IEngineeringSymbolRepository repo)
+                => await GetRequestBodyAsString(request)
+                    .Bind(query => repo.FusekiQueryAsync(query, request.Headers.Accept.ToString()))
+                    .Match(Results.Extensions.Fuseki, OnFail(app.Logger)))
+            .WithTags("Fuseki")
+            .WithMetadata(new SwaggerOperationAttribute("Fuseki query", "Query fuseki"))
             .Accepts<string>("application/sparql-query; charset=UTF-8")
-            .Produces<FusekiSelectResponse>(contentType: "application/json");
-
-        app.MapPost("/dev-fuseki/update", DevFuseki.Update)
-            .WithMetadata(new SwaggerOperationAttribute("Query (Update) local fuseki", "Query (Update) local fuseki"))
+            .Produces<FusekiSelectResponse>(contentType: ContentTypes.JsonLd,
+                additionalContentTypes: ContentTypes.Turtle)
+            .RequireAuthorization(Policy.OnlyAdmins);
+        
+        fuseki.MapPost("/update", async (HttpRequest request, IEngineeringSymbolRepository repo)
+                => await GetRequestBodyAsString(request)
+                    .Bind(query => repo.FusekiUpdateAsync(query, request.Headers.Accept.ToString()))
+                    .Match(Results.Extensions.Fuseki, OnFail(app.Logger)))
+            .WithTags("Fuseki")
+            .WithMetadata(new SwaggerOperationAttribute("Fuseki UPDATE query", "Update Query"))
             .Accepts<string>("application/sparql-query; charset=UTF-8")
-            .Produces<string>(contentType: "text/plain");
+            .Produces<string>(contentType: ContentTypes.JsonLd,
+                additionalContentTypes: ContentTypes.Turtle)
+            .RequireAuthorization(Policy.OnlyAdmins);
 
         return app;
     }
