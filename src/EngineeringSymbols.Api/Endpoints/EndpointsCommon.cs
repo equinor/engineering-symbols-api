@@ -21,7 +21,10 @@ public static class EndpointsCommon
             .Otherwise(ex =>
             {
                 logger?.LogError("Status500InternalServerError with exception: {Exception}", ex);
-                return TypedResults.Problem("Unexpected Error", statusCode: StatusCodes.Status500InternalServerError);
+
+                var det = ex.Message + ". Inner ex: " + ex.InnerException?.Message;
+                
+                return TypedResults.Problem("Unexpected Error" + det, statusCode: StatusCodes.Status500InternalServerError);
             });
     }
 
