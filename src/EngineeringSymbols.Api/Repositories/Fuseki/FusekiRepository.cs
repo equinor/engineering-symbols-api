@@ -1,10 +1,8 @@
-using System.Net;
 using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.RdfParser;
-using EngineeringSymbols.Tools.Validation;
 
 namespace EngineeringSymbols.Api.Repositories.Fuseki;
 
@@ -27,10 +25,10 @@ public class FusekiRepository : IEngineeringSymbolRepository
         var stringContent = message ?? await httpResponse.Content.ReadAsStringAsync();
         
         _logger.LogError(
-            "Repository request failed: Status {StatusCode} {ReasonPhrase} (Uri: {Method} {AbsoluteUri})\nSparql Query: \n{SparqlQuery}. Message: {Msg}",
-            (int) httpResponse.StatusCode, httpResponse.ReasonPhrase, method, reqUri, sparqlQuery, stringContent);
+            "Repository request to '{RequestUri}' failed: Status {StatusCode} {ReasonPhrase} (Uri: {Method} {AbsoluteUri})\nSparql Query: \n{SparqlQuery}. Message: {Msg}",
+             reqUri, httpResponse.StatusCode, httpResponse.ReasonPhrase, method, reqUri, sparqlQuery, stringContent);
 
-        return new Result<T>(new RepositoryException($"Repository request failed: Status {httpResponse.ReasonPhrase}. Message: {stringContent}"));
+        return new Result<T>(new RepositoryException($"Repository request to '{reqUri}' failed: Status {httpResponse.ReasonPhrase}. Message: {stringContent}"));
     }
 
     public TryAsync<List<EngineeringSymbol>> GetAllEngineeringSymbolsAsync(bool onlyLatestVersion = true,

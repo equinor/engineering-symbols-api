@@ -33,6 +33,5 @@ public class FusekiRawResponse
 {
     public string ContentType { get; set; }
     public string Content { get; set; }
-    
     public int StatusCode { get; set; }
 }
