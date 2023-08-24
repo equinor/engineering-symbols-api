@@ -19,17 +19,18 @@ public class FusekiRepository : IEngineeringSymbolRepository
         _logger = loggerFactory.CreateLogger("FusekiRepository");
     }
 
-    private Result<T> FusekiRequestErrorResult<T>(HttpResponseMessage httpResponse, string? message,
-        string? sparqlQuery = null)
+    private async Task<Result<T>> FusekiRequestErrorResult<T>(HttpResponseMessage httpResponse, string? message = null, string? sparqlQuery = null)
     {
         var reqUri = httpResponse.RequestMessage?.RequestUri?.AbsoluteUri ?? "?";
         var method = httpResponse.RequestMessage?.Method.Method ?? "";
+        
+        var stringContent = message ?? await httpResponse.Content.ReadAsStringAsync();
+        
         _logger.LogError(
-            "Repository request failed: Status {StatusCode} {ReasonPhrase} (Uri: {Method} {AbsoluteUri})\nSparql Query: \n{SparqlQuery}",
-            (int) httpResponse.StatusCode, httpResponse.ReasonPhrase, method, reqUri, sparqlQuery);
+            "Repository request failed: Status {StatusCode} {ReasonPhrase} (Uri: {Method} {AbsoluteUri})\nSparql Query: \n{SparqlQuery}. Message: {Msg}",
+            (int) httpResponse.StatusCode, httpResponse.ReasonPhrase, method, reqUri, sparqlQuery, stringContent);
 
-
-        return new Result<T>(new RepositoryException($"Repository request failed: Status {httpResponse.ReasonPhrase}"));
+        return new Result<T>(new RepositoryException($"Repository request failed: Status {httpResponse.ReasonPhrase}. Message: {stringContent}"));
     }
 
     public TryAsync<List<EngineeringSymbol>> GetAllEngineeringSymbolsAsync(bool onlyLatestVersion = true,
@@ -41,13 +42,13 @@ public class FusekiRepository : IEngineeringSymbolRepository
             var httpResponse =
                 await _fuseki.QueryAsync(query, "application/ld+json"); //"application/sparql-results+json" "text/csv"
 
+            var stringContent = await httpResponse.Content.ReadAsStringAsync();
+            
             if (!httpResponse.IsSuccessStatusCode)
             {
-                return FusekiRequestErrorResult<List<EngineeringSymbol>>(httpResponse, query);
+                return await FusekiRequestErrorResult<List<EngineeringSymbol>>(httpResponse, stringContent, sparqlQuery: query);
             }
-
-            var stringContent = await httpResponse.Content.ReadAsStringAsync();
-
+            
             return JsonLdParser.ParseEngineeringSymbols(stringContent);
         };
 
@@ -65,12 +66,12 @@ public class FusekiRepository : IEngineeringSymbolRepository
         {
             var httpResponse = await _fuseki.QueryAsync(query, "application/ld+json"); //"text/turtle"
 
+            var stringContent = await httpResponse.Content.ReadAsStringAsync();
+            
             if (!httpResponse.IsSuccessStatusCode)
             {
-                return FusekiRequestErrorResult<List<EngineeringSymbol>>(httpResponse, query);
+                return await FusekiRequestErrorResult<List<EngineeringSymbol>>(httpResponse, stringContent, sparqlQuery: query);
             }
-
-            var stringContent = await httpResponse.Content.ReadAsStringAsync();
 
             var parsedSymbols = JsonLdParser.ParseEngineeringSymbols(stringContent);
 
@@ -89,10 +90,13 @@ public class FusekiRepository : IEngineeringSymbolRepository
             _logger.LogInformation("Sparql Query:\n{SparqlQuery}", query);
 
             var httpResponse = await _fuseki.UpdateAsync(query);
+            
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                return await FusekiRequestErrorResult<string>(httpResponse, sparqlQuery: query);
+            }
 
-            return httpResponse.IsSuccessStatusCode
-                ? newSymbol.Id
-                : FusekiRequestErrorResult<string>(httpResponse, query);
+            return newSymbol.Id;
         };
 
 
@@ -112,10 +116,13 @@ public class FusekiRepository : IEngineeringSymbolRepository
                 _logger.LogInformation("Put Graph:\n{SymbolGraphTurtle}", symbolGraphTurtle);
 
                 var httpResponse = await _fuseki.PutGraphAsync(graph, symbolGraphTurtle);
+            
+                if (!httpResponse.IsSuccessStatusCode)
+                {
+                    return await FusekiRequestErrorResult<bool>(httpResponse);
+                }
 
-                return httpResponse.IsSuccessStatusCode
-                    ? true
-                    : FusekiRequestErrorResult<bool>(httpResponse, symbolGraphTurtle);
+                return true;
             }));
 
     public TryAsync<bool> DeleteEngineeringSymbolAsync(string id) =>
@@ -133,7 +140,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
                 return httpResponse.IsSuccessStatusCode
                     ? true
-                    : FusekiRequestErrorResult<bool>(httpResponse, query);
+                    : await FusekiRequestErrorResult<bool>(httpResponse, sparqlQuery: query);
             }));
 
     
@@ -174,7 +181,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
         if (!httpResponse.IsSuccessStatusCode)
         {
-            return FusekiRequestErrorResult<bool>(httpResponse, query);
+            return await FusekiRequestErrorResult<bool>(httpResponse, sparqlQuery: query);
         }
 
         var res = await httpResponse.Content.ReadFromJsonAsync<FusekiAskResponse>();
@@ -200,7 +207,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
         if (!httpResponse.IsSuccessStatusCode)
         {
-            return FusekiRequestErrorResult<bool>(httpResponse, query);
+            return await FusekiRequestErrorResult<bool>(httpResponse, sparqlQuery: query);
         }
 
         var res = await httpResponse.Content.ReadFromJsonAsync<FusekiAskResponse>();

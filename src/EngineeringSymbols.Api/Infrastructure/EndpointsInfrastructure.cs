@@ -135,7 +135,7 @@ public static class EndpointsInfrastructure
                 => await GetRequestBodyAsString(request)
                     .Bind(query => repo.FusekiQueryAsync(query, request.Headers.Accept.ToString()))
                     .Match(Results.Extensions.Fuseki, OnFail(app.Logger)))
-            .WithTags("Fuseki")
+            .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Fuseki query", "Query fuseki"))
             .Accepts<string>("application/sparql-query; charset=UTF-8")
             .Produces<FusekiSelectResponse>(contentType: ContentTypes.JsonLd,
@@ -146,7 +146,7 @@ public static class EndpointsInfrastructure
                 => await GetRequestBodyAsString(request)
                     .Bind(query => repo.FusekiUpdateAsync(query, request.Headers.Accept.ToString()))
                     .Match(Results.Extensions.Fuseki, OnFail(app.Logger)))
-            .WithTags("Fuseki")
+            .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Fuseki UPDATE query", "Update Query"))
             .Accepts<string>("application/sparql-query; charset=UTF-8")
             .Produces<string>(contentType: ContentTypes.JsonLd,
