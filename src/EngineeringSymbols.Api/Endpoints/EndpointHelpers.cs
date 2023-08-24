@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser;
@@ -94,16 +95,8 @@ public static class EndpointHelpers
                         "Failed to deserialize symbol content. Invalid Content-Type");
                     break;
             }
-
-            return parsedDto.Match<Result<EngineeringSymbolCreateDto>>(dto =>
-                {
-                    var validationResult = new EngineeringSymbolCreateDtoValidator().Validate(dto);
-
-                    return validationResult.IsValid
-                        ? dto
-                        : new Result<EngineeringSymbolCreateDto>(
-                            new ValidationException(validationResult.ToDictionary()));
-                },
+            
+            return parsedDto.Match<Result<EngineeringSymbolCreateDto>>(dto => dto,
                 ex => new Result<EngineeringSymbolCreateDto>(ex));
         };
 
@@ -114,4 +107,39 @@ public static class EndpointHelpers
             var content = await stream.ReadToEndAsync();
             return content;
         };
+    
+    public static TryAsync<User> GetUserInformation(ClaimsPrincipal claimsPrincipal)
+        => async () =>
+        {
+            var claims = claimsPrincipal.Claims.ToList();
+            
+            var oidString = claims.Find(claim => claim.Type == "http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+            
+            if (!Guid.TryParse(oidString, out var oid))
+            {
+                return new Result<User>(new ValidationException("Failed to determine user id (oid)."));
+            }
+
+            var roles = claims.Where(claim => claim.Type == ClaimTypes.Role)
+                .Select(claim => claim.Value)
+                .ToList();
+            
+            var friendlyName = claims.Find(c => c.Type == "preferred_username")?.Value;
+
+            return new User(oid, roles, friendlyName ?? "");
+        };
+
+
+    public static TryAsync<EngineeringSymbolCreateDto> ValidateCreateDto(EngineeringSymbolCreateDto dto)
+        => async () =>
+        {
+            var validationResult = new EngineeringSymbolCreateDtoValidator().Validate(dto);
+
+            return validationResult.IsValid
+                ? dto
+                : new Result<EngineeringSymbolCreateDto>(
+                    new ValidationException(validationResult.ToDictionary()));
+        };
+
+    //http://schemas.microsoft.com/identity/claims/objectidentifier
 }

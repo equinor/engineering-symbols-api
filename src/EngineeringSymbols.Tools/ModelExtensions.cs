@@ -1,6 +1,8 @@
 using System.Globalization;
+using System.Text;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
+using EngineeringSymbols.Tools.Utils;
 
 namespace EngineeringSymbols.Tools;
 
@@ -17,7 +19,7 @@ public static class ModelExtensions
             DateTimeUpdated: DateTimeOffset.MinValue, 
             DateTimePublished: DateTimeOffset.MinValue, 
             Owner: dto.Owner,
-            Geometry: dto.Geometry,
+            Geometry: StringHelpers.RemoveAllWhitespaceExceptSingleSpace(dto.Geometry),
             Width: dto.Width,
             Height: dto.Height,
             Connectors: dto.Connectors.Map(connectorDto 

@@ -57,7 +57,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                         Right: dto => dto,
                         Left: errors => new Result<EngineeringSymbolCreateDto>(new ValidationException(errors))))
             .ToAsync()
-            .Bind(dto => validationOnly
+            .Bind(dto => !validationOnly
                 ? _repo.InsertEngineeringSymbolAsync(dto)
                 : async () => string.Empty);
 

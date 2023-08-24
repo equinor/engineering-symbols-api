@@ -13,7 +13,7 @@ using static EngineeringSymbols.Api.Endpoints.EndpointsCommon;
 namespace EngineeringSymbols.Api.Infrastructure;
 
 internal delegate Task<IResult> CreateEngineeringSymbolHandler(IEngineeringSymbolService symbolService,
-    HttpRequest request, ClaimsPrincipal user, [FromQuery(Name = "validationOnly")] bool? validationOnly);
+    HttpRequest request, ClaimsPrincipal claimsPrincipal, [FromQuery(Name = "validationOnly")] bool? validationOnly);
 
 public static class EndpointsInfrastructure
 {
@@ -65,7 +65,7 @@ public static class EndpointsInfrastructure
 
 
         management.MapGet("/{idOrKey}",
-                async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrKey)
+                async (IEngineeringSymbolService symbolService, ClaimsPrincipal claimsPrincipal, string idOrKey)
                     => await symbolService
                         .GetSymbolByIdOrKeyAsync(idOrKey, publicVersion: false)
                         .Match(TypedResults.Ok, OnFail(app.Logger)))
@@ -77,11 +77,12 @@ public static class EndpointsInfrastructure
 
 
         management.MapPost("/",
-                (CreateEngineeringSymbolHandler) (async (symbolService, request, user, validationOnly) =>
+                (CreateEngineeringSymbolHandler) (async (symbolService, request, claimsPrincipal, validationOnly) =>
                     await GetSymbolCreateContentFromRequest(request)
                         .Bind(content => ParseSymbolCreateContent(request.ContentType, content))
-                        .Bind(dto => symbolService.CreateSymbolAsync(dto with {Owner = user.Identity?.Name ?? ""},
-                            validationOnly ?? false))
+                        .Bind(dto => GetUserInformation(claimsPrincipal)
+                            .Bind(user => ValidateCreateDto(dto with { Owner = user.ObjectIdentifier.ToString()})))
+                        .Bind(dto => symbolService.CreateSymbolAsync(dto, validationOnly ?? false))
                         .Match(
                             Succ: guid => validationOnly is true ? TypedResults.Ok() : TypedResults.Created(guid),
                             Fail: OnFail(app.Logger))
@@ -140,7 +141,7 @@ public static class EndpointsInfrastructure
             .Produces<FusekiSelectResponse>(contentType: ContentTypes.JsonLd,
                 additionalContentTypes: ContentTypes.Turtle)
             .RequireAuthorization(Policy.OnlyAdmins);
-        
+
         fuseki.MapPost("/update", async (HttpRequest request, IEngineeringSymbolRepository repo)
                 => await GetRequestBodyAsString(request)
                     .Bind(query => repo.FusekiUpdateAsync(query, request.Headers.Accept.ToString()))

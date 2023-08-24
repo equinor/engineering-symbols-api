@@ -32,8 +32,8 @@ public static class EngineeringSymbolFieldValidators
     public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolOwner<T>(this IRuleBuilder<T, string> ruleBuilder) {
         return ruleBuilder
             .NotNull()
-            .EmailAddress()
-            .WithMessage("Invalid value. Must be a valid email address.");
+            .Must(v => Guid.TryParse(v, out _))
+            .WithMessage("Not a valid Guid");
     }
     
     public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolDescription<T>(this IRuleBuilder<T, string> ruleBuilder) {
