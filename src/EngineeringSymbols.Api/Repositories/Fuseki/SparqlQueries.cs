@@ -3,7 +3,7 @@ using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 
-namespace EngineeringSymbols.Api.Repositories;
+namespace EngineeringSymbols.Api.Repositories.Fuseki;
 
 public static class SparqlQueries
 {
@@ -177,8 +177,8 @@ public static class SparqlQueries
                         {{sub}} {{ESProp.HasDescriptionIriPrefix}} "{{symbol.Description}}"^^xsd:string .
                         {{sub}} {{ESProp.IsTypeIriPrefix}} <{{RdfConst.SymbolTypeIri}}> .
                         {{sub}} {{ESProp.HasDateCreatedIriPrefix}} "{{DateTimeOffset.UtcNow:O}}"^^xsd:dateTime .
-                        {{sub}} {{ESProp.HasDateUpdatedIriPrefix}} "{{DateTimeOffset.MinValue:O}}"^^xsd:dateTime .
-                        {{sub}} {{ESProp.HasDatePublishedIriPrefix}} "{{DateTimeOffset.MinValue:O}}"^^xsd:dateTime .
+                        {{sub}} {{ESProp.HasDateUpdatedIriPrefix}} "{{DateTimeOffset.UnixEpoch:O}}"^^xsd:dateTime .
+                        {{sub}} {{ESProp.HasDatePublishedIriPrefix}} "{{DateTimeOffset.UnixEpoch:O}}"^^xsd:dateTime .
                         {{sub}} {{ESProp.HasGeometryIriPrefix}} "{{symbol.Geometry}}"^^xsd:string .
                         {{sub}} {{ESProp.HasWidthIriPrefix}} "{{symbol.Width.ToString(nfi)}}"^^xsd:integer .
                         {{sub}} {{ESProp.HasHeightIriPrefix}} "{{symbol.Height.ToString(nfi)}}"^^xsd:integer .

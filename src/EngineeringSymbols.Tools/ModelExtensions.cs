@@ -16,8 +16,8 @@ public static class ModelExtensions
             Status: EngineeringSymbolStatus.Draft, 
             Description: dto.Description, 
             DateTimeCreated: DateTimeOffset.Now,
-            DateTimeUpdated: DateTimeOffset.MinValue, 
-            DateTimePublished: DateTimeOffset.MinValue, 
+            DateTimeUpdated: DateTimeOffset.UnixEpoch, 
+            DateTimePublished: DateTimeOffset.UnixEpoch, 
             Owner: dto.Owner,
             Geometry: StringHelpers.RemoveAllWhitespaceExceptSingleSpace(dto.Geometry),
             Width: dto.Width,
@@ -98,9 +98,9 @@ public static class ModelExtensions
             Key: symbol.Key,
             Status: EngineeringSymbolStatus.None.ToString(),
             Description: symbol.Description,
-            DateTimeCreated: DateTimeOffset.MinValue,
-            DateTimeUpdated: DateTimeOffset.MinValue,
-            DateTimePublished: DateTimeOffset.MinValue,
+            DateTimeCreated: DateTimeOffset.UnixEpoch,
+            DateTimeUpdated: DateTimeOffset.UnixEpoch,
+            DateTimePublished: DateTimeOffset.UnixEpoch,
             Owner: symbol.Owner,
             Geometry: symbol.Geometry,
             Width: symbol.Width,
@@ -164,9 +164,9 @@ public static class ModelExtensions
                     {{ESProp.HasEngSymIdIriPrefix}} "{{symbol.Id}}"^^xsd:string ;
                     {{ESProp.HasEngSymKeyIriPrefix}} "{{symbol.Key}}"^^xsd:string ;
                     {{ESProp.HasStatusIriPrefix}} "{{symbol.Status}}"^^xsd:string ;
-                    {{ESProp.HasDateCreatedIriPrefix}} "{{symbol.DateTimeCreated.ToString("0")}}"^^xsd:dateTime ;
-                    {{ESProp.HasDateUpdatedIriPrefix}} "{{symbol.DateTimeUpdated.ToString("0")}}"^^xsd:dateTime ;
-                    {{ESProp.HasDatePublishedIriPrefix}} "{{symbol.DateTimePublished.ToString("0")}}"^^xsd:dateTime ;
+                    {{ESProp.HasDateCreatedIriPrefix}} "{{symbol.DateTimeCreated:O}}"^^xsd:dateTime ;
+                    {{ESProp.HasDateUpdatedIriPrefix}} "{{symbol.DateTimeUpdated:O}}"^^xsd:dateTime ;
+                    {{ESProp.HasDatePublishedIriPrefix}} "{{symbol.DateTimePublished:O}}"^^xsd:dateTime ;
                     {{ESProp.HasDescriptionIriPrefix}} "{{symbol.Description}}"^^xsd:string ;
                     {{ESProp.HasOwnerIriPrefix}} "{{symbol.Owner}}"^^xsd:string ;
                     {{ESProp.HasGeometryIriPrefix}} "{{symbol.Geometry}}"^^xsd:string ;

@@ -47,7 +47,7 @@ public static class EngineeringSymbolFieldValidators
     public static IRuleBuilderOptions<T, DateTimeOffset> MustBeValidEngineeringSymbolDateCreated<T>(this IRuleBuilder<T, DateTimeOffset> ruleBuilder) {
         return ruleBuilder
             .NotNull()
-            .Must(d => d != DateTimeOffset.MinValue);
+            .Must(d => d != DateTimeOffset.UnixEpoch);
     }
     
     public static IRuleBuilderOptions<T, DateTimeOffset> MustBeValidEngineeringSymbolDateUpdated<T>(this IRuleBuilder<T, DateTimeOffset> ruleBuilder) {
