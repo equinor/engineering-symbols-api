@@ -141,11 +141,11 @@ resource Fuseki 'Microsoft.Web/sites@2022-03-01' = {
     httpsOnly: true
     reserved: true
     siteConfig: {
-      linuxFxVersion: 'DOCKER|spineacr.azurecr.io/spinefuseki:latest'
+      linuxFxVersion: 'DOCKER|spineacr.azurecr.io/rawfuseki:latest'
       http20Enabled: true
       acrUseManagedIdentityCreds: true
       acrUserManagedIdentityID: AcrPullIdentity.properties.clientId
-      appCommandLine: '--conf /fuseki/config/${fusekiConfig}'
+      appCommandLine: '--update --tdb2 --loc /tdb2 /ds'
       azureStorageAccounts: {
         '${fileShareName}': {
           type: 'AzureFiles'
