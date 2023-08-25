@@ -23,8 +23,8 @@ public static class EndpointsCommon
                 logger?.LogError("Status500InternalServerError with exception: {Exception}", ex);
 
                 var det = ex.Message + ". Inner ex: " + ex.InnerException?.Message;
-                
-                return TypedResults.Problem("Unexpected Error" + det, statusCode: StatusCodes.Status500InternalServerError);
+                throw ex;
+                return TypedResults.Problem("Unexpected Error. " + det, statusCode: StatusCodes.Status500InternalServerError);
             });
     }
 
