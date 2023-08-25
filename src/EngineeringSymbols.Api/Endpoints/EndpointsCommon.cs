@@ -1,3 +1,4 @@
+using System.Text;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.SvgParser.Models;
 
@@ -20,11 +21,22 @@ public static class EndpointsCommon
                 TypedResults.Problem(ex.Message, statusCode: ex.StatusCode))
             .Otherwise(ex =>
             {
-                logger?.LogError("Status500InternalServerError with exception: {Exception}", ex);
+                var exceptionDetails = new StringBuilder();
+                exceptionDetails.AppendLine($"An unhandled exception occured!");
+                exceptionDetails.AppendLine($"Message: {ex.Message}");
+                exceptionDetails.AppendLine($"Source: {ex.Source}");
+                exceptionDetails.AppendLine($"StackTrace: {ex.StackTrace}");
 
-                var det = ex.Message + ". Inner ex: " + ex.InnerException?.Message;
-                throw ex;
-                return TypedResults.Problem("Unexpected Error. " + det, statusCode: StatusCodes.Status500InternalServerError);
+                if (ex.InnerException != null)
+                {
+                    exceptionDetails.AppendLine($"Inner Exception: {ex.InnerException}");
+                }
+
+                var message = exceptionDetails.ToString();
+                
+                logger?.LogError(message);
+                
+                return TypedResults.Problem(detail: message, statusCode: StatusCodes.Status500InternalServerError);
             });
     }
 
