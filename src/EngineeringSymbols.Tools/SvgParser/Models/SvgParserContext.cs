@@ -14,19 +14,19 @@ internal class SvgParserContext
 
     public ExtractedSvgData ExtractedData { get; } = new();
 	
-    public XElement? SvgRootElement { get; set; }
-	
+    public XElement SvgRootElement { get; set; }
+
+    public SvgParserContext(XElement svgRootElement)
+    {
+        SvgRootElement = svgRootElement;
+    }
+    
     public SvgParserResult ToSvgParserResult()
     {
-        if (SvgRootElement == null)
-        {
-            throw new SvgParseException("SvgRootElement was null");
-        }
-
         return new SvgParserResult(
             new EngineeringSymbolSvgParsed
             {
-                Key = ExtractedData.Key,
+                Key = ExtractedData.Key!, // We validate extracted data before calling this method
                 Geometry = string.Join("", ExtractedData.PathData),
                 Width = ExtractedData.Width,
                 Height = ExtractedData.Height,
@@ -37,6 +37,8 @@ internal class SvgParserContext
     {
         var key = Enum.GetName(typeof(SvgParseCategory), category);
 
+        if(key == null) throw new ArgumentException("Failed to convert SvgParseCategory to string"); 
+        
         if (ParseErrors.TryGetValue(key, out var errorList))
         {
             errorList.Add(errorMessage);

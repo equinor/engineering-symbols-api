@@ -164,9 +164,9 @@ public static class ModelExtensions
                     {{ESProp.HasEngSymIdIriPrefix}} "{{symbol.Id}}"^^xsd:string ;
                     {{ESProp.HasEngSymKeyIriPrefix}} "{{symbol.Key}}"^^xsd:string ;
                     {{ESProp.HasStatusIriPrefix}} "{{symbol.Status}}"^^xsd:string ;
-                    {{ESProp.HasDateCreatedIriPrefix}} "{{symbol.DateTimeCreated}}"^^xsd:dateTime ;
-                    {{ESProp.HasDateUpdatedIriPrefix}} "{{symbol.DateTimeUpdated}}"^^xsd:dateTime ;
-                    {{ESProp.HasDatePublishedIriPrefix}} "{{symbol.DateTimePublished}}"^^xsd:dateTime ;
+                    {{ESProp.HasDateCreatedIriPrefix}} "{{symbol.DateTimeCreated:0}}"^^xsd:dateTime ;
+                    {{ESProp.HasDateUpdatedIriPrefix}} "{{symbol.DateTimeUpdated:0}}"^^xsd:dateTime ;
+                    {{ESProp.HasDatePublishedIriPrefix}} "{{symbol.DateTimePublished:0}}"^^xsd:dateTime ;
                     {{ESProp.HasDescriptionIriPrefix}} "{{symbol.Description}}"^^xsd:string ;
                     {{ESProp.HasOwnerIriPrefix}} "{{symbol.Owner}}"^^xsd:string ;
                     {{ESProp.HasGeometryIriPrefix}} "{{symbol.Geometry}}"^^xsd:string ;

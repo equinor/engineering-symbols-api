@@ -2,11 +2,6 @@ namespace EngineeringSymbols.Tools.SvgParser.Models;
 
 public class SvgParseException : Exception
 {
-    public SvgParseException()
-    {
-        
-    }
-    
     public SvgParseException(string message) : base(message)
     {
         

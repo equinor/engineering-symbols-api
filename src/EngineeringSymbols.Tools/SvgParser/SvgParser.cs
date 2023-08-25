@@ -14,62 +14,68 @@ public static class SvgParser
 		return ParseSvgFlow(LoadRootXElementFromFile(filepath));
 	}
 	
-	private static Result<SvgParserResult> ParseSvgFlow(Func<SvgParserContext, Try<SvgParserContext>> xElementLoader)
+	private static Result<SvgParserResult> ParseSvgFlow(Func<Try<SvgParserContext>> xElementLoader)
 	{
-		return CreateSvgParserContext()
-			.Bind(xElementLoader)
+		return xElementLoader()
 			.Bind(ValidateRootElement)
 			.Bind(ParseSvgData)
 			.Map(ctx => ctx.ToSvgParserResult())
 			.Try();
 	}
 	
-	private static Try<SvgParserContext> CreateSvgParserContext()
+	private static Func<Try<SvgParserContext>> LoadRootXElementFromString(string svgString)
 	{
-		return () => new SvgParserContext ();
+		return () => Try(() => XElement.Parse(svgString))
+			.Map(el => new SvgParserContext(el));
 	}
 	
-	private static Func<SvgParserContext, Try<SvgParserContext>> LoadRootXElementFromString(string svgString)
+	private static Func<Try<SvgParserContext>> LoadRootXElementFromFile(string filePath)
 	{
-		return (SvgParserContext ctx) => () => 
-			Try(() => XElement.Parse(svgString))
-				.Map(el => 
-				{ 
-					ctx.SvgRootElement = el; 
-					return ctx;
-				})
-				.IfFail(_ => throw new SvgParseException("Failed to load SVG from string"));
-	}
-	
-	private static Func<SvgParserContext, Try<SvgParserContext>> LoadRootXElementFromFile(string filePath)
-	{
-		return (SvgParserContext ctx) => () =>
-			filePath.Apply(path => Try(() => Path.GetFullPath(path)))
-				.Bind(fullPath => Try(() => XElement.Load(fullPath)))
-				.Map(el =>
+		return () => new Try<string>(() =>
+			{
+
+				var fullPath = "";
+				
+				try
 				{
-					
-					ctx.SvgRootElement = el;
-					return ctx;
-				})
-				.IfFail(e => throw new SvgParseException($"Failed to load SVG from file: {e.Message}"));
+					fullPath = Path.GetFullPath(filePath);
+				}
+				catch (Exception _)
+				{
+					return new Result<string>(new SvgParseException("Invalid file path"));
+				}
+				
+				if (!File.Exists(fullPath))
+				{
+					return new Result<string>(new SvgParseException($"Could not find SVG at path '{filePath}'."));
+				}
+
+				return fullPath;
+			})
+			.Bind(fullPath => new Try<XElement>(() =>
+			{
+				try
+				{
+					return XElement.Load(fullPath);
+				}
+				catch (Exception e)
+				{
+					return new Result<XElement>(new SvgParseException($"Failed to load SVG from path: {filePath}"));
+				}
+			}))
+			.Map(el => new SvgParserContext(el));
 	}
+    
 	
 	private static Try<SvgParserContext> ValidateRootElement(SvgParserContext ctx)
 	{
-		return () =>
-		{
-			if (ctx.SvgRootElement == null  || ctx.SvgRootElement.Name.LocalName != "svg")
-				return new Result<SvgParserContext>(new SvgParseException("Invalid SVG content"));
-			
-			return ctx;
-		};
+		return () => ctx.SvgRootElement.Name.LocalName != "svg" 
+			? new Result<SvgParserContext>(new SvgParseException("Invalid SVG content")) 
+			: ctx;
 	}
 	
 	private static Try<SvgParserContext> ParseSvgData(SvgParserContext ctx)
 	{
-		return () => ctx.SvgRootElement == null
-			? new Result<SvgParserContext>(new SvgParseException("SvgRootElement was null"))
-			: SvgCrawler.ValidateAndExtractData(ctx.SvgRootElement, ctx);
+		return () => SvgCrawler.ValidateAndExtractData(ctx.SvgRootElement, ctx);
 	}
 }

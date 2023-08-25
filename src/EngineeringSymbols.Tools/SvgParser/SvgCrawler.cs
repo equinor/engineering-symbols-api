@@ -33,17 +33,15 @@ internal static class SvgCrawler
 	
 	private static void ProcessSvgElement(this XElement element, SvgParserContext ctx)
 	{
-		// Extract SVG height
-		if (!double.TryParse(element.Attribute("height")?.Value, NumberStyles.Any, CultureInfo.InvariantCulture,
+		if (!int.TryParse(element.Attribute("height")?.Value, NumberStyles.Any, CultureInfo.InvariantCulture,
 			    out var heightParsed))
 		{
 			ctx.AddParseError(SvgParseCategory.Dimensions,"SVG 'height' is missing or invalid");
 		}
 		
 		ctx.ExtractedData.Height = heightParsed;
-
-		// Extract SVG width
-		if (!double.TryParse(element.Attribute("width")?.Value, NumberStyles.Any, CultureInfo.InvariantCulture,
+        
+		if (!int.TryParse(element.Attribute("width")?.Value, NumberStyles.Any, CultureInfo.InvariantCulture,
 			    out var widthParsed))
 		{
 			ctx.AddParseError(SvgParseCategory.Dimensions,"SVG 'width' is missing or invalid");
@@ -63,13 +61,13 @@ internal static class SvgCrawler
 			var viewBoxElements = viewBox
 				.Split(" ")
 				.Map(el => 
-					Try(() => double.Parse(el, NumberStyles.Any, CultureInfo.InvariantCulture))
+					Try(() => 
+						int.Parse(el, NumberStyles.Any, CultureInfo.InvariantCulture))
 						.Try()
-						.Map(res => res)
-						.IfFail(-1d))
+						.IfFail(-1))
 				.ToList();
 
-			if (viewBoxElements.Contains(-1d))
+			if (viewBoxElements.Contains(-1))
 			{
 				ctx.AddParseError(SvgParseCategory.Dimensions,$"Could not parse viewBox attribute value in <svg> element");
 			} else if (viewBoxElements.Count != 4)
@@ -78,7 +76,7 @@ internal static class SvgCrawler
 			}
 			else if(viewBoxElements[0] != 0 || viewBoxElements[1] != 0 || viewBoxElements[2] != widthParsed || viewBoxElements[3] != heightParsed)
 			{
-				var msgDetails = heightParsed != 0 && widthParsed != 0
+				var msgDetails = heightParsed != 0d && widthParsed != 0d
 					? $"Expected '0 0 {widthParsed} {heightParsed}', but got '{viewBoxElements[0]} {viewBoxElements[1]} {viewBoxElements[2]} {viewBoxElements[3]}.'"
 					: "";
 				
