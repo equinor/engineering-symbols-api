@@ -140,41 +140,39 @@ public static class ModelExtensions
         var nfi = new NumberFormatInfo {NumberDecimalSeparator = "."};
         
         var hasConnectors = connectorPr.Count > 0
-            ? $$"""
-                    {{ESProp.HasConnectorIriPrefix}} {{string.Join(", ", connectorPr)}} .
-                """
+            ? $"    {ESProp.HasConnectorIriPrefix} {string.Join(", ", connectorPr)} ."
             : "";
 
         var end = symbol.Connectors.Count > 0 ? ";" : ".";
         
         var connectors = symbol.Connectors.Select(connector => 
-            $$"""
-            <{{GetConnectorIriPrefix(symbol.Id, connector.Id)}}>
-                a {{RdfConst.ConnectorTypeIriPrefix}} ;
-                {{ESProp.HasNameIriPrefix}} "{{connector.Id}}"^^xsd:string ;
-                {{ESProp.HasDirectionIriPrefix}} "{{connector.Direction}}"^^xsd:integer ;
-                {{ESProp.HasPositionXIriPrefix}} "{{connector.RelativePosition.X.ToString(nfi)}}"^^xsd:decimal ;
-                {{ESProp.HasPositionYIriPrefix}} "{{connector.RelativePosition.Y.ToString(nfi)}}"^^xsd:decimal .
+            $"""
+            <{GetConnectorIriPrefix(symbol.Id, connector.Id)}>
+                a {RdfConst.ConnectorTypeIriPrefix} ;
+                {ESProp.HasNameIriPrefix} "{connector.Id}"^^xsd:string ;
+                {ESProp.HasDirectionIriPrefix} "{connector.Direction}"^^xsd:integer ;
+                {ESProp.HasPositionXIriPrefix} "{connector.RelativePosition.X.ToString(nfi)}"^^xsd:decimal ;
+                {ESProp.HasPositionYIriPrefix} "{connector.RelativePosition.Y.ToString(nfi)}"^^xsd:decimal .
             """).ToList();
         
-        return $$"""
-                  {{RdfConst.AllPrefixes}}
-                  <{{RdfConst.IndividualPrefix}}:{{symbol.Id}}>
-                    a {{RdfConst.SymbolTypeIriPrefix}} ;
-                    {{ESProp.HasEngSymIdIriPrefix}} "{{symbol.Id}}"^^xsd:string ;
-                    {{ESProp.HasEngSymKeyIriPrefix}} "{{symbol.Key}}"^^xsd:string ;
-                    {{ESProp.HasStatusIriPrefix}} "{{symbol.Status}}"^^xsd:string ;
-                    {{ESProp.HasDateCreatedIriPrefix}} "{{symbol.DateTimeCreated:O}}"^^xsd:dateTime ;
-                    {{ESProp.HasDateUpdatedIriPrefix}} "{{symbol.DateTimeUpdated:O}}"^^xsd:dateTime ;
-                    {{ESProp.HasDatePublishedIriPrefix}} "{{symbol.DateTimePublished:O}}"^^xsd:dateTime ;
-                    {{ESProp.HasDescriptionIriPrefix}} "{{symbol.Description}}"^^xsd:string ;
-                    {{ESProp.HasOwnerIriPrefix}} "{{symbol.Owner}}"^^xsd:string ;
-                    {{ESProp.HasGeometryIriPrefix}} "{{symbol.Geometry}}"^^xsd:string ;
-                    {{ESProp.HasWidthIriPrefix}} "{{symbol.Width}}"^^xsd:integer ;
-                    {{ESProp.HasHeightIriPrefix}} "{{symbol.Height}}"^^xsd:integer {{end}}
-                  {{hasConnectors}}
+        return $"""
+                  {RdfConst.AllPrefixes}
+                  <{RdfConst.IndividualPrefix}:{symbol.Id}>
+                    a {RdfConst.SymbolTypeIriPrefix} ;
+                    {ESProp.HasEngSymIdIriPrefix} "{symbol.Id}"^^xsd:string ;
+                    {ESProp.HasEngSymKeyIriPrefix} "{symbol.Key}"^^xsd:string ;
+                    {ESProp.HasStatusIriPrefix} "{symbol.Status}"^^xsd:string ;
+                    {ESProp.HasDateCreatedIriPrefix} "{symbol.DateTimeCreated:O}"^^xsd:dateTime ;
+                    {ESProp.HasDateUpdatedIriPrefix} "{symbol.DateTimeUpdated:O}"^^xsd:dateTime ;
+                    {ESProp.HasDatePublishedIriPrefix} "{symbol.DateTimePublished:O}"^^xsd:dateTime ;
+                    {ESProp.HasDescriptionIriPrefix} "{symbol.Description}"^^xsd:string ;
+                    {ESProp.HasOwnerIriPrefix} "{symbol.Owner}"^^xsd:string ;
+                    {ESProp.HasGeometryIriPrefix} "{symbol.Geometry}"^^xsd:string ;
+                    {ESProp.HasWidthIriPrefix} "{symbol.Width}"^^xsd:integer ;
+                    {ESProp.HasHeightIriPrefix} "{symbol.Height}"^^xsd:integer {end}
+                  {hasConnectors}
                   
-                  {{string.Join(Environment.NewLine + Environment.NewLine, connectors)}}
+                  {string.Join(Environment.NewLine + Environment.NewLine, connectors)}
                   """;
     }
 }

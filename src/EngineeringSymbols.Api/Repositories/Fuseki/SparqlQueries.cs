@@ -10,8 +10,8 @@ public static class SparqlQueries
     public static string GetAllSymbolsConstructQuery(bool onlyLatestVersion = false, bool onlyPublished = true)
     {
         var onlyPublishedConstraint = onlyPublished
-            ? $$"""
-                    ?s2 {{ESProp.HasStatusIriPrefix}} "Published" .
+            ? $"""
+                    ?s2 {ESProp.HasStatusIriPrefix} "Published" .
             """
             : "";
         
@@ -79,8 +79,8 @@ public static class SparqlQueries
     public static string GetEngineeringSymbolByIdQuery(string id, bool onlyPublished = true)
     {
         var onlyPublishedConstraint = onlyPublished
-            ? $$"""
-                    ?s2 {{ESProp.HasStatusIriPrefix}} "Published" .
+            ? $"""
+                    ?s2 {ESProp.HasStatusIriPrefix} "Published" .
             """
             : "";
         
@@ -110,8 +110,8 @@ public static class SparqlQueries
     public static string GetEngineeringSymbolByKeyQuery(string key, bool onlyPublished = true)
     {
         var onlyPublishedConstraint = onlyPublished
-            ? $$"""
-                    ?s2 {{ESProp.HasStatusIriPrefix}} "Published" .
+            ? $"""
+                    ?s2 {ESProp.HasStatusIriPrefix} "Published" .
             """
             : "";
         
