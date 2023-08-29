@@ -1,12 +1,9 @@
+#!/bin/bash
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
-DATASET_NAME="ds"
-DB_NAME="db1"
-PORT="3030"
-IMAGE_NAME="es-api-fuseki"
-
-DB_PATH="$SCRIPT_DIR/databases/$DB_NAME"
+# Load variables
+source  $SCRIPT_DIR/vars.sh
 
 echo "Using persistant db at: $DB_PATH"
 
