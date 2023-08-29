@@ -1,6 +1,5 @@
 using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Tools;
-using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.Validation;
 
@@ -67,7 +66,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
             .Map(symbols =>
             {
                 var symbol = (EngineeringSymbolDto) symbols.ToArray().First();
-
+                
                 return createDto.ToDto() with
                 {
                     Id = symbol.Id,
@@ -76,6 +75,15 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                     Status = symbol.Status
                 };
             })
+            .Bind(dto => new TryAsync<EngineeringSymbolDto>(async () =>
+            {
+                if (dto.Status == EngineeringSymbolStatus.Published.ToString())
+                {
+                    return new Result<EngineeringSymbolDto>(
+                        new ValidationException("Symbol has already been published."));
+                }
+                return dto;
+            }))
             .Bind(_repo.ReplaceEngineeringSymbolAsync);
 
     public TryAsync<bool> UpdateSymbolStatusAsync(string id, EngineeringSymbolStatusDto statusDto)

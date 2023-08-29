@@ -1,6 +1,4 @@
 using System.Security.Claims;
-using Azure.Core;
-using EngineeringSymbols.Api.Endpoints;
 using EngineeringSymbols.Api.Infrastructure.Auth;
 using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Api.Repositories.Fuseki;
@@ -77,11 +75,11 @@ public static class EndpointsInfrastructure
 
 
         management.MapPost("/",
-                (CreateEngineeringSymbolHandler) (async (symbolService, request, claimsPrincipal, validationOnly) =>
+                (CreateEngineeringSymbolHandler)(async (symbolService, request, claimsPrincipal, validationOnly) =>
                     await GetSymbolCreateContentFromRequest(request)
                         .Bind(content => ParseSymbolCreateContent(request.ContentType, content))
                         .Bind(dto => GetUserInformation(claimsPrincipal)
-                            .Bind(user => ValidateCreateDto(dto with { Owner = user.ObjectIdentifier.ToString()})))
+                            .Bind(user => ValidateCreateDto(dto with { Owner = user.ObjectIdentifier.ToString() })))
                         .Bind(dto => symbolService.CreateSymbolAsync(dto, validationOnly ?? false))
                         .Match(
                             Succ: guid => validationOnly is true ? TypedResults.Ok() : TypedResults.Created(guid),
@@ -97,8 +95,10 @@ public static class EndpointsInfrastructure
 
 
         management.MapPut("/{id}",
-                async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolCreateDto createDto)
-                    => await symbolService.UpdateSymbolAsync(id, createDto).Match(
+                async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolCreateDto createDto) =>
+                    await ValidateCreateDto(createDto)
+                    .Bind(dto => symbolService.UpdateSymbolAsync(id, dto))
+                    .Match(
                         Succ: success => success ? TypedResults.Ok() : TypedResults.Problem("Updated failed"),
                         Fail: OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
