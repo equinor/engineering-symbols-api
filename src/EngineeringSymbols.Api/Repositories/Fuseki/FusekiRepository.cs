@@ -78,7 +78,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
                 : parsedSymbols;
         };
 
-    public TryAsync<string> InsertEngineeringSymbolAsync(EngineeringSymbolCreateDto symbol) =>
+    public TryAsync<EngineeringSymbol> InsertEngineeringSymbolAsync(EngineeringSymbolCreateDto symbol) =>
         async () =>
         {
             var newSymbol = symbol.ToInsertEntity();
@@ -91,10 +91,10 @@ public class FusekiRepository : IEngineeringSymbolRepository
             
             if (!httpResponse.IsSuccessStatusCode)
             {
-                return await FusekiRequestErrorResult<string>(httpResponse, sparqlQuery: query);
+                return await FusekiRequestErrorResult<EngineeringSymbol>(httpResponse, sparqlQuery: query);
             }
 
-            return newSymbol.Id;
+            return newSymbol;
         };
 
 

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using EngineeringSymbols.Api.Infrastructure.Auth;
 using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Api.Repositories.Fuseki;
+using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -82,12 +83,12 @@ public static class EndpointsInfrastructure
                             .Bind(user => ValidateCreateDto(dto with { Owner = user.ObjectIdentifier.ToString() })))
                         .Bind(dto => symbolService.CreateSymbolAsync(dto, validationOnly ?? false))
                         .Match(
-                            Succ: guid => validationOnly is true ? TypedResults.Ok() : TypedResults.Created(guid),
+                            Succ: symbol => validationOnly is true ? TypedResults.Ok(symbol.ToCreateDto()) : TypedResults.Created(symbol.Id, symbol),
                             Fail: OnFail(app.Logger))
                 ))
             .Accepts<string>(ContentTypes.Svg, ContentTypes.Json)
-            .Produces(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status201Created)
+            .Produces<EngineeringSymbolCreateDto>(StatusCodes.Status200OK)
+            .Produces<EngineeringSymbolDto>(StatusCodes.Status201Created)
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Create an Engineering Symbol revision",
                 "Create Engineering Symbol revision. If query parameter 'validationOnly' is true, only a validation of the SVG file or JSON symbol object is performed, nothing will be stored in the database."))

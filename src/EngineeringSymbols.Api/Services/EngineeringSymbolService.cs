@@ -49,7 +49,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                 : symbols.Map(s => s.ToDto()));
 
 
-    public TryAsync<string> CreateSymbolAsync(EngineeringSymbolCreateDto createDto, bool validationOnly)
+    public TryAsync<EngineeringSymbolDto> CreateSymbolAsync(EngineeringSymbolCreateDto createDto, bool validationOnly)
         => new Try<EngineeringSymbolCreateDto>(
                 () => createDto.Validate().ToEither()
                     .Match<Result<EngineeringSymbolCreateDto>>(
@@ -58,7 +58,8 @@ public class EngineeringSymbolService : IEngineeringSymbolService
             .ToAsync()
             .Bind(dto => !validationOnly
                 ? _repo.InsertEngineeringSymbolAsync(dto)
-                : async () => string.Empty);
+                : async () => dto.ToInsertEntity() with { Id = "", DateTimeCreated = DateTimeOffset.UnixEpoch})
+            .Map(es => es.ToDto());
 
 
     public TryAsync<bool> UpdateSymbolAsync(string id, EngineeringSymbolCreateDto createDto)

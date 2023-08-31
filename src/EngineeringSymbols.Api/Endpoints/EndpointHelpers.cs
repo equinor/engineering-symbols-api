@@ -58,8 +58,6 @@ public static class EndpointHelpers
 			{
 				case ContentTypes.Json:
 					{
-						throw new Exception();
-
 						try
 						{
 							var obj = JsonConvert.DeserializeObject<EngineeringSymbolCreateDto>(content);

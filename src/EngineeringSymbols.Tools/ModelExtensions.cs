@@ -68,6 +68,19 @@ public static class ModelExtensions
             Connectors: new List<EngineeringSymbolConnectorDto>());
     }
     
+    public static EngineeringSymbolCreateDto ToCreateDto(this EngineeringSymbolDto sym)
+    {
+        return new EngineeringSymbolCreateDto
+        (
+            Key: sym.Key,
+            Description: sym.Description,
+            Owner: sym.Owner,
+            Geometry: sym.Geometry,
+            Width: sym.Width,
+            Height: sym.Height,
+            Connectors: sym.Connectors);
+    }
+    
     public static EngineeringSymbolDto ToDto(this EngineeringSymbol symbol)
     {
         return new EngineeringSymbolDto(
