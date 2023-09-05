@@ -9,7 +9,7 @@ public class EngineeringSymbolDtoValidator : AbstractValidator<EngineeringSymbol
     public EngineeringSymbolDtoValidator()
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
-        
+
         RuleFor(symbol => symbol.Id).MustBeValidEngineeringSymbolId();
 
         RuleFor(symbol => symbol.Key).MustBeValidEngineeringSymbolKey();
@@ -29,10 +29,15 @@ public class EngineeringSymbolDtoValidator : AbstractValidator<EngineeringSymbol
         RuleFor(symbol => symbol.Geometry).MustBeValidEngineeringSymbolGeometry();
 
         RuleFor(symbol => symbol.Width).MustBeValidEngineeringSymbolWidth();
-        
+
         RuleFor(symbol => symbol.Height).MustBeValidEngineeringSymbolHeight();
-        
-        RuleForEach(symbol => symbol.Connectors).SetValidator(new EngineeringSymbolConnectorDtoValidator());
+
+        RuleFor(symbol => symbol.Connectors)
+            .MustBeValidEngineeringSymbolConnectorList()
+            .ForEach(connectorRule =>
+            {
+                connectorRule.SetValidator(new EngineeringSymbolConnectorDtoValidator());
+            });
     }
 }
 
@@ -43,7 +48,7 @@ public class EngineeringSymbolCreateDtoValidator : AbstractValidator<Engineering
         RuleLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(symbol => symbol.Key).MustBeValidEngineeringSymbolKey();
-        
+
         RuleFor(symbol => symbol.Owner).MustBeValidEngineeringSymbolOwner();
 
         RuleFor(symbol => symbol.Description).MustBeValidEngineeringSymbolDescription();
@@ -51,10 +56,15 @@ public class EngineeringSymbolCreateDtoValidator : AbstractValidator<Engineering
         RuleFor(symbol => symbol.Geometry).MustBeValidEngineeringSymbolGeometry();
 
         RuleFor(symbol => symbol.Width).MustBeValidEngineeringSymbolWidth();
-        
+
         RuleFor(symbol => symbol.Height).MustBeValidEngineeringSymbolHeight();
 
-        RuleForEach(symbol => symbol.Connectors).SetValidator(new EngineeringSymbolConnectorDtoValidator());
+        RuleFor(symbol => symbol.Connectors)
+            .MustBeValidEngineeringSymbolConnectorList()
+            .ForEach(connectorRule =>
+            {
+                connectorRule.SetValidator(new EngineeringSymbolConnectorDtoValidator());
+            });
     }
 }
 
@@ -63,22 +73,26 @@ public class EngineeringSymbolConnectorDtoValidator : AbstractValidator<Engineer
     public EngineeringSymbolConnectorDtoValidator()
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
-        
+
         RuleFor(connector => connector.Id).MustBeValidEngineeringSymbolConnectorId();
         RuleFor(connector => connector.RelativePosition).MustBeValidEngineeringSymbolConnectorPoint();
         RuleFor(connector => connector.Direction).MustBeValidEngineeringSymbolConnectorDirection();
     }
 }
 
-public class EngineeringSymbolKeyValidator : AbstractValidator<string> {
-    public EngineeringSymbolKeyValidator() {
+public class EngineeringSymbolKeyValidator : AbstractValidator<string>
+{
+    public EngineeringSymbolKeyValidator()
+    {
         RuleLevelCascadeMode = CascadeMode.Stop;
         RuleFor(key => key).MustBeValidEngineeringSymbolKey();
     }
 }
 
-public class EngineeringSymbolIdValidator : AbstractValidator<string> {
-    public EngineeringSymbolIdValidator() {
+public class EngineeringSymbolIdValidator : AbstractValidator<string>
+{
+    public EngineeringSymbolIdValidator()
+    {
         RuleLevelCascadeMode = CascadeMode.Stop;
         RuleFor(key => key).MustBeValidEngineeringSymbolId();
     }

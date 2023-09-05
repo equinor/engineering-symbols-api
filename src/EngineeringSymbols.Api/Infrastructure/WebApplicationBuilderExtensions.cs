@@ -9,11 +9,11 @@ public static class WebApplicationBuilderExtensions
     public static WebApplicationBuilder AddLogging(this WebApplicationBuilder builder)
     {
         builder.Logging.ClearProviders();
-        
+
         var logLevel = builder.Environment.IsProduction()
             ? LogEventLevel.Error
             : LogEventLevel.Information;
-        
+
         var logger = new LoggerConfiguration()
             .MinimumLevel.Information()
             .MinimumLevel.Override("Microsoft", logLevel)
@@ -24,7 +24,9 @@ public static class WebApplicationBuilderExtensions
             .CreateLogger();
 
         builder.Logging.AddSerilog(logger);
-        
+
+        builder.Services.AddProblemDetails();
+
         return builder;
     }
 }
