@@ -128,10 +128,36 @@ public static class EndpointHelpers
 
 			var friendlyName = claims.Find(c => c.Type == "preferred_username")?.Value;
 
-			return new User(oid, roles, friendlyName ?? "");
+			return new User(oid, roles, friendlyName ?? "", "No email yet");
 		};
 
 
+	public static TryAsync<EngineeringSymbolCreateDto> AddUserFromClaimsPrincipal(EngineeringSymbolCreateDto dto, ClaimsPrincipal claimsPrincipal)
+		=> async () =>
+		{
+			
+			var claims = claimsPrincipal.Claims.ToList();
+
+			// var oidString = claims.Find(claim => claim.Type == "http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+			//
+			// if (!Guid.TryParse(oidString, out var oid))
+			// {
+			// 	return new Result<User>(new ValidationException("Failed to determine user id (oid)."));
+			// }
+
+			var roles = claims.Where(claim => claim.Type == ClaimTypes.Role)
+				.Select(claim => claim.Value)
+				.ToList();
+
+			var friendlyName = claims.Find(c => c.Type == "preferred_username")?.Value;
+
+
+			var creators = dto.Creators;
+			creators.Add(new Tools.Entities.User(friendlyName ?? "No name?","No email yet - TODO"));
+
+			return dto with {Creators = creators};
+		};
+	
 	public static TryAsync<EngineeringSymbolCreateDto> ValidateCreateDto(EngineeringSymbolCreateDto dto)
 		=> async () =>
 		{

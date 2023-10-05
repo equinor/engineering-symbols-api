@@ -87,7 +87,7 @@ internal static class SvgCrawler
 		foreach (var el in metadata)
 		{
 			// Assume that all versions has the "key" property
-			if (el.Name.NamespaceName != RdfConst.EngSymOntologyIri) continue;
+			if (el.Name.NamespaceName != Ontology.EngSymOntologyIri) continue;
 
 			switch (el.Name.LocalName)
 			{

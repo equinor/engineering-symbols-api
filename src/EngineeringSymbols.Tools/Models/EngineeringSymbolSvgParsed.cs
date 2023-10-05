@@ -4,6 +4,6 @@ public record EngineeringSymbolSvgParsed
 {
 	public required string Key { get; init; }
 	public required string Geometry { get; init; }
-	public required double Width { get; init; }
-	public required double Height { get; init; }
+	public required int Width { get; init; }
+	public required int Height { get; init; }
 }

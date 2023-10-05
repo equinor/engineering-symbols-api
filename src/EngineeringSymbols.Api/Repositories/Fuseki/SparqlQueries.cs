@@ -7,34 +7,34 @@ namespace EngineeringSymbols.Api.Repositories.Fuseki;
 
 public static class SparqlQueries
 {
-    public static string GetAllSymbolsConstructQuery(bool onlyLatestVersion = false, bool onlyPublished = true)
-    {
-        var onlyPublishedConstraint = onlyPublished
-            ? $"""
-                    ?s2 {ESProp.HasStatusIriPrefix} "Published" .
+	public static string GetAllSymbolsConstructQuery(bool onlyLatestVersion = false, bool onlyPublished = true)
+	{
+		var onlyPublishedConstraint = onlyPublished
+			? $"""
+                    ?s2 {EsProp.EditorStatusQName} "Published" .
             """
-            : "";
-        
-        var onlyLatestVersionSubQuery = onlyLatestVersion 
-            ? $$"""
+			: "";
+
+		var onlyLatestVersionSubQuery = onlyLatestVersion
+			? $$"""
                   {
                       SELECT ?key (MAX(?dc) AS ?dateCreated) (COUNT(?g) AS ?numVersions)
                       WHERE {
                           GRAPH ?g {
-                              ?s2 {{ESProp.HasEngSymKeyIriPrefix}} ?key .
-                              ?s2 {{ESProp.HasDateCreatedIriPrefix}} ?dc .
+                              ?s2 {{EsProp.IdentifierQName}} ?key .
+                              ?s2 {{EsProp.DateCreatedQName}} ?dc .
                               {{onlyPublishedConstraint}}
                           }
                       }
                       GROUP BY ?key
                   }
-              """ 
-            : "";
-        
-        return $$"""
-                {{RdfConst.XsdPrefix}}
-                {{RdfConst.EngSymPrefix}}
-                {{RdfConst.SymbolPrefix}}
+              """
+			: "";
+
+		return $$"""
+                {{Ontology.XsdPrefixDef}}
+                {{Ontology.EngSymPrefixDef}}
+                {{Ontology.SymbolPrefixDef}}
 
                 CONSTRUCT {
                     GRAPH ?symbolGraph {
@@ -45,50 +45,50 @@ public static class SparqlQueries
                 WHERE {
                     GRAPH ?symbolGraph {
                         ?s ?p ?o .
-                        ?s1 {{ESProp.HasDateCreatedIriPrefix}} ?dateCreated .
+                        ?s1 {{EsProp.DateCreatedQName}} ?dateCreated .
                 {{onlyPublishedConstraint}}
                     }
                 {{onlyLatestVersionSubQuery}}
                 }
                 """;
-    }
+	}
 
-    
-    public static string SymbolExistByIdQuery(string id)
-    {
-        return $$"""
-                {{RdfConst.SymbolPrefix}}
+
+	public static string SymbolExistByIdQuery(string id)
+	{
+		return $$"""
+                {{Ontology.SymbolPrefixDef}}
                 ASK WHERE { 
-                    GRAPH {{RdfConst.IndividualPrefix}}:{{id}} { ?s ?p ?o }
+                    GRAPH {{Ontology.IndividualPrefix}}:{{id}} { ?s ?p ?o }
                 }
                 """;
-    }
-    
-    public static string SymbolExistByKeyQuery(string key)
-    {
-        return $$"""
-                {{RdfConst.EngSymPrefix}}
+	}
+
+	public static string SymbolExistByKeyQuery(string key)
+	{
+		return $$"""
+                {{Ontology.EngSymPrefixDef}}
                 ASK WHERE { 
                     GRAPH ?g { 
-                        ?s {{ESProp.HasEngSymKeyIriPrefix}} "{{key}}" 
+                        ?s {{EsProp.IdentifierQName}} "{{key}}" 
                     }
                 }
                 """;
-    }
-    
-    public static string GetEngineeringSymbolByIdQuery(string id, bool onlyPublished = true)
-    {
-        var onlyPublishedConstraint = onlyPublished
-            ? $"""
-                    ?s2 {ESProp.HasStatusIriPrefix} "Published" .
+	}
+
+	public static string GetEngineeringSymbolByIdQuery(string id, bool onlyPublished = true)
+	{
+		var onlyPublishedConstraint = onlyPublished
+			? $"""
+                    ?s2 {EsProp.EditorStatusQName} "Published" .
             """
-            : "";
-        
-        return $$"""
-                {{RdfConst.XsdPrefix}}
-                {{RdfConst.RdfsPrefix}}
-                {{RdfConst.SymbolPrefix}}
-                {{RdfConst.EngSymPrefix}}
+			: "";
+
+		return $$"""
+                {{Ontology.XsdPrefixDef}}
+                {{Ontology.RdfsPrefixDef}}
+                {{Ontology.SymbolPrefixDef}}
+                {{Ontology.EngSymPrefixDef}}
 
                 CONSTRUCT 
                 {   
@@ -100,26 +100,26 @@ public static class SparqlQueries
                 {
                     GRAPH ?symbolGraph {
                 {{onlyPublishedConstraint}}
-                        ?ss {{ESProp.HasEngSymIdIriPrefix}} "{{id}}" .
+                        ?ss {{EsProp.HasEngSymIdQName}} "{{id}}" .
                         ?s ?p ?o .
                     }
                 }
                 """;
-    }
+	}
 
-    public static string GetEngineeringSymbolByKeyQuery(string key, bool onlyPublished = true)
-    {
-        var onlyPublishedConstraint = onlyPublished
-            ? $"""
-                    ?s2 {ESProp.HasStatusIriPrefix} "Published" .
+	public static string GetEngineeringSymbolByKeyQuery(string key, bool onlyPublished = true)
+	{
+		var onlyPublishedConstraint = onlyPublished
+			? $"""
+                    ?s2 {EsProp.EditorStatusQName} "Published" .
             """
-            : "";
-        
-        return $$"""
-                {{RdfConst.XsdPrefix}}
-                {{RdfConst.RdfsPrefix}}
-                {{RdfConst.SymbolPrefix}}
-                {{RdfConst.EngSymPrefix}}
+			: "";
+
+		return $$"""
+                {{Ontology.XsdPrefixDef}}
+                {{Ontology.RdfsPrefixDef}}
+                {{Ontology.SymbolPrefixDef}}
+                {{Ontology.EngSymPrefixDef}}
 
                 CONSTRUCT 
                 {
@@ -132,115 +132,122 @@ public static class SparqlQueries
                     GRAPH ?g 
                     {
                 {{onlyPublishedConstraint}}
-                        ?ss {{ESProp.HasEngSymKeyIriPrefix}} "{{key}}" .
+                        ?ss {{EsProp.IdentifierQName}} "{{key}}" .
                         ?s ?o ?p .
                     }
                 }
                 """;
-    }
+	}
 
-    public static string DeleteEngineeringSymbolByIdQuery(string id)
-    {
-        return $"""
-                {RdfConst.SymbolPrefix}
-                DROP GRAPH {RdfConst.IndividualPrefix}:{id}
+	public static string DeleteEngineeringSymbolByIdQuery(string id)
+	{
+		return $"""
+                {Ontology.SymbolPrefixDef}
+                DROP GRAPH {Ontology.IndividualPrefix}:{id}
                 """;
-    }
-    
-    public static string InsertEngineeringSymbolQuery(EngineeringSymbol symbol)
-    {
-        var nfi = new NumberFormatInfo {NumberDecimalSeparator = "."};
-        var sub = $"{RdfConst.IndividualPrefix}:{symbol.Id}";
-        
-        var connectorTurtle = symbol.Connectors.Map(connector =>
-        {
-            var cIri = $"{RdfConst.IndividualPrefix}:{symbol.Id}_C_{connector.Id}";
-                
-            return $"""
-                            {sub} {ESProp.HasConnectorIriPrefix} {cIri} .
-                            {cIri} {ESProp.IsTypeIriPrefix} <{RdfConst.ConnectorTypeIri}> .
-                            {cIri} {ESProp.HasNameIriPrefix} "{connector.Id}"^^xsd:string .
-                            {cIri} {ESProp.HasPositionXIriPrefix} "{connector.RelativePosition.X.ToString(nfi)}"^^xsd:decimal .
-                            {cIri} {ESProp.HasPositionYIriPrefix} "{connector.RelativePosition.Y.ToString(nfi)}"^^xsd:decimal .
-                            {cIri} {ESProp.HasDirectionIriPrefix} "{connector.Direction}"^^xsd:integer .
-                    """;
-        }).ToList();
+	}
 
-        return $$"""
-                {{RdfConst.AllPrefixes}}
+	public static string InsertEngineeringSymbolQuery(EngineeringSymbol symbol)
+	{
+		var nfi = new NumberFormatInfo { NumberDecimalSeparator = "." };
+		
+		var sub = $"{Ontology.IndividualPrefix}:{symbol.Id}";
+        
+		var connectorTurtle = symbol.ConnectionPoints.Map(connector =>
+		{
+			var cIri = $"_:ConnectionPoint_{connector.Identifier}";
+
+			return $"""
+                            {sub} {EsProp.HasConnectionPointQName} {cIri} .
+                            {cIri} {EsProp.IsTypeQName} <{Ontology.ConnectionPointTypeIri}> .
+                            {cIri} {EsProp.IdentifierQName} "{connector.Identifier}"^^xsd:string .
+                            {cIri} {EsProp.PositionXQName} "{connector.Position.X.ToString(nfi)}"^^xsd:decimal .
+                            {cIri} {EsProp.PositionYQName} "{connector.Position.Y.ToString(nfi)}"^^xsd:decimal .
+                            {cIri} {EsProp.ConnectorDirectionQName} "{connector.Direction}"^^xsd:integer .
+                    """;
+		}).ToList();
+
+		
+		//     {{sub}} {{EsProp.HasShapeQName}} "{{symbol.Geometry}}"^^xsd:string .
+		
+		
+		//      {{sub}} {{EsProp.CreatorQName}} "{{symbol.Creator}}"^^xsd:string .
+		
+		return $$"""
+                {{Ontology.AllPrefixDefs}}
 
                 INSERT DATA {
                     GRAPH {{sub}} {
-                        {{sub}} {{ESProp.HasEngSymIdIriPrefix}} "{{symbol.Id}}"^^xsd:string .
-                        {{sub}} {{ESProp.HasEngSymKeyIriPrefix}} "{{symbol.Key}}"^^xsd:string .
-                        {{sub}} {{ESProp.HasStatusIriPrefix}} "{{EngineeringSymbolStatus.Draft}}"^^xsd:string .
-                        {{sub}} {{ESProp.HasDescriptionIriPrefix}} "{{symbol.Description}}"^^xsd:string .
-                        {{sub}} {{ESProp.IsTypeIriPrefix}} <{{RdfConst.SymbolTypeIri}}> .
-                        {{sub}} {{ESProp.HasDateCreatedIriPrefix}} "{{DateTimeOffset.UtcNow:O}}"^^xsd:dateTime .
-                        {{sub}} {{ESProp.HasDateUpdatedIriPrefix}} "{{DateTimeOffset.UnixEpoch:O}}"^^xsd:dateTime .
-                        {{sub}} {{ESProp.HasDatePublishedIriPrefix}} "{{DateTimeOffset.UnixEpoch:O}}"^^xsd:dateTime .
-                        {{sub}} {{ESProp.HasGeometryIriPrefix}} "{{symbol.Geometry}}"^^xsd:string .
-                        {{sub}} {{ESProp.HasWidthIriPrefix}} "{{symbol.Width.ToString(nfi)}}"^^xsd:integer .
-                        {{sub}} {{ESProp.HasHeightIriPrefix}} "{{symbol.Height.ToString(nfi)}}"^^xsd:integer .
-                        {{sub}} {{ESProp.HasOwnerIriPrefix}} "{{symbol.Owner}}"^^xsd:string .
+                        {{sub}} {{EsProp.IsTypeQName}} <{{Ontology.SymbolTypeIri}}> .
+                        {{sub}} {{EsProp.HasEngSymIdQName}} "{{symbol.Id}}"^^xsd:string .
+                        {{sub}} {{EsProp.IdentifierQName}} "{{symbol.Identifier}}"^^xsd:string .
+                        {{sub}} {{EsProp.EditorStatusQName}} "{{EngineeringSymbolStatus.Draft}}"^^xsd:string .
+                        {{sub}} {{EsProp.DescriptionQName}} "{{symbol.Description}}"^^xsd:string .
+                        {{sub}} {{EsProp.DateCreatedQName}} "{{DateTimeOffset.UtcNow:O}}"^^xsd:dateTime .
+                        {{sub}} {{EsProp.DateModifiedQName}} "{{DateTimeOffset.UnixEpoch:O}}"^^xsd:dateTime .
+                        {{sub}} {{EsProp.DateIssuedQName}} "{{DateTimeOffset.UnixEpoch:O}}"^^xsd:dateTime .
+                    
+                        {{sub}} {{EsProp.WidthQName}} "{{symbol.Width.ToString(nfi)}}"^^xsd:integer .
+                        {{sub}} {{EsProp.HeightQName}} "{{symbol.Height.ToString(nfi)}}"^^xsd:integer .
+                  
                 {{string.Join(Environment.NewLine, connectorTurtle)}}
                     }
                 }
                 """;
-    }
+	}
 
-    public static string? UpdateEngineeringSymbolQuery(string id, EngineeringSymbolDto dto)
-    {
-        var triples = new Dictionary<string,string>();
+	/*public static string? UpdateEngineeringSymbolQuery(string id, EngineeringSymbol symbol)
+	{
+		var triples = new Dictionary<string, string>();
 
-        var symbolGraph = $"{RdfConst.IndividualPrefix}:{id}";
-        
-        if (dto.Key != null)
-        {
-            triples.Add(ESProp.HasEngSymKeyIriPrefix, dto.Key);
-        }
-        
-        if (dto.Owner != null)
-        {
-            triples.Add(ESProp.HasOwnerIriPrefix, dto.Owner);
-        }
-        
-        if (dto.Description != null)
-        {
-            triples.Add(ESProp.HasDescriptionIriPrefix, dto.Description);
-        }
+		var symbolGraph = $"{Ontology.IndividualPrefix}:{id}";
 
-        if (triples.Count == 0)
-        {
-            return null;
-        }
-        
-        // Update dateUpdates as well!
-        triples.Add(ESProp.HasDateUpdatedIriPrefix, DateTimeOffset.UtcNow.ToString("O"));
-        
-        var deleteTriples = string.Join(Environment.NewLine, 
-            triples.Select(kvp => $"""
+		if (symbol.Identifier != null)
+		{
+			triples.Add(EsProp.IdentifierQName, symbol.Identifier);
+		}
+
+		if (symbol.Owner != null)
+		{
+			triples.Add(EsProp.CreatorQName, symbol.Owner);
+		}
+
+		if (symbol.Description != null)
+		{
+			triples.Add(EsProp.DescriptionQName, symbol.Description);
+		}
+
+		if (triples.Count == 0)
+		{
+			return null;
+		}
+
+		// Update dateUpdates as well!
+		triples.Add(EsProp.DateModifiedQName, DateTimeOffset.UtcNow.ToString("O"));
+
+		var deleteTriples = string.Join(Environment.NewLine,
+			triples.Select(kvp => $"""
                                                             {symbolGraph} {kvp.Key} ?o .
                                                         """));
 
-        var insertTriples = string.Join(Environment.NewLine,
-            triples.Select(kvp =>
-            {
-                var unit = kvp.Key switch
-                {
-                    ESProp.HasDateUpdatedIriPrefix => "^^xsd:dateTime",
-                    _ => ""
-                };
-                
-                return $"""
+		var insertTriples = string.Join(Environment.NewLine,
+			triples.Select(kvp =>
+			{
+				var unit = kvp.Key switch
+				{
+					EsProp.DateModifiedQName => "^^xsd:dateTime",
+					_ => ""
+				};
+
+				return $"""
                             {symbolGraph} {kvp.Key} "{kvp.Value}"{unit} .
                         """;
-            }));
-        
-        return $$"""
-                {{RdfConst.XsdPrefix}}
-                {{RdfConst.EngSymPrefix}}
-                {{RdfConst.SymbolPrefix}}
+			}));
+
+		return $$"""
+                {{Ontology.XsdPrefixDef}}
+                {{Ontology.EngSymPrefixDef}}
+                {{Ontology.SymbolPrefixDef}}
 
                 WITH {{symbolGraph}}
                 DELETE {
@@ -251,6 +258,6 @@ public static class SparqlQueries
                 }
                 WHERE { ?s ?p ?o }
                 """;
-    }
-    
+	}*/
+
 }

@@ -56,7 +56,7 @@ public static class JsonLdParser
         }
 
         EngineeringSymbol? symbolParsed = null;
-        var connectors = new List<EngineeringSymbolConnector>();
+        var connectors = new List<ConnectionPoint>();
         
         // The nodes are either connectors or a symbol
         foreach (var node in graph)
@@ -67,17 +67,17 @@ public static class JsonLdParser
             {
                 var typeIri = typeNode.ToString();
 
-                if (typeIri.StartsWith(RdfConst.EngSymOntologyPrefix + ":"))
+                if (typeIri.StartsWith(Ontology.EngSymPrefix + ":"))
                 {
-                    typeIri = RdfConst.EngSymOntologyIri + typeIri.Split(":").Last().Trim();
+                    typeIri = Ontology.EngSymOntologyIri + typeIri.Split(":").Last().Trim();
                 }
 
                 switch (typeIri)
                 {
-                    case RdfConst.SymbolTypeIri:
+                    case Ontology.SymbolTypeIri:
                         symbolParsed = ParseSymbolObject(ob);
                         break;
-                    case RdfConst.ConnectorTypeIri:
+                    case Ontology.ConnectionPointTypeIri:
                         connectors.Add(ParseConnectorObject(ob));
                         break;
                 }
@@ -89,43 +89,43 @@ public static class JsonLdParser
             throw new Exception("Failed to parse EngineeringSymbol from JSON LD graph");
         }
 
-        symbolParsed.Connectors.AddRange(connectors);
+        symbolParsed.ConnectionPoints.AddRange(connectors);
 
         return symbolParsed;
     }
     
     public static EngineeringSymbol ParseSymbolObject(JsonObject obj)
     {
-        if (!Enum.TryParse<EngineeringSymbolStatus>(GetStringValue(obj, ESProp.HasStatusIriPrefix), out var statusEnum))
+        if (!Enum.TryParse<EngineeringSymbolStatus>(GetStringValue(obj, EsProp.EditorStatusQName), out var statusEnum))
         {
             throw new ArgumentException("Failed to parse EngineeringSymbolStatus");
         }
         
         return new EngineeringSymbol(
-            Id: GetStringValue(obj, ESProp.HasEngSymIdIriPrefix),
-            Key: GetStringValue(obj,  ESProp.HasEngSymKeyIriPrefix),
+            Id: GetStringValue(obj, EsProp.HasEngSymIdQName),
+            Identifier: GetStringValue(obj,  EsProp.IdentifierQName),
             Status: statusEnum,
-            Description: GetStringValue(obj,  ESProp.HasDescriptionIriPrefix),
-            DateTimeCreated: GetDateTimeOffsetValue(obj,  ESProp.HasDateCreatedIriPrefix),
-            DateTimeUpdated: GetDateTimeOffsetValue(obj, ESProp.HasDateUpdatedIriPrefix),
-            DateTimePublished: GetDateTimeOffsetValue(obj, ESProp.HasDatePublishedIriPrefix),
-            Owner: GetStringValue(obj,  ESProp.HasOwnerIriPrefix),
-            Geometry: GetStringValue(obj,  ESProp.HasGeometryIriPrefix),
-            Width: GetDoubleValue(obj, ESProp.HasWidthIriPrefix),
-            Height: GetDoubleValue(obj,  ESProp.HasHeightIriPrefix),
-            Connectors: new List<EngineeringSymbolConnector>());
+            Description: GetStringValue(obj,  EsProp.DescriptionQName),
+            DateTimeCreated: GetDateTimeOffsetValue(obj,  EsProp.DateCreatedQName),
+            DateTimeModified: GetDateTimeOffsetValue(obj, EsProp.DateModifiedQName),
+            DateTimeIssued: GetDateTimeOffsetValue(obj, EsProp.DateIssuedQName),
+            Creator: GetStringValue(obj,  EsProp.CreatorQName),
+            Geometry: GetStringValue(obj,  EsProp.HasShapeQName),
+            Width: GetDoubleValue(obj, EsProp.WidthQName),
+            Height: GetDoubleValue(obj,  EsProp.HeightQName),
+            ConnectionPoints: new List<ConnectionPoint>());
     }
     
-    public static EngineeringSymbolConnector ParseConnectorObject(JsonObject obj)
+    public static ConnectionPoint ParseConnectorObject(JsonObject obj)
     {
-        return new EngineeringSymbolConnector(
-            Id: GetStringValue(obj, ESProp.HasNameIriPrefix),
-            RelativePosition: new Point 
+        return new ConnectionPoint(
+            Identifier: GetStringValue(obj, EsProp.HasNameIriPrefix),
+            Position: new Point 
             {
-                X = GetDoubleValue(obj,  ESProp.HasPositionXIriPrefix),
-                Y = GetDoubleValue(obj,  ESProp.HasPositionYIriPrefix)
+                X = GetDoubleValue(obj,  EsProp.PositionXQName),
+                Y = GetDoubleValue(obj,  EsProp.PositionYQName)
             },
-            Direction: GetIntValue(obj,  ESProp.HasDirectionIriPrefix)
+            Direction: GetIntValue(obj,  EsProp.ConnectorDirectionQName)
         );
     }
     

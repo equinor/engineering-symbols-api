@@ -55,7 +55,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
         => TryAsync(() => Task.FromResult(SparqlQueries.GetEngineeringSymbolByIdQuery(id, onlyPublished)))
             .Bind(_getEngineeringSymbolByQueryAsync);
 
-    public TryAsync<List<EngineeringSymbol>> GetEngineeringSymbolByKeyAsync(string key, bool onlyPublished = true)
+    public TryAsync<List<EngineeringSymbol>> GetEngineeringSymbolByIdentifierAsync(string key, bool onlyPublished = true)
         => TryAsync(() => Task.FromResult(SparqlQueries.GetEngineeringSymbolByKeyQuery(key, onlyPublished)))
             .Bind(_getEngineeringSymbolByQueryAsync);
 
@@ -78,12 +78,10 @@ public class FusekiRepository : IEngineeringSymbolRepository
                 : parsedSymbols;
         };
 
-    public TryAsync<EngineeringSymbol> InsertEngineeringSymbolAsync(EngineeringSymbolCreateDto symbol) =>
+    public TryAsync<EngineeringSymbol> InsertEngineeringSymbolAsync(EngineeringSymbol symbol) =>
         async () =>
         {
-            var newSymbol = symbol.ToInsertEntity();
-
-            var query = SparqlQueries.InsertEngineeringSymbolQuery(newSymbol);
+            var query = SparqlQueries.InsertEngineeringSymbolQuery(symbol);
 
             _logger.LogInformation("Sparql Query:\n{SparqlQuery}", query);
 
@@ -94,12 +92,12 @@ public class FusekiRepository : IEngineeringSymbolRepository
                 return await FusekiRequestErrorResult<EngineeringSymbol>(httpResponse, sparqlQuery: query);
             }
 
-            return newSymbol;
+            return symbol with {};
         };
 
 
-    public TryAsync<bool> ReplaceEngineeringSymbolAsync(EngineeringSymbolDto dto) =>
-        SymbolExistsByIdAsync(dto.Id)
+    /*public TryAsync<bool> ReplaceEngineeringSymbolAsync(EngineeringSymbol symbol) =>
+        SymbolExistsByIdAsync(symbol.Id)
             .Bind(exists => new TryAsync<bool>(async () =>
             {
                 if (!exists)
@@ -107,7 +105,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
                     return new Result<bool>(new RepositoryException(RepositoryOperationError.EntityNotFound));
                 }
 
-                var graph = $"{RdfConst.SymbolIri}{dto.Id}";
+                var graph = $"{Ontology.SymbolIri}{dto.Id}";
 
                 var symbolGraphTurtle = (dto with {DateTimeUpdated = DateTimeOffset.Now}).ToTurtle();
 
@@ -121,7 +119,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
                 }
 
                 return true;
-            }));
+            }));*/
 
     public TryAsync<bool> DeleteEngineeringSymbolAsync(string id) =>
         SymbolExistsByIdAsync(id)
@@ -192,7 +190,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
         return res.Boolean;
     };
 
-    private TryAsync<bool> SymbolExistsByKeyAsync(string? key) => async () =>
+    private TryAsync<bool> SymbolExistsByIdentifierAsync(string? key) => async () =>
     {
         if (key == null)
         {

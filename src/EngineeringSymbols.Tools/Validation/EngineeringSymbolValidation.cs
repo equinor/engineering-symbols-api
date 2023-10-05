@@ -13,6 +13,11 @@ public static class EngineeringSymbolValidation
             || wl.Contains(c));
     }
     
+    public static bool ContainsOnlyLatinLetters(string value)
+    {
+        return value.All(c => c is >= 'A' and <= 'Z' or >= 'a' and <= 'z');
+    }
+    
     public static Validation<ValidationError, EngineeringSymbol> Validate(this EngineeringSymbolDto symbol)
     {
         var validator = new EngineeringSymbolDtoValidator();

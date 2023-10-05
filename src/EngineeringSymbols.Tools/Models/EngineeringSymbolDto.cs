@@ -3,47 +3,32 @@ using EngineeringSymbols.Tools.Entities;
 
 namespace EngineeringSymbols.Tools.Models;
 
-[JsonDerivedType(typeof(EngineeringSymbolDto))]
-[JsonDerivedType(typeof(EngineeringSymbolPublicDto))]
-public record EngineeringSymbolResponse;
+// [JsonDerivedType(typeof(EngineeringSymbolDto))]
+// [JsonDerivedType(typeof(EngineeringSymbolPublicDto))]
+// public record EngineeringSymbolResponse;
 
-public record EngineeringSymbolPublicDto(
-    string Id,
-    string Key,
-    string Description,
-    DateTimeOffset DateTimePublished,
-    string Geometry,
-    double Width,
-    double Height,
-    List<EngineeringSymbolConnectorPublicDto> Connectors
-) : EngineeringSymbolResponse;
 
-public record EngineeringSymbolConnectorPublicDto(string Id, Point RelativePosition, int Direction);
+public record EngineeringSymbolCreateDto
+{
+    public required string Identifier { get; init; }
+    
+    /// <summary>
+    /// IRI
+    /// </summary>
+    public string? IsRevisionOf { get; init; }
+    public required string Label { get; init; }
+    public required string Description { get; init; }
+    public required List<string> Sources { get; init; }
+    public required List<string> Subjects { get; init; }
+    public required List<User> Creators { get; init; }
+    public required List<User> Contributors { get; init; }
+    public required Shape Shape { get; init; }
+    public required int Width { get; init; }
+    public required int Height { get; init; }
+    public required string? DrawColor { get; init; }
+    public required string? FillColor { get; init; }
+    public required Point CenterOfRotation { get; init; }
+    public required List<ConnectionPoint> ConnectionPoints { get; init; }
+}
 
-public record EngineeringSymbolDto(
-    string Id,
-    string Key,
-    string Status,
-    string Description,
-    DateTimeOffset DateTimeCreated,
-    DateTimeOffset DateTimeUpdated,
-    DateTimeOffset DateTimePublished,
-    string Owner,
-    string Geometry,
-    double Width,
-    double Height,
-    List<EngineeringSymbolConnectorDto> Connectors
-) : EngineeringSymbolResponse;
-
-public record EngineeringSymbolConnectorDto(string Id, Point RelativePosition, int Direction);
-
-public record EngineeringSymbolCreateDto(
-    string Key,
-    string Description,
-    string Owner,
-    string Geometry,
-    double Width,
-    double Height,
-    List<EngineeringSymbolConnectorDto> Connectors);
-
-public record EngineeringSymbolStatusDto(string Status);    
+public record EngineeringSymbolStatusDto(string Status);
