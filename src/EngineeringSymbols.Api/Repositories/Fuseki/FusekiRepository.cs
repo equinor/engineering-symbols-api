@@ -2,7 +2,7 @@ using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
-using EngineeringSymbols.Tools.RdfParser;
+//using EngineeringSymbols.Tools.RdfParser;
 
 namespace EngineeringSymbols.Api.Repositories.Fuseki;
 
@@ -46,8 +46,9 @@ public class FusekiRepository : IEngineeringSymbolRepository
             {
                 return await FusekiRequestErrorResult<List<EngineeringSymbol>>(httpResponse, stringContent, sparqlQuery: query);
             }
-            
-            return JsonLdParser.ParseEngineeringSymbols(stringContent);
+
+            return new Result<List<EngineeringSymbol>>();
+            //return JsonLdParser.ParseEngineeringSymbols(stringContent);
         };
 
 
@@ -55,8 +56,8 @@ public class FusekiRepository : IEngineeringSymbolRepository
         => TryAsync(() => Task.FromResult(SparqlQueries.GetEngineeringSymbolByIdQuery(id, onlyPublished)))
             .Bind(_getEngineeringSymbolByQueryAsync);
 
-    public TryAsync<List<EngineeringSymbol>> GetEngineeringSymbolByIdentifierAsync(string key, bool onlyPublished = true)
-        => TryAsync(() => Task.FromResult(SparqlQueries.GetEngineeringSymbolByKeyQuery(key, onlyPublished)))
+    public TryAsync<List<EngineeringSymbol>> GetEngineeringSymbolByIdentifierAsync(string identifier, bool onlyPublished = true)
+        => TryAsync(() => Task.FromResult(SparqlQueries.GetEngineeringSymbolByIdentifierQuery(identifier, onlyPublished)))
             .Bind(_getEngineeringSymbolByQueryAsync);
 
     private TryAsync<List<EngineeringSymbol>> _getEngineeringSymbolByQueryAsync(string query) =>
@@ -71,7 +72,8 @@ public class FusekiRepository : IEngineeringSymbolRepository
                 return await FusekiRequestErrorResult<List<EngineeringSymbol>>(httpResponse, stringContent, sparqlQuery: query);
             }
 
-            var parsedSymbols = JsonLdParser.ParseEngineeringSymbols(stringContent);
+            //var parsedSymbols = JsonLdParser.ParseEngineeringSymbols(stringContent);
+            var parsedSymbols = new List<EngineeringSymbol>();
 
             return parsedSymbols.Count == 0
                 ? new Result<List<EngineeringSymbol>>(new RepositoryException(RepositoryOperationError.EntityNotFound))

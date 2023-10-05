@@ -12,31 +12,70 @@ public class EngineeringSymbolValidator : AbstractValidator<EngineeringSymbol>
 
         RuleFor(symbol => symbol.Id).MustBeValidEngineeringSymbolId();
 
-        RuleFor(symbol => symbol.Key).MustBeValidEngineeringSymbolKey();
+        RuleFor(symbol => symbol.Identifier)
+            .MustBeValidEngineeringSymbolIdentifier();
 
-        RuleFor(symbol => symbol.Status).MustBeValidEngineeringSymbolStatus();
+        //RuleFor(symbol => symbol.Status).MustBeValidEngineeringSymbolStatus();
+        
+        RuleFor(symbol => symbol.Version).MustBeValidEngineeringSymbolVersion();
+        
+        RuleFor(symbol => symbol.PreviousVersion)
+            .MustBeValidSymbolIri()
+            .When(symbol => symbol.PreviousVersion != null);
 
-        RuleFor(symbol => symbol.Owner).MustBeValidEngineeringSymbolOwner();
+        RuleFor(symbol => symbol.Label).MustBeValidEngineeringSymbolLabel();
+        
+        RuleFor(symbol => symbol.Description)
+            .MustBeValidEngineeringSymbolDescription();
 
-        RuleFor(symbol => symbol.Description).MustBeValidEngineeringSymbolDescription();
-
+        RuleForEach(symbol => symbol.Sources)
+            .MustBeValidEngineeringSymbolSource()
+            .When(symbol => symbol.Sources != null);
+        
+        RuleForEach(symbol => symbol.Subjects)
+            .MustBeValidEngineeringSymbolSubject()
+            .When(symbol => symbol.Subjects != null);
+        
         RuleFor(symbol => symbol.DateTimeCreated).MustBeValidEngineeringSymbolDateCreated();
 
-        RuleFor(symbol => symbol.DateTimeUpdated).MustBeValidEngineeringSymbolDateUpdated();
+        RuleFor(symbol => symbol.DateTimeModified).MustBeValidEngineeringSymbolDateModified();
 
-        RuleFor(symbol => symbol.DateTimePublished).MustBeValidEngineeringSymbolDatePublished();
+        RuleFor(symbol => symbol.DateTimeIssued).MustBeValidEngineeringSymbolDateIssued();
+        
+        RuleFor(symbol => symbol.Creators)
+            .NotNull()
+            .NotEmpty()
+            .ForEach(s => s.MustBeValidEngineeringSymbolUser());
 
-        RuleFor(symbol => symbol.Geometry).MustBeValidEngineeringSymbolGeometry();
+        RuleFor(symbol => symbol.Contributors)
+            .NotNull()
+            .ForEach(s => s.MustBeValidEngineeringSymbolUser());
+
+        
+        RuleFor(symbol => symbol.Shape)
+            .NotNull()
+            .SetValidator(new EngineeringSymbolShapeValidator());
 
         RuleFor(symbol => symbol.Width).MustBeValidEngineeringSymbolWidth();
 
         RuleFor(symbol => symbol.Height).MustBeValidEngineeringSymbolHeight();
 
-        RuleFor(symbol => symbol.Connectors)
-            .MustBeValidEngineeringSymbolConnectorList()
+        RuleFor(symbol => symbol.DrawColor)
+            .MustBeValidEngineeringSymbolColor()
+            .When(s => s.DrawColor != null);
+
+        RuleFor(symbol => symbol.FillColor)
+            .MustBeValidEngineeringSymbolColor()
+            .When(s => s.FillColor != null);
+        
+        RuleFor(symbol => symbol.CenterOfRotation)
+            .MustBeValidEngineeringSymbolCenterOfRotation();
+        
+        RuleFor(symbol => symbol.ConnectionPoints)
+            .MustBeValidEngineeringSymbolConnectionPointsList()
             .ForEach(connectorRule =>
             {
-                connectorRule.SetValidator(new EngineeringSymbolConnectorDtoValidator());
+                connectorRule.SetValidator(new EngineeringSymbolConnectionPointValidator());
             });
     }
 }
@@ -47,36 +86,56 @@ public class EngineeringSymbolCreateDtoValidator : AbstractValidator<Engineering
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
 
-        RuleFor(symbol => symbol.Identifier).MustBeValidEngineeringSymbolIdentifier();
+        RuleFor(symbol => symbol.Identifier)
+            .MustBeValidEngineeringSymbolIdentifier();
         
         RuleFor(symbol => symbol.IsRevisionOf)
             .MustBeValidSymbolIri()
             .When(symbol => !string.IsNullOrEmpty(symbol.IsRevisionOf));
         
-        RuleFor(symbol => symbol.Label).MustBeValidEngineeringSymbolLabel();
+        RuleFor(symbol => symbol.Label)
+            .MustBeValidEngineeringSymbolLabel();
         
-        RuleFor(symbol => symbol.Description).MustBeValidEngineeringSymbolDescription();
-        
-        RuleFor(symbol => symbol.Sources).MustBeValidEngineeringSymbolSources();
-        
-        RuleFor(symbol => symbol.Subjects).MustBeValidEngineeringSymbolSubjects();
-        
-        RuleFor(symbol => symbol.Creators).MustBeValidEngineeringSymbolCreators();
-        
-        RuleFor(symbol => symbol.Contributors).MustBeValidEngineeringSymbolContributors();
-        
-        RuleFor(symbol => symbol.Shape).MustBeValidEngineeringSymbolShape();
-        
-        RuleFor(symbol => symbol.Width).MustBeValidEngineeringSymbolWidth();
-        RuleFor(symbol => symbol.Height).MustBeValidEngineeringSymbolHeight();
+        RuleFor(symbol => symbol.Description)
+            .MustBeValidEngineeringSymbolDescription();
 
+        RuleForEach(symbol => symbol.Sources)
+            .MustBeValidEngineeringSymbolSource()
+            .When(symbol => symbol.Sources != null);
         
-        RuleFor(symbol => symbol.DrawColor).MustBeValidEngineeringSymbolDrawColor();
+        RuleForEach(symbol => symbol.Subjects)
+            .MustBeValidEngineeringSymbolSubject()
+            .When(symbol => symbol.Subjects != null);
+
+        RuleFor(symbol => symbol.Creators)
+            .NotNull()
+            .NotEmpty()
+            .ForEach(s => s.MustBeValidEngineeringSymbolUser());
         
-        RuleFor(symbol => symbol.FillColor).MustBeValidEngineeringSymbolFillColor();
+        RuleFor(symbol => symbol.Contributors)
+            .NotNull()
+            .ForEach(s => s.MustBeValidEngineeringSymbolUser());
+
+
+        RuleFor(symbol => symbol.Shape)
+            .NotNull()
+            .SetValidator(new EngineeringSymbolShapeValidator());
         
+        RuleFor(symbol => symbol.Width)
+            .MustBeValidEngineeringSymbolWidth();
+        RuleFor(symbol => symbol.Height)
+            .MustBeValidEngineeringSymbolHeight();
         
-        RuleFor(symbol => symbol.CenterOfRotation).MustBeValidEngineeringSymbolCenterOfRotation();
+        RuleFor(symbol => symbol.DrawColor)
+            .MustBeValidEngineeringSymbolColor()
+            .When(s => s.DrawColor != null);
+
+        RuleFor(symbol => symbol.FillColor)
+            .MustBeValidEngineeringSymbolColor()
+            .When(s => s.FillColor != null);
+        
+        RuleFor(symbol => symbol.CenterOfRotation)
+            .MustBeValidEngineeringSymbolCenterOfRotation();
         
         RuleFor(symbol => symbol.ConnectionPoints)
             .MustBeValidEngineeringSymbolConnectionPointsList()
@@ -96,6 +155,40 @@ public class EngineeringSymbolConnectionPointValidator : AbstractValidator<Conne
         RuleFor(connector => connector.Identifier).MustBeValidEngineeringSymbolConnectorId();
         RuleFor(connector => connector.Position).MustBeValidEngineeringSymbolConnectorPoint();
         RuleFor(connector => connector.Direction).MustBeValidEngineeringSymbolConnectorDirection();
+    }
+}
+
+public class EngineeringSymbolShapeValidator : AbstractValidator<Shape>
+{
+    public EngineeringSymbolShapeValidator()
+    {
+        //ClassLevelCascadeMode = CascadeMode.Stop;
+        RuleLevelCascadeMode = CascadeMode.Stop;
+
+        RuleFor(shape => shape.Serializations)
+            .NotNull()
+            .NotEmpty();
+        
+        RuleForEach(shape => shape.Serializations)
+            .NotNull()
+            .Must(s =>
+            {
+                if (s.Type == ShapeSerializationType.SvgPathData)
+                {
+                    if (string.IsNullOrEmpty(s.Serialization) || string.IsNullOrWhiteSpace(s.Serialization))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            })
+            .WithMessage("Shape Serialization is invalid/incomplete")
+            .When(s => s.Serializations != null);
+        
+        // TODO: Implement validation for depictions
+        //RuleFor(connector => connector.Depictions)
+
     }
 }
 

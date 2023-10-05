@@ -7,11 +7,11 @@ namespace EngineeringSymbols.Api.Repositories.Fuseki;
 
 public static class SparqlQueries
 {
-	public static string GetAllSymbolsConstructQuery(bool onlyLatestVersion = false, bool onlyPublished = true)
+	public static string GetAllSymbolsConstructQuery(bool onlyLatestVersion = false, bool onlyIssued = true)
 	{
-		var onlyPublishedConstraint = onlyPublished
+		var onlyIssuedConstraint = onlyIssued
 			? $"""
-                    ?s2 {EsProp.EditorStatusQName} "Published" .
+                    ?s2 {EsProp.EditorStatusQName} "{EngineeringSymbolStatus.Issued}" .
             """
 			: "";
 
@@ -23,7 +23,7 @@ public static class SparqlQueries
                           GRAPH ?g {
                               ?s2 {{EsProp.IdentifierQName}} ?key .
                               ?s2 {{EsProp.DateCreatedQName}} ?dc .
-                              {{onlyPublishedConstraint}}
+                              {{onlyIssuedConstraint}}
                           }
                       }
                       GROUP BY ?key
@@ -32,9 +32,7 @@ public static class SparqlQueries
 			: "";
 
 		return $$"""
-                {{Ontology.XsdPrefixDef}}
-                {{Ontology.EngSymPrefixDef}}
-                {{Ontology.SymbolPrefixDef}}
+                {{Ontology.AllPrefixDefs}}
 
                 CONSTRUCT {
                     GRAPH ?symbolGraph {
@@ -46,7 +44,7 @@ public static class SparqlQueries
                     GRAPH ?symbolGraph {
                         ?s ?p ?o .
                         ?s1 {{EsProp.DateCreatedQName}} ?dateCreated .
-                {{onlyPublishedConstraint}}
+                {{onlyIssuedConstraint}}
                     }
                 {{onlyLatestVersionSubQuery}}
                 }
@@ -76,19 +74,16 @@ public static class SparqlQueries
                 """;
 	}
 
-	public static string GetEngineeringSymbolByIdQuery(string id, bool onlyPublished = true)
+	public static string GetEngineeringSymbolByIdQuery(string id, bool onlyIssued = true)
 	{
-		var onlyPublishedConstraint = onlyPublished
+		var onlyIssuedConstraint = onlyIssued
 			? $"""
                     ?s2 {EsProp.EditorStatusQName} "Published" .
             """
 			: "";
 
 		return $$"""
-                {{Ontology.XsdPrefixDef}}
-                {{Ontology.RdfsPrefixDef}}
-                {{Ontology.SymbolPrefixDef}}
-                {{Ontology.EngSymPrefixDef}}
+                {{Ontology.AllPrefixDefs}}
 
                 CONSTRUCT 
                 {   
@@ -99,7 +94,7 @@ public static class SparqlQueries
                 WHERE
                 {
                     GRAPH ?symbolGraph {
-                {{onlyPublishedConstraint}}
+                {{onlyIssuedConstraint}}
                         ?ss {{EsProp.HasEngSymIdQName}} "{{id}}" .
                         ?s ?p ?o .
                     }
@@ -107,19 +102,16 @@ public static class SparqlQueries
                 """;
 	}
 
-	public static string GetEngineeringSymbolByKeyQuery(string key, bool onlyPublished = true)
+	public static string GetEngineeringSymbolByIdentifierQuery(string identifier, bool onlyIssued = true)
 	{
-		var onlyPublishedConstraint = onlyPublished
+		var onlyIssuedConstraint = onlyIssued
 			? $"""
                     ?s2 {EsProp.EditorStatusQName} "Published" .
             """
 			: "";
 
 		return $$"""
-                {{Ontology.XsdPrefixDef}}
-                {{Ontology.RdfsPrefixDef}}
-                {{Ontology.SymbolPrefixDef}}
-                {{Ontology.EngSymPrefixDef}}
+                {{Ontology.AllPrefixDefs}}
 
                 CONSTRUCT 
                 {
@@ -131,8 +123,8 @@ public static class SparqlQueries
                 {
                     GRAPH ?g 
                     {
-                {{onlyPublishedConstraint}}
-                        ?ss {{EsProp.IdentifierQName}} "{{key}}" .
+                {{onlyIssuedConstraint}}
+                        ?ss {{EsProp.IdentifierQName}} "{{identifier}}" .
                         ?s ?o ?p .
                     }
                 }

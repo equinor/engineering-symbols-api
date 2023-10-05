@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace EngineeringSymbols.Tools.Entities;
 
 /// <summary>
@@ -7,7 +9,13 @@ namespace EngineeringSymbols.Tools.Entities;
 /// <param name="Depictions">Depictions or images of the symbol (IRIs)</param>
 public record Shape(List<ShapeSerialization> Serializations, List<string> Depictions);
 
-public record ShapeSerialization(ShapeSerializationType Type, string Serialization);
+public record ShapeSerialization
+{
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public required ShapeSerializationType Type { get; init; }
+    
+    public required string Serialization { get; init; }
+}
 
 public enum ShapeSerializationType
 {

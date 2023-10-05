@@ -10,6 +10,9 @@ namespace EngineeringSymbols.Tools.Models;
 
 public record EngineeringSymbolCreateDto
 {
+    /// <summary>
+    /// Identifier for the symbol that is stable over different versions of the symbol.
+    /// </summary>
     public required string Identifier { get; init; }
     
     /// <summary>
@@ -18,8 +21,15 @@ public record EngineeringSymbolCreateDto
     public string? IsRevisionOf { get; init; }
     public required string Label { get; init; }
     public required string Description { get; init; }
-    public required List<string> Sources { get; init; }
-    public required List<string> Subjects { get; init; }
+    /// <summary>
+    /// Reference to the source of the symbol, if the symbol is taken from a diagram standard that can be referenced.
+    /// </summary>
+    public required List<string>? Sources { get; init; }
+    
+    /// <summary>
+    /// Reference to the origin of the symbol, if the origin symbol can be referenced.
+    /// </summary>
+    public required List<string>? Subjects { get; init; }
     public required List<User> Creators { get; init; }
     public required List<User> Contributors { get; init; }
     public required Shape Shape { get; init; }

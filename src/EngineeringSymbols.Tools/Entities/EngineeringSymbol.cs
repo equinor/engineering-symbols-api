@@ -11,8 +11,12 @@ public record EngineeringSymbol
     /// Symbol IRI
     /// </summary>
     public required string Id { get; init; }
-    public required EngineeringSymbolStatus Status { get; init; }
+    
     public required string Identifier { get; init; }
+    
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public required EngineeringSymbolStatus Status { get; init; }
+    
     /// <summary>
     /// Version is an integer > 0, but stored as a string for future changes
     /// </summary>

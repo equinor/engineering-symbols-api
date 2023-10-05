@@ -88,7 +88,7 @@ public static class EndpointHelpers
 								if (result.EngineeringSymbolSvgParsed == null)
 									return new ValidationException("SVG parse error");
 
-								return result.EngineeringSymbolSvgParsed.ToCreateDto("");
+								return result.EngineeringSymbolSvgParsed.ToCreateDto();
 							},
 							Fail: exception => exception);
 					break;

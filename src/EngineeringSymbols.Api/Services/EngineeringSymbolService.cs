@@ -30,9 +30,9 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                     return (idOrIdentifier, true);
                 }
 
-                var keyValidator = new EngineeringSymbolKeyValidator();
+                var identifierValidator = new EngineeringSymbolIdentifierValidator();
 
-                return keyValidator.Validate(idOrIdentifier).IsValid
+                return identifierValidator.Validate(idOrIdentifier).IsValid
                     ? (idOrIdentifier, false)
                     : new Result<(string, bool)>(new ValidationException(
                         new Dictionary<string, string[]>

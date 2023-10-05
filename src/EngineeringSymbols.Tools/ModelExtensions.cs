@@ -60,45 +60,25 @@ public static class ModelExtensions
                 .ToList());
     }*/
     
-    public static EngineeringSymbol ToEngineeringSymbol(this EngineeringSymbolDto dto)
-    {
-        var status = Enum.Parse<EngineeringSymbolStatus>(dto.Status);
-
-        return new EngineeringSymbol(
-            Id: dto.Id, 
-            Identifier: dto.Key, 
-            Status: status, 
-            Description: dto.Description, 
-            DateTimeCreated: dto.DateTimeCreated,
-            DateTimeModified: dto.DateTimeUpdated, 
-            DateTimeIssued: dto.DateTimePublished, 
-            Creator: dto.Owner,
-            Geometry: dto.Geometry,
-            Width: dto.Width,
-            Height: dto.Height,
-            ConnectionPoints: dto.Connectors.Map(connectorDto 
-                => new ConnectionPoint(
-                    connectorDto.Id,
-                    connectorDto.RelativePosition,
-                    connectorDto.Direction))
-                .ToList()
-            );
-    }
     
-    public static EngineeringSymbolCreateDto ToCreateDto(this EngineeringSymbolSvgParsed sym, string creatorEmail, string description = "None")
+    public static EngineeringSymbolCreateDto ToCreateDto(this EngineeringSymbolSvgParsed sym)
     {
         return new EngineeringSymbolCreateDto
         {
             Identifier = sym.Key,
             Label = string.Empty,
-            Description = description,
+            Description = string.Empty,
             Sources = new List<string>(),
             Subjects = new List<string>(),
-            Creators = new List<User>{ new User("",creatorEmail) },
+            Creators = new List<User>(),
             Contributors = new List<User>(),
             Shape = new Shape(new List<ShapeSerialization>
             {
-                new (ShapeSerializationType.SvgPathData, StringHelpers.RemoveAllWhitespaceExceptSingleSpace(sym.Geometry))
+                new ()
+                {
+                    Type = ShapeSerializationType.SvgPathData,
+                    Serialization = StringHelpers.RemoveAllWhitespaceExceptSingleSpace(sym.Geometry)
+                }
             }, new List<string>()),
             Width = sym.Width,
             Height = sym.Height,
@@ -111,50 +91,14 @@ public static class ModelExtensions
     
     
     
-    public static EngineeringSymbolDto ToDto(this EngineeringSymbolCreateDto symbol)
-    {
-        return new EngineeringSymbolDto(
-            Id: string.Empty,
-            Key: symbol.Key,
-            Status: EngineeringSymbolStatus.None.ToString(),
-            Description: symbol.Description,
-            DateTimeCreated: DateTimeOffset.UnixEpoch,
-            DateTimeUpdated: DateTimeOffset.UnixEpoch,
-            DateTimePublished: DateTimeOffset.UnixEpoch,
-            Owner: symbol.Owner,
-            Geometry: symbol.Geometry,
-            Width: symbol.Width,
-            Height: symbol.Height,
-            Connectors: symbol.Connectors.Map(connector => 
-                new EngineeringSymbolConnectorDto(
-                    Id: connector.Id,
-                    RelativePosition: connector.RelativePosition,
-                    Direction: connector.Direction))
-                .ToList());
-    }
-    
-    public static EngineeringSymbolPublicDto ToPublicDto(this EngineeringSymbol symbol)
-    {
-        return new EngineeringSymbolPublicDto(
-            Id: symbol.Id,
-            Key: symbol.Identifier,
-            Description: symbol.Description,
-            DateTimePublished: symbol.DateTimeIssued,
-            Geometry: symbol.Geometry,
-            Width: symbol.Width,
-            Height: symbol.Height,
-            Connectors: symbol.ConnectionPoints.Map(connector => new EngineeringSymbolConnectorPublicDto(
-                Id: connector.Identifier,
-                RelativePosition: connector.Position,
-                Direction: connector.Direction)).ToList());
-    }
+
 
     public static string GetConnectorIriPrefix(string symbolId, string name)
     {
         return Ontology.IndividualPrefix + ":" + symbolId + "_C_" + name;
     }
     
-    public static string ToTurtle(this EngineeringSymbolDto symbol)
+    /*public static string ToTurtle(this EngineeringSymbolDto symbol)
     {
         var connectorPr = symbol.Connectors.Select(connector => $"<{GetConnectorIriPrefix(symbol.Id, connector.Id)}>").ToList();
         var nfi = new NumberFormatInfo {NumberDecimalSeparator = "."};
@@ -194,5 +138,5 @@ public static class ModelExtensions
                   
                   {string.Join(Environment.NewLine + Environment.NewLine, connectors)}
                   """;
-    }
+    }*/
 }

@@ -7,7 +7,7 @@ using EngineeringSymbols.Tools.Models;
 
 namespace EngineeringSymbols.Tools.RdfParser;
 
-public static class JsonLdParser
+/*public static class JsonLdParser
 {
     public static List<EngineeringSymbol> ParseEngineeringSymbols(string jsonLdString)
     {
@@ -100,8 +100,34 @@ public static class JsonLdParser
         {
             throw new ArgumentException("Failed to parse EngineeringSymbolStatus");
         }
-        
-        return new EngineeringSymbol(
+
+        return new EngineeringSymbol
+        {
+            ShouldSerializeAsPublicVersion = false,
+            Id = null,
+            Identifier = null,
+            Status = EngineeringSymbolStatus.None,
+            Version = null,
+            PreviousVersion = null,
+            Label = null,
+            Description = null,
+            Sources = null,
+            Subjects = null,
+            DateTimeCreated = default,
+            DateTimeModified = default,
+            DateTimeIssued = default,
+            Creators = null,
+            Contributors = null,
+            Shape = null,
+            Width = GetIntValue(obj, EsProp.WidthQName),
+            Height = GetIntValue(obj, EsProp.HeightQName),
+            DrawColor = null,
+            FillColor = null,
+            CenterOfRotation = null,
+            ConnectionPoints = null
+        };
+
+        /*return new EngineeringSymbol(
             Id: GetStringValue(obj, EsProp.HasEngSymIdQName),
             Identifier: GetStringValue(obj,  EsProp.IdentifierQName),
             Status: statusEnum,
@@ -113,7 +139,7 @@ public static class JsonLdParser
             Geometry: GetStringValue(obj,  EsProp.HasShapeQName),
             Width: GetDoubleValue(obj, EsProp.WidthQName),
             Height: GetDoubleValue(obj,  EsProp.HeightQName),
-            ConnectionPoints: new List<ConnectionPoint>());
+            ConnectionPoints: new List<ConnectionPoint>());#1#
     }
     
     public static ConnectionPoint ParseConnectorObject(JsonObject obj)
@@ -187,4 +213,4 @@ public static class JsonLdParser
         
         throw new FormatException($"Unable to parse double value: {valueString}");
     }
-}
+}*/
