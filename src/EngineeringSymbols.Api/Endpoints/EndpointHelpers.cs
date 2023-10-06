@@ -150,8 +150,7 @@ public static class EndpointHelpers
 				.ToList();
 
 			var friendlyName = claims.Find(c => c.Type == "preferred_username")?.Value;
-
-
+            
 			var creators = dto.Creators;
 			creators.Add(new Tools.Entities.User(friendlyName ?? "No name?","No email yet - TODO"));
 

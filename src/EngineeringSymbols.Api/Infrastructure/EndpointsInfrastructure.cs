@@ -80,7 +80,7 @@ public static class EndpointsInfrastructure
                 (CreateEngineeringSymbolHandler)(async (symbolService, request, claimsPrincipal, validationOnly) =>
                     await GetSymbolCreateContentFromRequest(request)
                         .Bind(content => ParseSymbolCreateContent(request.ContentType, content))
-                        .Bind(dto => AddUserFromClaimsPrincipal(dto, claimsPrincipal))
+                        //.Bind(dto => AddUserFromClaimsPrincipal(dto, claimsPrincipal))
                         .Bind(ValidateCreateDto)
                         .Bind(dto => symbolService.CreateSymbolAsync(dto, validationOnly ?? false))
                         .Match(

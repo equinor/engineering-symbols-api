@@ -8,7 +8,7 @@ namespace EngineeringSymbols.Tools.Validation;
 
 public static class EngineeringSymbolFieldValidators
 {
-	public static readonly char[] TextWhiteList = { '-', '_', '.', ',', '!', '?' };
+	public static readonly char[] TextWhiteList = { '-', '_', '.', ',', '!', '?', ' ' };
 
 	public const int BaseSvgSize = 12;
 
@@ -74,7 +74,11 @@ public static class EngineeringSymbolFieldValidators
 		return ruleBuilder
 			.NotNull()
 			.MaximumLength(250)
-			.Must(s => !EngineeringSymbolValidation.ContainsIllegalChars(s, TextWhiteList))
+			.Must(s =>
+			{
+				Console.WriteLine($"STRING LABEL: {s}");
+				return !EngineeringSymbolValidation.ContainsIllegalChars(s, TextWhiteList);
+			})
 			.WithMessage("Invalid characters");
 	}
 	

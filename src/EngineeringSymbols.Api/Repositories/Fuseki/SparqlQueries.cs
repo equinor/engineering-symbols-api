@@ -18,15 +18,15 @@ public static class SparqlQueries
 		var onlyLatestVersionSubQuery = onlyLatestVersion
 			? $$"""
                   {
-                      SELECT ?key (MAX(?dc) AS ?dateCreated) (COUNT(?g) AS ?numVersions)
+                      SELECT ?identifier (MAX(?dc) AS ?dateCreated) (COUNT(?g) AS ?numVersions)
                       WHERE {
                           GRAPH ?g {
-                              ?s2 {{EsProp.IdentifierQName}} ?key .
+                              ?s2 {{EsProp.IdentifierQName}} ?identifier .
                               ?s2 {{EsProp.DateCreatedQName}} ?dc .
                               {{onlyIssuedConstraint}}
                           }
                       }
-                      GROUP BY ?key
+                      GROUP BY ?identifier
                   }
               """
 			: "";
@@ -139,7 +139,7 @@ public static class SparqlQueries
                 """;
 	}
 
-	public static string InsertEngineeringSymbolQuery(EngineeringSymbol symbol)
+	/*public static string InsertEngineeringSymbolQuery(EngineeringSymbol symbol)
 	{
 		var nfi = new NumberFormatInfo { NumberDecimalSeparator = "." };
 		
@@ -158,12 +158,7 @@ public static class SparqlQueries
                             {cIri} {EsProp.ConnectorDirectionQName} "{connector.Direction}"^^xsd:integer .
                     """;
 		}).ToList();
-
-		
-		//     {{sub}} {{EsProp.HasShapeQName}} "{{symbol.Geometry}}"^^xsd:string .
-		
-		
-		//      {{sub}} {{EsProp.CreatorQName}} "{{symbol.Creator}}"^^xsd:string .
+        
 		
 		return $$"""
                 {{Ontology.AllPrefixDefs}}
@@ -186,7 +181,7 @@ public static class SparqlQueries
                     }
                 }
                 """;
-	}
+	}*/
 
 	/*public static string? UpdateEngineeringSymbolQuery(string id, EngineeringSymbol symbol)
 	{

@@ -6,6 +6,10 @@ public static class EsProp
     public const string IsTypeIri = $"{Ontology.RdfIri}{IsType}";
     public const string IsTypeQName = $"rdf:{IsType}";
     
+    public const string IdQname = $"{Ontology.MetadataEditorPrefix}:id";
+    
+    public const string SymbolTypeQname = $"{Ontology.EngSymPrefix}:{Ontology.SymbolTypeName}";
+    
     public const string Label = "label";
     public const string LabelIri = $"{Ontology.RdfsIri}{Label}";
     public const string LabelQName = $"rdfs:{Label}";
@@ -39,6 +43,8 @@ public static class EsProp
     public const string HasShapeIri = $"{Ontology.EngSymOntologyIri}{HasShape}";
     public const string HasShapeQName = $"{Ontology.EngSymPrefix}:{HasShape}";
 
+    public const string HasSerializationQName = $"{Ontology.EngSymPrefix}:hasSerialization";
+    
     public const string Width = "width";
     public const string WidthIri = $"{Ontology.EngSymOntologyIri}{Width}";
     public const string WidthQName = $"{Ontology.EngSymPrefix}:{Width}";
@@ -51,6 +57,8 @@ public static class EsProp
     public const string CreatorIri = $"{Ontology.DcIri}{Creator}";
     public const string CreatorQName = $"dc:{Creator}";
     
+    public const string ContributorQName = $"dc:contributor";
+    
     public const string HasConnectionPoint = "hasConnectionPoint";
     public const string HasConnectionPointIri = $"{Ontology.EngSymOntologyIri}{HasConnectionPoint}";
     public const string HasConnectionPointQName = $"{Ontology.EngSymPrefix}:{HasConnectionPoint}";
@@ -61,6 +69,11 @@ public static class EsProp
     
     public const string PositionXQName = $"{Ontology.EngSymPrefix}:positionX";
     public const string PositionYQName = $"{Ontology.EngSymPrefix}:positionY";
+    
+    public const string DrawColorQName = $"{Ontology.EngSymPrefix}:drawColor";
+    public const string FillColorQName = $"{Ontology.EngSymPrefix}:fillColor";    
+        
+    public const string HasCenterOfRotationQName = $"{Ontology.EngSymPrefix}:hasCenterOfRotation";
     
     public const string ConnectorDirectionQName = $"{Ontology.EngSymPrefix}:connectorDirection";
 }

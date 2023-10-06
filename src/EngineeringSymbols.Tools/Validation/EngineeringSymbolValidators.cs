@@ -175,7 +175,7 @@ public class EngineeringSymbolShapeValidator : AbstractValidator<Shape>
             {
                 if (s.Type == ShapeSerializationType.SvgPathData)
                 {
-                    if (string.IsNullOrEmpty(s.Serialization) || string.IsNullOrWhiteSpace(s.Serialization))
+                    if (string.IsNullOrEmpty(s.Value) || string.IsNullOrWhiteSpace(s.Value))
                     {
                         return false;
                     }

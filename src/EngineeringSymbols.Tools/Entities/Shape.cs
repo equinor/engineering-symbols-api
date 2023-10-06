@@ -14,7 +14,7 @@ public record ShapeSerialization
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public required ShapeSerializationType Type { get; init; }
     
-    public required string Serialization { get; init; }
+    public required string Value { get; init; }
 }
 
 public enum ShapeSerializationType

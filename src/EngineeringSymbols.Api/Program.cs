@@ -28,6 +28,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     //options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
+
+
 // Services and repos
 builder.Services.AddHttpClient<IFusekiService, FusekiService>();
 builder.Services.AddScoped<IEngineeringSymbolService, EngineeringSymbolService>();

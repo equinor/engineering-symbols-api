@@ -55,7 +55,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
             .ToAsync()
             .Bind(ResolveVersion)
             .Bind(symbol => !validationOnly
-                ? _repo.InsertEngineeringSymbolAsync(symbol)
+                ? _repo.PutEngineeringSymbolAsync(symbol)
                 : async () => symbol with {Id = "", DateTimeCreated = DateTimeOffset.UnixEpoch});
 
 

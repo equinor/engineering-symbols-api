@@ -1,6 +1,3 @@
-using System.Globalization;
-using System.Text;
-using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Utils;
 
@@ -21,8 +18,8 @@ public static class ModelExtensions
             PreviousVersion = null,
             Label = dto.Label,
             Description = dto.Description,
-            Sources = dto.Sources,
-            Subjects = dto.Subjects,
+            Sources = dto.Sources ?? new List<string>(),
+            Subjects = dto.Subjects ?? new List<string>(),
             DateTimeCreated = DateTimeOffset.Now,
             DateTimeModified = DateTimeOffset.UnixEpoch,
             DateTimeIssued = DateTimeOffset.UnixEpoch,
@@ -37,29 +34,6 @@ public static class ModelExtensions
             ConnectionPoints = dto.ConnectionPoints
         };
     }
-    
-    /*public static EngineeringSymbol ToInsertEntity(this EngineeringSymbolCreateDto dto)
-    {
-        return new EngineeringSymbol(
-            Id: Guid.NewGuid().ToString(), 
-            Identifier: dto.Key, 
-            Status: EngineeringSymbolStatus.Draft, 
-            Description: dto.Description, 
-            DateTimeCreated: DateTimeOffset.Now,
-            DateTimeModified: DateTimeOffset.UnixEpoch, 
-            DateTimeIssued: DateTimeOffset.UnixEpoch, 
-            Creator: dto.Owner,
-            Geometry: StringHelpers.RemoveAllWhitespaceExceptSingleSpace(dto.Geometry),
-            Width: dto.Width,
-            Height: dto.Height,
-            ConnectionPoints: dto.Connectors.Map(connectorDto 
-                    => new ConnectionPoint(
-                        connectorDto.Id,
-                        connectorDto.RelativePosition,
-                        connectorDto.Direction))
-                .ToList());
-    }*/
-    
     
     public static EngineeringSymbolCreateDto ToCreateDto(this EngineeringSymbolSvgParsed sym)
     {
@@ -77,7 +51,7 @@ public static class ModelExtensions
                 new ()
                 {
                     Type = ShapeSerializationType.SvgPathData,
-                    Serialization = StringHelpers.RemoveAllWhitespaceExceptSingleSpace(sym.Geometry)
+                    Value = StringHelpers.RemoveAllWhitespaceExceptSingleSpace(sym.Geometry)
                 }
             }, new List<string>()),
             Width = sym.Width,
@@ -88,55 +62,4 @@ public static class ModelExtensions
             ConnectionPoints = new List<ConnectionPoint>()
         };
     }
-    
-    
-    
-
-
-    public static string GetConnectorIriPrefix(string symbolId, string name)
-    {
-        return Ontology.IndividualPrefix + ":" + symbolId + "_C_" + name;
-    }
-    
-    /*public static string ToTurtle(this EngineeringSymbolDto symbol)
-    {
-        var connectorPr = symbol.Connectors.Select(connector => $"<{GetConnectorIriPrefix(symbol.Id, connector.Id)}>").ToList();
-        var nfi = new NumberFormatInfo {NumberDecimalSeparator = "."};
-        
-        var hasConnectors = connectorPr.Count > 0
-            ? $"    {EsProp.HasConnectionPointQName} {string.Join(", ", connectorPr)} ."
-            : "";
-
-        var end = symbol.Connectors.Count > 0 ? ";" : ".";
-        
-        var connectors = symbol.Connectors.Select(connector => 
-            $"""
-            <{GetConnectorIriPrefix(symbol.Id, connector.Id)}>
-                a {Ontology.ConnectorTypeIriPrefix} ;
-                {EsProp.HasNameIriPrefix} "{connector.Id}"^^xsd:string ;
-                {EsProp.ConnectorDirectionQName} "{connector.Direction}"^^xsd:integer ;
-                {EsProp.PositionXQName} "{connector.RelativePosition.X.ToString(nfi)}"^^xsd:decimal ;
-                {EsProp.PositionYQName} "{connector.RelativePosition.Y.ToString(nfi)}"^^xsd:decimal .
-            """).ToList();
-        
-        return $"""
-                  {Ontology.AllPrefixDefs}
-                  <{Ontology.IndividualPrefix}:{symbol.Id}>
-                    a {Ontology.SymbolTypeIriPrefix} ;
-                    {EsProp.HasEngSymIdQName} "{symbol.Id}"^^xsd:string ;
-                    {EsProp.IdentifierQName} "{symbol.Key}"^^xsd:string ;
-                    {EsProp.EditorStatusQName} "{symbol.Status}"^^xsd:string ;
-                    {EsProp.DateCreatedQName} "{symbol.DateTimeCreated:O}"^^xsd:dateTime ;
-                    {EsProp.DateModifiedQName} "{symbol.DateTimeUpdated:O}"^^xsd:dateTime ;
-                    {EsProp.DateIssuedQName} "{symbol.DateTimePublished:O}"^^xsd:dateTime ;
-                    {EsProp.DescriptionQName} "{symbol.Description}"^^xsd:string ;
-                    {EsProp.CreatorQName} "{symbol.Owner}"^^xsd:string ;
-                    {EsProp.HasShapeQName} "{symbol.Geometry}"^^xsd:string ;
-                    {EsProp.WidthQName} "{symbol.Width}"^^xsd:integer ;
-                    {EsProp.HeightQName} "{symbol.Height}"^^xsd:integer {end}
-                  {hasConnectors}
-                  
-                  {string.Join(Environment.NewLine + Environment.NewLine, connectors)}
-                  """;
-    }*/
 }

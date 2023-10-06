@@ -2,6 +2,13 @@ using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
+using EngineeringSymbols.Tools.RdfParser;
+using EngineeringSymbols.Tools.Utils;
+using Newtonsoft.Json.Linq;
+using VDS.RDF.Parsing;
+using VDS.RDF.Writing;
+using StringWriter = System.IO.StringWriter;
+using  VDS.RDF.JsonLd;
 //using EngineeringSymbols.Tools.RdfParser;
 
 namespace EngineeringSymbols.Api.Repositories.Fuseki;
@@ -41,6 +48,15 @@ public class FusekiRepository : IEngineeringSymbolRepository
                 await _fuseki.QueryAsync(query, "application/ld+json"); //"application/sparql-results+json" "text/csv"
 
             var stringContent = await httpResponse.Content.ReadAsStringAsync();
+
+            var frame = await FileHelpers.GetJsonLdFrame();
+            
+            var aa = JToken.Parse(stringContent);
+
+            var bb = JToken.Parse(frame);
+
+            var a = JsonLdProcessor.Frame(aa, bb, new JsonLdProcessorOptions());
+            
             
             if (!httpResponse.IsSuccessStatusCode)
             {
@@ -80,49 +96,24 @@ public class FusekiRepository : IEngineeringSymbolRepository
                 : parsedSymbols;
         };
 
-    public TryAsync<EngineeringSymbol> InsertEngineeringSymbolAsync(EngineeringSymbol symbol) =>
+    public TryAsync<EngineeringSymbol> PutEngineeringSymbolAsync(EngineeringSymbol symbol) =>
         async () =>
         {
-            var query = SparqlQueries.InsertEngineeringSymbolQuery(symbol);
-
-            _logger.LogInformation("Sparql Query:\n{SparqlQuery}", query);
-
-            var httpResponse = await _fuseki.UpdateAsync(query);
+            var graph = $"{Ontology.SymbolIri}{symbol.Id}";
+            var turtleString = await SymbolGraphHelper.EngineeringSymbolToTurtleString(symbol);
+            
+            _logger.LogInformation("Put Graph:\n{SymbolGraphTurtle}", turtleString);
+            
+            var httpResponse = await _fuseki.PutGraphAsync(graph, turtleString);
             
             if (!httpResponse.IsSuccessStatusCode)
             {
-                return await FusekiRequestErrorResult<EngineeringSymbol>(httpResponse, sparqlQuery: query);
+                return await FusekiRequestErrorResult<EngineeringSymbol>(httpResponse, sparqlQuery: turtleString);
             }
 
             return symbol with {};
         };
-
-
-    /*public TryAsync<bool> ReplaceEngineeringSymbolAsync(EngineeringSymbol symbol) =>
-        SymbolExistsByIdAsync(symbol.Id)
-            .Bind(exists => new TryAsync<bool>(async () =>
-            {
-                if (!exists)
-                {
-                    return new Result<bool>(new RepositoryException(RepositoryOperationError.EntityNotFound));
-                }
-
-                var graph = $"{Ontology.SymbolIri}{dto.Id}";
-
-                var symbolGraphTurtle = (dto with {DateTimeUpdated = DateTimeOffset.Now}).ToTurtle();
-
-                _logger.LogInformation("Put Graph:\n{SymbolGraphTurtle}", symbolGraphTurtle);
-
-                var httpResponse = await _fuseki.PutGraphAsync(graph, symbolGraphTurtle);
-            
-                if (!httpResponse.IsSuccessStatusCode)
-                {
-                    return await FusekiRequestErrorResult<bool>(httpResponse);
-                }
-
-                return true;
-            }));*/
-
+    
     public TryAsync<bool> DeleteEngineeringSymbolAsync(string id) =>
         SymbolExistsByIdAsync(id)
             .Bind(exists => new TryAsync<bool>(async () =>
