@@ -1,12 +1,18 @@
 using System.Text.Json.Serialization;
 using EngineeringSymbols.Tools.Entities;
+using Newtonsoft.Json.Linq;
 
 namespace EngineeringSymbols.Tools.Models;
 
-// [JsonDerivedType(typeof(EngineeringSymbolDto))]
-// [JsonDerivedType(typeof(EngineeringSymbolPublicDto))]
-// public record EngineeringSymbolResponse;
+[JsonDerivedType(typeof(List<EngineeringSymbol>))]
+[JsonDerivedType(typeof(JObject))]
+public record EngineeringSymbolResponse;
 
+public static class EngineeringSymbolResponseContentType
+{
+    public const string Json = "application/json";
+    public const string JsonLd = "application/ld+json";
+}
 
 public record EngineeringSymbolCreateDto
 {
@@ -25,11 +31,13 @@ public record EngineeringSymbolCreateDto
     /// Reference to the source of the symbol, if the symbol is taken from a diagram standard that can be referenced.
     /// </summary>
     public required List<string>? Sources { get; init; }
-    
+
     /// <summary>
     /// Reference to the origin of the symbol, if the origin symbol can be referenced.
     /// </summary>
     public required List<string>? Subjects { get; init; }
+    
+    public required string UserOid { get; init; }
     public required List<User> Creators { get; init; }
     public required List<User> Contributors { get; init; }
     public required Shape Shape { get; init; }

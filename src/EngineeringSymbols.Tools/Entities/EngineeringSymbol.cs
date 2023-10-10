@@ -4,8 +4,8 @@ namespace EngineeringSymbols.Tools.Entities;
 
 public record EngineeringSymbol
 {
-    [JsonIgnore]
-    public bool ShouldSerializeAsPublicVersion { get; init; } = true;
+    // [JsonIgnore]
+    // public bool ShouldSerializeAsPublicVersion { get; init; } = true;
     
     /// <summary>
     /// Symbol IRI
@@ -29,6 +29,8 @@ public record EngineeringSymbol
     public required DateTimeOffset DateTimeCreated { get; init; }
     public required DateTimeOffset DateTimeModified { get; init; }
     public required DateTimeOffset DateTimeIssued { get; init; }
+    
+    public required string UserOid { get; init; }
     public required List<User> Creators { get; init; }
     public required List<User> Contributors { get; init; }
     public required Shape Shape { get; init; }

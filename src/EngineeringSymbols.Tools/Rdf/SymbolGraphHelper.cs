@@ -1,7 +1,10 @@
 using System.Globalization;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
+using EngineeringSymbols.Tools.Utils;
+using Newtonsoft.Json.Linq;
 using VDS.RDF;
+using VDS.RDF.JsonLd;
 using VDS.RDF.Nodes;
 using VDS.RDF.Parsing;
 using VDS.RDF.Writing;
@@ -9,7 +12,7 @@ using EsOntology = EngineeringSymbols.Tools.Constants.Ontology;
 using GraphFactory = VDS.RDF.Configuration.GraphFactory;
 using StringWriter = System.IO.StringWriter;
 
-namespace EngineeringSymbols.Tools.RdfParser;
+namespace EngineeringSymbols.Tools.Rdf;
 
 
 public static class SymbolGraphHelper
@@ -111,6 +114,9 @@ public static class SymbolGraphHelper
         // DateTimeIssued
         g.AssertTriple(s, g.CreateUriNode(EsProp.DateIssuedQName), new DateTimeNode(symbol.DateTimeIssued));
         
+        // User oid (object id from token)
+        g.AssertTriple(s, g.CreateUriNode(EsProp.UserObjectIdQName), new StringNode(symbol.UserOid));
+        
         // Creators
         symbol.Creators.ForEach(c =>
         {
@@ -195,7 +201,9 @@ public static class SymbolGraphHelper
         
         var turtleWriter = new CompressingTurtleWriter(TurtleSyntax.W3C)
         {
-            HighSpeedModePermitted = false
+            CompressionLevel = WriterCompressionLevel.None,
+            //HighSpeedModePermitted = false,
+            //PrettyPrintMode = true
         };
 
         await using var stringWriter = new StringWriter();
@@ -204,5 +212,17 @@ public static class SymbolGraphHelper
                 
         // Get the Turtle-formatted string
         return stringWriter.ToString();
+    }
+
+    public static async Task<string> EngineeringSymbolToTurtleStrin(EngineeringSymbol symbol)
+    {
+        var frame = await FileHelpers.GetJsonLdFrame();
+            
+        var aa = JToken.Parse("stringContent");
+
+        var bb = JToken.Parse(frame);
+
+        var a = JsonLdProcessor.Frame(aa, bb, new JsonLdProcessorOptions());
+        return "";
     }
 }

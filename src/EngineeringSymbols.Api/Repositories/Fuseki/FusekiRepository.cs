@@ -2,7 +2,7 @@ using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
-using EngineeringSymbols.Tools.RdfParser;
+using EngineeringSymbols.Tools.Rdf;
 using EngineeringSymbols.Tools.Utils;
 using Newtonsoft.Json.Linq;
 using VDS.RDF.Parsing;
@@ -38,7 +38,32 @@ public class FusekiRepository : IEngineeringSymbolRepository
         return new Result<T>(new RepositoryException($"Repository request to '{reqUri}' failed: Status {httpResponse.ReasonPhrase}. Message: {stringContent}"));
     }
 
-    public TryAsync<List<EngineeringSymbol>> GetAllEngineeringSymbolsAsync(bool onlyLatestVersion = true,
+    public TryAsync<string> GetAllEngineeringSymbolsAsync(bool onlyLatestVersion = true, bool onlyPublished = true) =>
+        async () =>
+        {
+            var query = SparqlQueries.GetAllSymbolsConstructQuery(onlyLatestVersion, onlyPublished);
+
+            var httpResponse =
+                await _fuseki.QueryAsync(query, "application/ld+json"); //"application/sparql-results+json" "text/csv"
+
+            var stringContent = await httpResponse.Content.ReadAsStringAsync();
+            
+            //var jsonInput = JToken.Parse(stringContent);
+            //var output = JsonLdProcessor.Frame(jsonInput, SymbolFrame.Frame, new JsonLdProcessorOptions() { e});
+
+            //var syms = a.GetValue("@graph").ToObject<List<EngineeringSymbol>>();
+            
+            
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                return await FusekiRequestErrorResult<string>(httpResponse, stringContent, sparqlQuery: query);
+            }
+
+            return stringContent;
+            //return JsonLdParser.ParseEngineeringSymbols(stringContent);
+        };
+    
+    private TryAsync<string> _GetAllEngineeringSymbolsAsync(bool onlyLatestVersion = true,
         bool onlyPublished = true) =>
         async () =>
         {
@@ -48,35 +73,29 @@ public class FusekiRepository : IEngineeringSymbolRepository
                 await _fuseki.QueryAsync(query, "application/ld+json"); //"application/sparql-results+json" "text/csv"
 
             var stringContent = await httpResponse.Content.ReadAsStringAsync();
-
-            var frame = await FileHelpers.GetJsonLdFrame();
-            
-            var aa = JToken.Parse(stringContent);
-
-            var bb = JToken.Parse(frame);
-
-            var a = JsonLdProcessor.Frame(aa, bb, new JsonLdProcessorOptions());
-            
             
             if (!httpResponse.IsSuccessStatusCode)
             {
-                return await FusekiRequestErrorResult<List<EngineeringSymbol>>(httpResponse, stringContent, sparqlQuery: query);
+                return await FusekiRequestErrorResult<string>(httpResponse, stringContent, sparqlQuery: query);
             }
 
-            return new Result<List<EngineeringSymbol>>();
-            //return JsonLdParser.ParseEngineeringSymbols(stringContent);
+            return stringContent;
+
+            //var jsonInput = JToken.Parse(stringContent);
+
+            //return JsonLdProcessor.Frame(jsonInput, SymbolFrame.Frame, new JsonLdProcessorOptions());
         };
+    
 
-
-    public TryAsync<List<EngineeringSymbol>> GetEngineeringSymbolByIdAsync(string id, bool onlyPublished = true)
+    public TryAsync<string> GetEngineeringSymbolByIdAsync(string id, bool onlyPublished = true)
         => TryAsync(() => Task.FromResult(SparqlQueries.GetEngineeringSymbolByIdQuery(id, onlyPublished)))
             .Bind(_getEngineeringSymbolByQueryAsync);
 
-    public TryAsync<List<EngineeringSymbol>> GetEngineeringSymbolByIdentifierAsync(string identifier, bool onlyPublished = true)
+    public TryAsync<string> GetEngineeringSymbolByIdentifierAsync(string identifier, bool onlyPublished = true)
         => TryAsync(() => Task.FromResult(SparqlQueries.GetEngineeringSymbolByIdentifierQuery(identifier, onlyPublished)))
             .Bind(_getEngineeringSymbolByQueryAsync);
 
-    private TryAsync<List<EngineeringSymbol>> _getEngineeringSymbolByQueryAsync(string query) =>
+    private TryAsync<string> _getEngineeringSymbolByQueryAsync(string query) =>
         async () =>
         {
             var httpResponse = await _fuseki.QueryAsync(query, "application/ld+json"); //"text/turtle"
@@ -85,15 +104,19 @@ public class FusekiRepository : IEngineeringSymbolRepository
             
             if (!httpResponse.IsSuccessStatusCode)
             {
-                return await FusekiRequestErrorResult<List<EngineeringSymbol>>(httpResponse, stringContent, sparqlQuery: query);
+                return await FusekiRequestErrorResult<string>(httpResponse, stringContent, sparqlQuery: query);
             }
 
+            return stringContent;
+            
             //var parsedSymbols = JsonLdParser.ParseEngineeringSymbols(stringContent);
+/*
             var parsedSymbols = new List<EngineeringSymbol>();
 
             return parsedSymbols.Count == 0
                 ? new Result<List<EngineeringSymbol>>(new RepositoryException(RepositoryOperationError.EntityNotFound))
                 : parsedSymbols;
+*/
         };
 
     public TryAsync<EngineeringSymbol> PutEngineeringSymbolAsync(EngineeringSymbol symbol) =>

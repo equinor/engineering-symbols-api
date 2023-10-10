@@ -1,6 +1,7 @@
 using EngineeringSymbols.Api.Infrastructure;
 using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Api.Repositories.Fuseki;
+using EngineeringSymbols.Tools.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 
@@ -28,7 +29,9 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     //options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
-
+// Load the static symbol frame from json
+//await SymbolFrames.Load(builder.Configuration.GetValue<string>("SymbolFramePath"));
+await SymbolFrames.Load();
 
 // Services and repos
 builder.Services.AddHttpClient<IFusekiService, FusekiService>();

@@ -1,8 +1,11 @@
 using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Tools;
+using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.Validation;
+using Newtonsoft.Json.Linq;
+using VDS.RDF.JsonLd;
 
 namespace EngineeringSymbols.Api.Services;
 
@@ -19,10 +22,22 @@ public class EngineeringSymbolService : IEngineeringSymbolService
         _logger = loggerFactory.CreateLogger("EngineeringSymbolService");
     }
 
-    public TryAsync<List<EngineeringSymbol>> GetSymbolsAsync(bool onlyLatestVersion, bool onlyPublished)
-        => _repo.GetAllEngineeringSymbolsAsync(onlyLatestVersion, onlyPublished);
+    private static Func<string, TryAsync<JObject>> AddFraming(bool publicVersion)
+    {
+        return jsonLdContent => () =>
+        {
+            var input = JToken.Parse(jsonLdContent);
+            var frame = publicVersion ? SymbolFrames.FramePublic : SymbolFrames.FrameInternal;
+            var framed = JsonLdProcessor.Frame(input, frame, new JsonLdProcessorOptions { Explicit = true });
+            return Task.FromResult(new Result<JObject>(framed));
+        };
+    }
+    
+    public TryAsync<JObject> GetSymbolsAsync(bool onlyLatestVersion, bool publicVersion)
+        => _repo.GetAllEngineeringSymbolsAsync(onlyLatestVersion, onlyPublished: publicVersion)
+            .Bind(AddFraming(publicVersion));
 
-    public TryAsync<List<EngineeringSymbol>> GetSymbolByIdOrIdentifierAsync(string idOrIdentifier, bool publicVersion)
+    public TryAsync<JObject> GetSymbolByIdOrIdentifierAsync(string idOrIdentifier, bool publicVersion)
         => new Try<(string, bool)>(() =>
             {
                 if (Guid.TryParse(idOrIdentifier, out _))
@@ -36,16 +51,16 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                     ? (idOrIdentifier, false)
                     : new Result<(string, bool)>(new ValidationException(
                         new Dictionary<string, string[]>
-                            {{"idOrIdentifier", new[] {"Value is not a valid GUID or Engineering Symbol Identifier."}}}));
+                        {
+                            {"idOrIdentifier", new[] {"Value is not a valid GUID or Engineering Symbol Identifier."}}
+                        }));
             })
             .ToAsync()
             .Bind(idOrKeyTuple => idOrKeyTuple.Item2
                 ? _repo.GetEngineeringSymbolByIdAsync(idOrKeyTuple.Item1, onlyPublished: publicVersion)
                 : _repo.GetEngineeringSymbolByIdentifierAsync(idOrKeyTuple.Item1, onlyPublished: publicVersion))
-            .Map(symbols=>(List<EngineeringSymbol>) 
-                symbols.Map(s => s with {ShouldSerializeAsPublicVersion = publicVersion}));
-
-
+            .Bind(AddFraming(publicVersion));
+    
     public TryAsync<EngineeringSymbol> CreateSymbolAsync(EngineeringSymbolCreateDto createDto, bool validationOnly)
         => new Try<EngineeringSymbolCreateDto>(
                 () => createDto.Validate().ToEither()
@@ -59,6 +74,20 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                 : async () => symbol with {Id = "", DateTimeCreated = DateTimeOffset.UnixEpoch});
 
 
+    private static SymbolSlim ToSymbolSlim(JObject obj)
+    {
+        // "dc:identifier": "PP007A_alt1",
+        // "pav:version": "1",
+        // "pav:previousVersion": "...",
+        // "esmde:status": "Draft",
+
+        var id = (string)obj["@id"];
+        var identifier = (string) obj[EsProp.IdentifierQName];
+        var version = (string)obj[EsProp.VersionQName];
+        
+        return new SymbolSlim(id, identifier, version);
+    }
+    
     private TryAsync<EngineeringSymbol> ResolveVersion(EngineeringSymbolCreateDto createDto)
         => async () =>
         {
@@ -68,13 +97,31 @@ public class EngineeringSymbolService : IEngineeringSymbolService
             // 2: 'Identifier' does not exist
             //     - 'IsRevisionOf' must be null or empty
             
-            
             // Check if Identifier exists
-            var existsResult = await _repo.GetEngineeringSymbolByIdentifierAsync(createDto.Identifier, onlyPublished: true).Try();
+            var existsResult = await _repo.GetEngineeringSymbolByIdentifierAsync(createDto.Identifier, onlyPublished: true)
+                .Bind(AddFraming(publicVersion: false))
+                .Try();
             
             Exception? existsException = null;
             
-            var symbols = existsResult.Match(symbols => symbols, exception =>
+            // Check if multiple, single or none...
+            var ancestors = existsResult.Match<List<SymbolSlim>>(jObject =>
+            {
+                var res = new List<SymbolSlim> ();
+                
+                // Top level symbol graph
+                if (jObject.ContainsKey("@graph") && jObject.ContainsKey("@id"))
+                {
+                    res.Add(ToSymbolSlim(jObject));
+                }
+                else if (jObject.TryGetValue("@graph", out var value))
+                {
+                    res.AddRange(from g in value as JArray select ToSymbolSlim(g as JObject));
+                }
+
+                return res;
+
+            }, exception =>
             {
                 if (exception is not RepositoryException
                     {
@@ -83,18 +130,13 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                 {
                     existsException = exception;
                 }
-                
-                return new List<EngineeringSymbol>();
+
+                return new List<SymbolSlim> ();
             });
             
-            if (existsException != null)
-            {
-                return new Result<EngineeringSymbol>(existsException);
-            }
-           
             var version = 1;
 
-            if (symbols.Count > 0)
+            if (ancestors.Count > 0)
             {
                 if (createDto.IsRevisionOf == null)
                 {
@@ -102,7 +144,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                         $"'{nameof(createDto.Identifier)}' '{createDto.Identifier}' already exists, but '{nameof(createDto.IsRevisionOf)}' is not provided."));
                 }
                 
-                var parent = symbols.Find(s => s.Id == createDto.IsRevisionOf);
+                var parent = ancestors.Find(s => s.Id == createDto.IsRevisionOf);
                 
                 if (parent == null)
                 {

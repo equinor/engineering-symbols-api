@@ -41,14 +41,7 @@ public static class Ontology
     
     
     public const string MetadataEditorIri = BaseIri + "/engineering-symbol-metadata-editor#";
-    
-    public const string ShapeSerializationTypeSvgPathUri = $"{EngSymOntologyIri}:svg-path-data"; 
-    
-    // Data types
-    public const string StringTypeQName = "xsd:integer";
-    public const string IntegerTypeQName = "xsd:integer";
-    public const string DateTimeTypeQName = $"xsd:dateTime";
-    public const string DecimalTypeQName = $"xsd:decimal";
+    public const string ShapeSerializationTypeSvgPathUri = $"{EngSymOntologyIri}svg-path-data";
     
     // Prefix defs (turtle)
     

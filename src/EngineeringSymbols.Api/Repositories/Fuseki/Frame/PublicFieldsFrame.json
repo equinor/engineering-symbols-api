@@ -1,0 +1,43 @@
+{
+  "dc:contributor": {
+    "foaf:mbox": {},
+    "foaf:name": {}
+  },
+  "dc:created": {},
+  "dc:creator": {
+    "foaf:mbox": {},
+    "foaf:name": {}
+  },
+  "dc:description": {},
+  "dc:identifier": {},
+  "dc:issued": {},
+  "dc:modified": {},
+  "pav:version": {},
+  "rdfs:label": {},
+  "sym:height": {},
+  "sym:width": {},
+  "sym:hasCenterOfRotation": {
+    "@type": {},
+    "sym:positionX": {},
+    "sym:positionY": {}
+  },
+  "sym:hasConnectionPoint": 
+    {
+      "@type": {},
+      "dc:identifier": {},
+      "sym:connectorDirection": {},
+      "sym:positionX": {},
+      "sym:positionY": {}
+    },
+  "sym:hasShape": {
+      "@type": {},
+      "foaf:depiction": {},
+      "sym:hasSerialization": {
+        "@value": {},
+        "@type": {}
+      }
+    }
+  ,
+  "https://rdf.equinor.com/ontology/engineering-symbol/v1#drawColor": {},
+  "https://rdf.equinor.com/ontology/engineering-symbol/v1#fillColor": {}
+}

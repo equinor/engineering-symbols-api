@@ -29,11 +29,12 @@ public static class EndpointsInfrastructure
         anonymous.MapGet("/", async (IEngineeringSymbolService symbolService, bool? onlyLatestVersion)
                 => await symbolService
                     .GetSymbolsAsync(onlyLatestVersion ?? true, publicVersion: true)
-                    .Match(TypedResults.Ok, OnFail(app.Logger)))
+                    .Match(Results.Extensions.EngineeringSymbol, OnFail(app.Logger)))
             .WithTags(SymbolTagsPublic)
             .WithMetadata(new SwaggerOperationAttribute("Get all published Engineering Symbols",
                 "Get all published Engineering Symbols. If query parameter 'allVersions' is missing or 'false' only the latest version of a symbol is returned, otherwise all versions of every symbol is returned. Only published symbols will be returned for anonymous requests."))
-            .Produces<List<EngineeringSymbol>>()
+            .Produces<string>(contentType: ContentTypes.JsonLd)
+            .Produces<string>(StatusCodes.Status400BadRequest, contentType: ContentTypes.Json)
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
 
@@ -42,11 +43,12 @@ public static class EndpointsInfrastructure
                 async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrIdentifier)
                     => await symbolService
                         .GetSymbolByIdOrIdentifierAsync(idOrIdentifier, publicVersion: true)
-                        .Match(TypedResults.Ok, OnFail(app.Logger)))
+                        .Match(Results.Extensions.EngineeringSymbol, OnFail(app.Logger)))
             .WithTags(SymbolTagsPublic)
-            .WithMetadata(new SwaggerOperationAttribute("Get a published Engineering Symbol by Id or Key",
-                "Get a published Engineering Symbol by Id or Key. All versions are returned if Key is specified. Only published symbols will be returned for anonymous requests."))
-            .Produces<List<EngineeringSymbol>>()
+            .WithMetadata(new SwaggerOperationAttribute("Get a published Engineering Symbol by Id or Identifier",
+                "Get a published Engineering Symbol by Id or Identifier. All versions are returned if Identifier is specified. Only published symbols will be returned for anonymous requests."))
+            .Produces<string>(contentType: ContentTypes.JsonLd)
+            .Produces<string>(StatusCodes.Status400BadRequest, contentType: ContentTypes.Json)
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
 
@@ -56,23 +58,24 @@ public static class EndpointsInfrastructure
         management.MapGet("/", async (IEngineeringSymbolService symbolService, bool? onlyLatestVersion)
                 => await symbolService
                     .GetSymbolsAsync(onlyLatestVersion ?? true, publicVersion: false)
-                    .Match(TypedResults.Ok, OnFail(app.Logger)))
+                    .Match(Results.Extensions.EngineeringSymbol, OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Get all Engineering Symbols",
                 "Get all Engineering Symbols. If query parameter 'allVersions' is missing or 'false' only the latest version of a symbol is returned, otherwise all versions of every symbol is returned."))
-            .Produces<List<EngineeringSymbol>>()
+            .Produces<string>(contentType: ContentTypes.JsonLd)
+            .Produces<string>(StatusCodes.Status400BadRequest, contentType: ContentTypes.Json)
             .RequireAuthorization(Policy.ContributorOrAdmin);
-
-
+        
         management.MapGet("/{idOrIdentifier}",
                 async (IEngineeringSymbolService symbolService, ClaimsPrincipal claimsPrincipal, string idOrIdentifier)
                     => await symbolService
                         .GetSymbolByIdOrIdentifierAsync(idOrIdentifier, publicVersion: false)
-                        .Match(TypedResults.Ok, OnFail(app.Logger)))
+                        .Match(Results.Extensions.EngineeringSymbol, OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
-            .WithMetadata(new SwaggerOperationAttribute("Get an Engineering Symbol by Id or Key",
-                "Get an Engineering Symbol by Id or Key. All versions are returned if Key is specified."))
-            .Produces<List<EngineeringSymbol>>()
+            .WithMetadata(new SwaggerOperationAttribute("Get an Engineering Symbol by Id or Identifier",
+                "Get an Engineering Symbol by Id or Identifier. All versions are returned if Identifier is specified."))
+            .Produces<string>(contentType: ContentTypes.JsonLd)
+            .Produces<string>(StatusCodes.Status400BadRequest, contentType: ContentTypes.Json)
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
 
@@ -80,7 +83,7 @@ public static class EndpointsInfrastructure
                 (CreateEngineeringSymbolHandler)(async (symbolService, request, claimsPrincipal, validationOnly) =>
                     await GetSymbolCreateContentFromRequest(request)
                         .Bind(content => ParseSymbolCreateContent(request.ContentType, content))
-                        //.Bind(dto => AddUserFromClaimsPrincipal(dto, claimsPrincipal))
+                        .Bind(dto => AddUserFromClaimsPrincipal(dto, claimsPrincipal))
                         .Bind(ValidateCreateDto)
                         .Bind(dto => symbolService.CreateSymbolAsync(dto, validationOnly ?? false))
                         .Match(

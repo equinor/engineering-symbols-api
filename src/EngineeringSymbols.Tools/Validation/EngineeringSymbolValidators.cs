@@ -44,7 +44,7 @@ public class EngineeringSymbolValidator : AbstractValidator<EngineeringSymbol>
         
         RuleFor(symbol => symbol.Creators)
             .NotNull()
-            .NotEmpty()
+            //.NotEmpty()
             .ForEach(s => s.MustBeValidEngineeringSymbolUser());
 
         RuleFor(symbol => symbol.Contributors)
@@ -109,7 +109,7 @@ public class EngineeringSymbolCreateDtoValidator : AbstractValidator<Engineering
 
         RuleFor(symbol => symbol.Creators)
             .NotNull()
-            .NotEmpty()
+            //.NotEmpty()
             .ForEach(s => s.MustBeValidEngineeringSymbolUser());
         
         RuleFor(symbol => symbol.Contributors)

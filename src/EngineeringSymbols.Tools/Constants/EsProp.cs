@@ -26,9 +26,7 @@ public static class EsProp
     public const string EditorStatusIri = $"{Ontology.MetadataEditorIri}{EditorStatus}";
     public const string EditorStatusQName = $"{Ontology.MetadataEditorPrefix}:{EditorStatus}";
     
-    // public const string HasName = "hasName";
-    // public const string HasNameIri = $"{Ontology.EngSymOntologyIri}{HasName}";
-    // public const string HasNameIriPrefix = $"{Ontology.EngSymPrefix}:{HasName}";
+    public const string UserObjectIdQName = $"{Ontology.MetadataEditorPrefix}:oid";
     
     public const string Description = "description";
     public const string DescriptionIri = $"{Ontology.DcIri}{Description}";

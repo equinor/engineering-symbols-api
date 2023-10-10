@@ -5,7 +5,7 @@ using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 
-namespace EngineeringSymbols.Tools.RdfParser;
+namespace EngineeringSymbols.Tools.Rdf;
 
 /*public static class JsonLdParser
 {

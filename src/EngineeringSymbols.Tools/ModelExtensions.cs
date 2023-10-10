@@ -9,8 +9,6 @@ public static class ModelExtensions
     {
         return new EngineeringSymbol
         {
-            ShouldSerializeAsPublicVersion = false,
-            
             Id = Guid.NewGuid().ToString(),
             Status = EngineeringSymbolStatus.Draft,
             Identifier = dto.Identifier,
@@ -23,6 +21,7 @@ public static class ModelExtensions
             DateTimeCreated = DateTimeOffset.Now,
             DateTimeModified = DateTimeOffset.UnixEpoch,
             DateTimeIssued = DateTimeOffset.UnixEpoch,
+            UserOid = dto.UserOid,
             Creators = dto.Creators,
             Contributors = dto.Contributors,
             Shape = dto.Shape,
@@ -44,6 +43,7 @@ public static class ModelExtensions
             Description = string.Empty,
             Sources = new List<string>(),
             Subjects = new List<string>(),
+            UserOid = string.Empty,
             Creators = new List<User>(),
             Contributors = new List<User>(),
             Shape = new Shape(new List<ShapeSerialization>
