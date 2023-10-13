@@ -21,7 +21,25 @@
   <ItemGroup>
     <ProjectReference Include="..\EngineeringSymbols.Tools\EngineeringSymbols.Tools.csproj" />
   </ItemGroup>
+  
 
+  <Target Name="CopySymbolFrames" AfterTargets="Build">
+    <Message Text="Executing CopySymbolFrames task" Importance="High" />
 
+    <!-- Gather only .json files -->
+    <ItemGroup>
+      <MySourceFiles Include="$(SolutionDir)\EngineeringSymbols.Tools\Rdf\Frame\**\*.json" />
+    </ItemGroup>
 
+    <!-- Ensure the destination directory exists -->
+    <MakeDir Directories="$(OutDir)/frames"
+             Condition="!Exists('$(OutDir)/frames')" />
+
+    <!-- Copy the .json files -->
+    <Copy SourceFiles="@(MySourceFiles)"
+          DestinationFolder="$(OutDir)/frames/%(RecursiveDir)" />
+
+    <Message Text="Copied Symbol *.json framing files to dist dir" Importance="High" />
+  </Target>
+  
 </Project>

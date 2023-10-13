@@ -80,7 +80,7 @@ public class EngineeringSymbolValidator : AbstractValidator<EngineeringSymbol>
     }
 }
 
-public class EngineeringSymbolCreateDtoValidator : AbstractValidator<EngineeringSymbolCreateDto>
+public class EngineeringSymbolCreateDtoValidator : AbstractValidator<EngineeringSymbolPutDto>
 {
     public EngineeringSymbolCreateDtoValidator()
     {

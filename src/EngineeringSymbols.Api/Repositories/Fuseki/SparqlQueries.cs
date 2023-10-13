@@ -78,7 +78,7 @@ public static class SparqlQueries
 	{
 		var onlyIssuedConstraint = onlyIssued
 			? $"""
-                    ?s2 {EsProp.EditorStatusQName} "Published" .
+                    ?s2 {EsProp.EditorStatusQName} "{EngineeringSymbolStatus.Issued}" .
             """
 			: "";
 
@@ -95,7 +95,7 @@ public static class SparqlQueries
                 {
                     GRAPH ?symbolGraph {
                 {{onlyIssuedConstraint}}
-                        ?ss {{EsProp.HasEngSymIdQName}} "{{id}}" .
+                        ?ss {{EsProp.IdQname}} "{{id}}" .
                         ?s ?p ?o .
                     }
                 }
@@ -139,6 +139,37 @@ public static class SparqlQueries
                 """;
 	}
 
+	public static string UpdateEngineeringSymbolStatusQuery(string id, string status)
+	{
+		var symbolGraph = $"{Ontology.IndividualPrefix}:{id}";
+
+		var dt = DateTimeOffset.Now.ToString("O");
+		
+		var issuedTriple = status == EngineeringSymbolStatus.Issued.ToString()
+			? $"""
+			   {symbolGraph} {EsProp.DateIssuedQName} "{dt}"^^xsd:string .
+			   """
+			: "";
+        
+		return $$"""
+		         {{Ontology.XsdPrefixDef}}
+		         {{Ontology.EngSymPrefixDef}}
+		         {{Ontology.SymbolPrefixDef}}
+		         {{Ontology.MetadataEditorPrefixDef}}
+		         {{Ontology.DcPrefixDef}}
+
+		         WITH {{symbolGraph}}
+		         DELETE {
+		             {{symbolGraph}} {{EsProp.EditorStatusQName}} ?o .
+		         }
+		         INSERT {
+		             {{symbolGraph}} {{EsProp.EditorStatusQName}} "{{status}}"^^xsd:string .
+		             {{issuedTriple}}
+		         }
+		         WHERE { ?s ?p ?o }
+		         """;
+	}
+	
 	/*public static string InsertEngineeringSymbolQuery(EngineeringSymbol symbol)
 	{
 		var nfi = new NumberFormatInfo { NumberDecimalSeparator = "." };

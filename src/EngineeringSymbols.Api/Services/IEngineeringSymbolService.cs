@@ -8,8 +8,8 @@ public interface IEngineeringSymbolService
 {
 	TryAsync<JObject> GetSymbolsAsync(bool onlyLatestVersion, bool publicVersion);
 	TryAsync<JObject> GetSymbolByIdOrIdentifierAsync(string idOrKey, bool publicVersion);
-	TryAsync<EngineeringSymbol> CreateSymbolAsync(EngineeringSymbolCreateDto createDto, bool validationOnly);
-	//TryAsync<bool> UpdateSymbolAsync(string id, EngineeringSymbolCreateDto createDto);
-	//TryAsync<bool> UpdateSymbolStatusAsync(string id, EngineeringSymbolStatusDto statusDto);
+	TryAsync<EngineeringSymbol> CreateSymbolAsync(EngineeringSymbolPutDto putDto, bool validationOnly);
+	TryAsync<EngineeringSymbol> UpdateSymbolAsync(string id, EngineeringSymbolPutDto putDto);
+	TryAsync<bool> UpdateSymbolStatusAsync(string id, EngineeringSymbolStatusDto statusDto);
 	TryAsync<bool> DeleteSymbolAsync(string id);
 }

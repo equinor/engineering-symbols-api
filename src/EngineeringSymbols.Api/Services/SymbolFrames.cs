@@ -6,30 +6,8 @@ namespace EngineeringSymbols.Api.Services;
 
 public static class SymbolFrames
 {
-    //public static JToken Frame { get; private set; } = new JObject();
-    
     public static JToken FramePublic { get; private set; } = new JObject();
-    
     public static JToken FrameInternal { get; private set; } = new JObject();
-    
-    /*public static async Task Load(string? path)
-    {
-        var filePath = path ?? throw new ArgumentNullException(nameof(path));
-        
-        if (!Path.IsPathRooted(path))
-        {
-            // Get the directory of the executable
-            var exePath = Assembly.GetExecutingAssembly().Location;
-            var exeDirectory = Path.GetDirectoryName(exePath);
-
-            // Build the path to the file you want to read
-            filePath = Path.Combine(exeDirectory, path);
-        }
-        
-        var jsonFrameString = await File.ReadAllTextAsync(filePath);
-        
-        Frame = JToken.Parse(jsonFrameString);
-    }*/
 
     private static string GetFilePath(string absOrRelativePath)
     {
@@ -45,10 +23,10 @@ public static class SymbolFrames
 
     public static async Task Load()
     {
-        var baseFrameJson = await File.ReadAllTextAsync(GetFilePath("Repositories/Fuseki/Frame/SymbolFrameBase.json"));
+        var baseFrameJson = await File.ReadAllTextAsync(GetFilePath("frames/SymbolFrameBase.json"));
         var publicFrame = JObject.Parse(baseFrameJson);
         
-        var publicFrameJson = await File.ReadAllTextAsync(GetFilePath("Repositories/Fuseki/Frame/PublicFieldsFrame.json"));
+        var publicFrameJson = await File.ReadAllTextAsync(GetFilePath("frames/PublicFieldsFrame.json"));
         var pubDict = JObject.Parse(publicFrameJson);
         
         foreach (var property in pubDict.Properties())
@@ -63,7 +41,7 @@ public static class SymbolFrames
         FramePublic = publicFrame;
         
         var internalFrame = (JObject)publicFrame.DeepClone();
-        var internalFrameJson = await File.ReadAllTextAsync(GetFilePath("Repositories/Fuseki/Frame/InternalFieldsFrame.json"));
+        var internalFrameJson = await File.ReadAllTextAsync(GetFilePath("frames/InternalFieldsFrame.json"));
         var internalDict = JObject.Parse(internalFrameJson);
 
         foreach (var property in internalDict.Properties())

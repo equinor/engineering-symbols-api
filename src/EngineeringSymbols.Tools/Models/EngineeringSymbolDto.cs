@@ -14,7 +14,7 @@ public static class EngineeringSymbolResponseContentType
     public const string JsonLd = "application/ld+json";
 }
 
-public record EngineeringSymbolCreateDto
+public record EngineeringSymbolPutDto
 {
     /// <summary>
     /// Identifier for the symbol that is stable over different versions of the symbol.
@@ -37,7 +37,7 @@ public record EngineeringSymbolCreateDto
     /// </summary>
     public required List<string>? Subjects { get; init; }
     
-    public required string UserOid { get; init; }
+    public required string UserIdentifier { get; init; }
     public required List<User> Creators { get; init; }
     public required List<User> Contributors { get; init; }
     public required Shape Shape { get; init; }

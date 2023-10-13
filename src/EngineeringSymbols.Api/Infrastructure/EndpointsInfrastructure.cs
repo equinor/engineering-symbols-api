@@ -84,14 +84,14 @@ public static class EndpointsInfrastructure
                     await GetSymbolCreateContentFromRequest(request)
                         .Bind(content => ParseSymbolCreateContent(request.ContentType, content))
                         .Bind(dto => AddUserFromClaimsPrincipal(dto, claimsPrincipal))
-                        .Bind(ValidateCreateDto)
+                        .Bind(ValidatePutDto)
                         .Bind(dto => symbolService.CreateSymbolAsync(dto, validationOnly ?? false))
                         .Match(
                             Succ: symbol => validationOnly is true ? TypedResults.Ok(symbol) : TypedResults.Created(symbol.Id, symbol),
                             Fail: OnFail(app.Logger))
                 ))
             .Accepts<string>(ContentTypes.Svg, ContentTypes.Json)
-            .Produces<EngineeringSymbolCreateDto>(StatusCodes.Status200OK)
+            .Produces<EngineeringSymbolPutDto>(StatusCodes.Status200OK)
             .Produces<EngineeringSymbol>(StatusCodes.Status201Created)
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Create an Engineering Symbol revision",
@@ -99,30 +99,29 @@ public static class EndpointsInfrastructure
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
 
-        /*management.MapPut("/{id}",
-                async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolCreateDto createDto) =>
-                    await ValidateCreateDto(createDto)
-                    .Bind(dto => symbolService.UpdateSymbolAsync(id, dto))
-                    .Match(
-                        Succ: success => success ? TypedResults.Ok() : TypedResults.Problem("Updated failed"),
-                        Fail: OnFail(app.Logger)))
+        management.MapPut("/{id}",
+                async (IEngineeringSymbolService symbolService, ClaimsPrincipal claimsPrincipal, string id, EngineeringSymbolPutDto putDto) =>
+                    await ValidatePutDto(putDto)
+                        .Bind(dto => AddUserFromClaimsPrincipal(dto, claimsPrincipal))
+                        .Bind(dto => symbolService.UpdateSymbolAsync(id, dto))
+                        .Match(Succ: TypedResults.Ok, Fail: OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute(
                 "Update (replace) an Engineering Symbol revision by Id (Only when Status='Draft')",
                 "Update (replace) an Engineering Symbol by Id. Note that this will only work if the symbol has Status='Draft'."))
-            .RequireAuthorization(Policy.ContributorOrAdmin);*/
+            .RequireAuthorization(Policy.ContributorOrAdmin);
 
 
-        // management.MapPut("/{id}/status",
-        //         async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolStatusDto statusDto)
-        //             => await symbolService.UpdateSymbolStatusAsync(id, statusDto)
-        //                 .Match(
-        //                     Succ: success => success ? TypedResults.Ok() : TypedResults.Problem("Updated failed"),
-        //                     Fail: OnFail(app.Logger)))
-        //     .WithTags(SymbolTagsManagement)
-        //     .WithMetadata(new SwaggerOperationAttribute("Set the Status of an Engineering Symbol revision",
-        //         "Set the Status of an Engineering Symbol revision"))
-        //     .RequireAuthorization(Policy.OnlyAdmins);
+        management.MapPut("/{id}/status",
+                async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolStatusDto statusDto)
+                    => await symbolService.UpdateSymbolStatusAsync(id, statusDto)
+                        .Match(
+                            Succ: success => success ? TypedResults.Ok() : TypedResults.Problem("Updated failed"),
+                            Fail: OnFail(app.Logger)))
+            .WithTags(SymbolTagsManagement)
+            .WithMetadata(new SwaggerOperationAttribute("Set the Status of an Engineering Symbol revision",
+                "Set the Status of an Engineering Symbol revision"))
+            .RequireAuthorization(Policy.OnlyAdmins);
 
 
         management.MapDelete("/{id}", async (IEngineeringSymbolService symbolService, string id)

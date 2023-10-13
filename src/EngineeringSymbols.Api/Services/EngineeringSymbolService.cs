@@ -1,8 +1,10 @@
+using System.Globalization;
 using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
+using EngineeringSymbols.Tools.Rdf;
 using EngineeringSymbols.Tools.Validation;
 using Newtonsoft.Json.Linq;
 using VDS.RDF.JsonLd;
@@ -26,24 +28,24 @@ public class EngineeringSymbolService : IEngineeringSymbolService
     {
         return jsonLdContent => () =>
         {
-            var input = JToken.Parse(jsonLdContent);
+            var input = JToken.Parse(jsonLdContent, new JsonLoadSettings() { });
             var frame = publicVersion ? SymbolFrames.FramePublic : SymbolFrames.FrameInternal;
-            var framed = JsonLdProcessor.Frame(input, frame, new JsonLdProcessorOptions { Explicit = true });
+            var framed = JsonLdProcessor.Frame(input, frame, new JsonLdProcessorOptions {Explicit = true});
             return Task.FromResult(new Result<JObject>(framed));
         };
     }
-    
+
     public TryAsync<JObject> GetSymbolsAsync(bool onlyLatestVersion, bool publicVersion)
-        => _repo.GetAllEngineeringSymbolsAsync(onlyLatestVersion, onlyPublished: publicVersion)
+    {
+        return _repo.GetAllEngineeringSymbolsAsync(onlyLatestVersion, publicVersion)
             .Bind(AddFraming(publicVersion));
+    }
 
     public TryAsync<JObject> GetSymbolByIdOrIdentifierAsync(string idOrIdentifier, bool publicVersion)
-        => new Try<(string, bool)>(() =>
+    {
+        return new Try<(string, bool)>(() =>
             {
-                if (Guid.TryParse(idOrIdentifier, out _))
-                {
-                    return (idOrIdentifier, true);
-                }
+                if (Guid.TryParse(idOrIdentifier, out _)) return (idOrIdentifier, true);
 
                 var identifierValidator = new EngineeringSymbolIdentifierValidator();
 
@@ -57,21 +59,26 @@ public class EngineeringSymbolService : IEngineeringSymbolService
             })
             .ToAsync()
             .Bind(idOrKeyTuple => idOrKeyTuple.Item2
-                ? _repo.GetEngineeringSymbolByIdAsync(idOrKeyTuple.Item1, onlyPublished: publicVersion)
-                : _repo.GetEngineeringSymbolByIdentifierAsync(idOrKeyTuple.Item1, onlyPublished: publicVersion))
+                ? _repo.GetEngineeringSymbolByIdAsync(idOrKeyTuple.Item1, publicVersion)
+                : _repo.GetEngineeringSymbolByIdentifierAsync(idOrKeyTuple.Item1, publicVersion))
             .Bind(AddFraming(publicVersion));
-    
-    public TryAsync<EngineeringSymbol> CreateSymbolAsync(EngineeringSymbolCreateDto createDto, bool validationOnly)
-        => new Try<EngineeringSymbolCreateDto>(
-                () => createDto.Validate().ToEither()
-                    .Match<Result<EngineeringSymbolCreateDto>>(
-                        Right: dto => dto,
-                        Left: errors => new Result<EngineeringSymbolCreateDto>(new ValidationException(errors))))
-            .ToAsync()
-            .Bind(ResolveVersion)
+    }
+
+    public TryAsync<EngineeringSymbol> CreateSymbolAsync(EngineeringSymbolPutDto putDto, bool validationOnly)
+    {
+        return ResolveNewVersion(putDto)
             .Bind(symbol => !validationOnly
                 ? _repo.PutEngineeringSymbolAsync(symbol)
                 : async () => symbol with {Id = "", DateTimeCreated = DateTimeOffset.UnixEpoch});
+    }
+
+    private TryAsync<EngineeringSymbolPutDto> ValidatePutDto(EngineeringSymbolPutDto putDto)
+    {
+        return async () => putDto.Validate().ToEither()
+            .Match<Result<EngineeringSymbolPutDto>>(
+                dto => dto,
+                errors => new Result<EngineeringSymbolPutDto>(new ValidationException(errors)));
+    }
 
 
     private static SymbolSlim ToSymbolSlim(JObject obj)
@@ -81,104 +88,195 @@ public class EngineeringSymbolService : IEngineeringSymbolService
         // "pav:previousVersion": "...",
         // "esmde:status": "Draft",
 
-        var id = (string)obj["@id"];
+        var id = (string) obj["@id"];
         var identifier = (string) obj[EsProp.IdentifierQName];
-        var version = (string)obj[EsProp.VersionQName];
-        
+        var version = (string) obj[EsProp.VersionQName];
+
         return new SymbolSlim(id, identifier, version);
     }
-    
-    private TryAsync<EngineeringSymbol> ResolveVersion(EngineeringSymbolCreateDto createDto)
-        => async () =>
+
+    private TryAsync<EngineeringSymbol> ResolveNewVersion(EngineeringSymbolPutDto putDto)
+    {
+        return async () =>
         {
-            // Two paths:
-            // 1: 'Identifier' exists
-            //     - 'IsRevisionOf' must not be null and have an equal 'Identifier'
-            // 2: 'Identifier' does not exist
-            //     - 'IsRevisionOf' must be null or empty
-            
+            /*
+             Two paths:
+                1: 'Identifier' exists
+                    - 'IsRevisionOf' must not be null
+                    - 'new Identifier' must be equal to the 'current Identifier' in the 'IsRevisionOf' graph
+                2: 'Identifier' does not exist
+                    - 'IsRevisionOf' must be null or empty (to avoid confusion)
+            */
+
             // Check if Identifier exists
-            var existsResult = await _repo.GetEngineeringSymbolByIdentifierAsync(createDto.Identifier, onlyPublished: true)
-                .Bind(AddFraming(publicVersion: false))
+            var existsResult = await _repo.GetEngineeringSymbolByIdentifierAsync(putDto.Identifier, true)
+                .Bind(AddFraming(false))
                 .Try();
-            
+
             Exception? existsException = null;
-            
+
             // Check if multiple, single or none...
             var ancestors = existsResult.Match<List<SymbolSlim>>(jObject =>
             {
-                var res = new List<SymbolSlim> ();
-                
+                var res = new List<SymbolSlim>();
+
                 // Top level symbol graph
                 if (jObject.ContainsKey("@graph") && jObject.ContainsKey("@id"))
-                {
                     res.Add(ToSymbolSlim(jObject));
-                }
                 else if (jObject.TryGetValue("@graph", out var value))
-                {
                     res.AddRange(from g in value as JArray select ToSymbolSlim(g as JObject));
-                }
 
                 return res;
-
             }, exception =>
             {
                 if (exception is not RepositoryException
                     {
                         RepositoryOperationError: RepositoryOperationError.EntityNotFound
                     })
-                {
                     existsException = exception;
-                }
 
-                return new List<SymbolSlim> ();
+                return new List<SymbolSlim>();
             });
-            
+
             var version = 1;
 
             if (ancestors.Count > 0)
             {
-                if (createDto.IsRevisionOf == null)
-                {
+                if (string.IsNullOrEmpty(putDto.IsRevisionOf))
                     return new Result<EngineeringSymbol>(new ValidationException(
-                        $"'{nameof(createDto.Identifier)}' '{createDto.Identifier}' already exists, but '{nameof(createDto.IsRevisionOf)}' is not provided."));
-                }
-                
-                var parent = ancestors.Find(s => s.Id == createDto.IsRevisionOf);
-                
+                        $"'{nameof(putDto.Identifier)}' '{putDto.Identifier}' already exists, but '{nameof(putDto.IsRevisionOf)}' is not provided."));
+
+                var parent = ancestors.Find(s => s.Id == putDto.IsRevisionOf);
+
                 if (parent == null)
-                {
                     return new Result<EngineeringSymbol>(new ValidationException(
-                        $"'{nameof(createDto.IsRevisionOf)}' is invalid."));
-                }
-                
+                        $"'{nameof(putDto.IsRevisionOf)}' is invalid."));
+
                 if (!int.TryParse(parent.Version, out var parentVersion))
-                {
-                    return new Result<EngineeringSymbol>(new RepositoryException($"Failed to parse parent '{nameof(parent.Version)}'"));
-                }
+                    return new Result<EngineeringSymbol>(
+                        new RepositoryException($"Failed to parse parent '{nameof(parent.Version)}'"));
 
                 version = parentVersion + 1;
-            } 
-            else if (createDto.IsRevisionOf != null)
-            {
-                return new Result<EngineeringSymbol>(new ValidationException($"Expected '{nameof(createDto.IsRevisionOf)}' to be null because there does not exist any symbol with '{nameof(createDto.Identifier)}' = '{createDto.Identifier}' in the database."));
             }
-            
-            return createDto.ToInsertEntity() with
+            else if (!string.IsNullOrEmpty(putDto.IsRevisionOf))
             {
-                Version = version.ToString(), 
-                PreviousVersion = createDto.IsRevisionOf
+                return new Result<EngineeringSymbol>(new ValidationException(
+                    $"Expected '{nameof(putDto.IsRevisionOf)}' to be null because there does not exist any symbol with '{nameof(putDto.Identifier)}' = '{putDto.Identifier}' in the database."));
+            }
+
+            return putDto.ToInsertEntity() with
+            {
+                Version = version.ToString(),
+                PreviousVersion = putDto.IsRevisionOf
             };
         };
-            
-            
-    /*public TryAsync<bool> UpdateSymbolAsync(string id, EngineeringSymbolCreateDto createDto)
-        => GetSymbolByIdOrKeyAsync(id, publicVersion: false)
+    }
+
+
+    public TryAsync<EngineeringSymbol> UpdateSymbolAsync(string id, EngineeringSymbolPutDto putDto)
+    {
+        return _repo.GetEngineeringSymbolByIdAsync(id, false)
+            .Bind(AddFraming(false))
+            .Bind(existing => new TryAsync<EngineeringSymbol>(async () =>
+                {
+                    /*
+                     * TODO: It hurts a bit to parse these fields in this method, should make
+                     * TODO: a method to parse a JObject to an EngineeringSymbol
+                     * */
+                    
+                    if (!existing.ContainsKey("@id"))
+                        return new Result<EngineeringSymbol>(
+                            new ValidationException("Expected root level '@id' field."));
+
+                    if (!Enum.TryParse<EngineeringSymbolStatus>((string?) existing.GetValue(EsProp.EditorStatusQName),
+                            out var currentStatus))
+                        return new Result<EngineeringSymbol>(
+                            new ValidationException(
+                                $"Failed to read/parse '{EsProp.EditorStatusQName}' from existing state."));
+
+                    if (currentStatus == EngineeringSymbolStatus.Issued)
+                        return new Result<EngineeringSymbol>(
+                            new ValidationException(
+                                $"Cannot modify symbol because it has status '{EngineeringSymbolStatus.Issued}'."));
+
+                    var currentIdentifier = (string?) existing.GetValue(EsProp.IdentifierQName);
+                    if (currentIdentifier == null)
+                        return new Result<EngineeringSymbol>(
+                            new ValidationException(
+                                $"Failed to read/parse '{EsProp.IdentifierQName}' from existing state."));
+
+                    var currentVersion = (string?) existing.GetValue(EsProp.VersionQName);
+                    if (currentVersion == null)
+                        return new Result<EngineeringSymbol>(
+                            new ValidationException(
+                                $"Failed to read/parse '{EsProp.VersionQName}' from existing state."));
+
+                    var currentPrevVersion = (string?) existing.GetValue(EsProp.PreviousVersionQName);
+                    // if (currentPrevVersion == null)
+                    //     return new Result<EngineeringSymbol>(
+                    //         new ValidationException(
+                    //             $"Failed to read/parse '{EsProp.PreviousVersionQName}' from existing state."));
+
+                    if (!DateTimeOffset.TryParse((string?) existing.GetValue(EsProp.DateCreatedQName),
+                            CultureInfo.CurrentCulture, out var createdDate))
+                        return new Result<EngineeringSymbol>(
+                            new ValidationException(
+                                $"Failed to read/parse '{EsProp.DateCreatedQName}' from existing state."));
+
+
+                    // These fields must be set by backend, other fields come from the putDto:  
+                    //  - Id  
+                    //  - Status => Dont update, just pass over (status is set by own endpoint)  
+                    //  - Version + Prev version => Update if Identifier has changed  
+                    //  - Dates...  
+                    //  - UserIdentifier => added earlier in pipeline  
+
+
+                    // "pav:version": "1",  
+                    // "rdfs:label": "Pump PP007A",  
+                    // "esmde:id": "4d193516-dbaf-4829-afd9-e5f327bc2dc6",  
+                    // "esmde:oid": "d5327a96-0771-4c0c-9334-bd14a0d3cb09",  
+                    // "esmde:status": "Draft",  
+
+                    if (currentIdentifier != putDto.Identifier)
+                        /*
+                            Same rules as when creating a new symbol. If the identifier has been modified,
+                            then Version and PreviousVersion must also update based on IsRevisionOf from dto
+                            
+                            Two paths:        
+                            1: 'Identifier' exists
+                                - 'IsRevisionOf' must not be null
+                                - 'new Identifier' must be equal to the 'current Identifier' in the 'IsRevisionOf' graph
+                            2: 'Identifier' does not exist
+                                - 'IsRevisionOf' must be null or empty (to avoid confusion)
+                        */
+                        return await ResolveNewVersion(putDto).Map(es => es with
+                        {
+                            Id = id,
+                            Status = currentStatus,
+                            DateTimeCreated = createdDate,
+                            DateTimeModified = DateTimeOffset.Now
+                        }).Try();
+
+                    return putDto.ToInsertEntity() with
+                    {
+                        Id = id,
+                        Status = currentStatus,
+                        DateTimeCreated = createdDate,
+                        DateTimeModified = DateTimeOffset.Now,
+                        Version = currentVersion,
+                        PreviousVersion = currentPrevVersion
+                    };
+                }
+            )).Bind(_repo.PutEngineeringSymbolAsync);
+    }
+
+    /*GetSymbolByIdOrIdentifierAsync(id, publicVersion: false)
             .Map(symbols =>
             {
                 var symbol = symbols.ToArray().First();
-                
-                return createDto.ToDto() with
+
+                return putDto.ToDto() with
                 {
                     Id = symbol.Id,
                     DateTimeCreated = symbol.DateTimeCreated,
@@ -195,15 +293,18 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                 }
                 return dto;
             }))
-            .Bind(_repo.ReplaceEngineeringSymbolAsync);
+            .Bind(_repo.PutEngineeringSymbolAsync);*/
+
 
     public TryAsync<bool> UpdateSymbolStatusAsync(string id, EngineeringSymbolStatusDto statusDto)
-        => GetSymbolByIdOrKeyAsync(id, publicVersion: false)
-            .Bind(symbols => new TryAsync<EngineeringSymbolDto>(
+        => _repo.GetEngineeringSymbolByIdAsync(id, false)
+            .Bind(AddFraming(false))
+            //.Bind(obj => SymbolGraphHelper.ToEngineeringSymbols(obj).ToAsync())
+            .Bind(sObj => new TryAsync<(string, string)>(
                 async () =>
                 {
-                    if (!Enum.TryParse<EngineeringSymbolStatus>(statusDto.Status, out var status) ||
-                        status == EngineeringSymbolStatus.None)
+                    if (!Enum.TryParse<EngineeringSymbolStatus>(statusDto.Status, out var newStatus) ||
+                        newStatus == EngineeringSymbolStatus.None)
                     {
                         var statusValues = Enum.GetValues(typeof(EngineeringSymbolStatus))
                             .OfType<EngineeringSymbolStatus>()
@@ -212,16 +313,31 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                         var validValues = string.Join(", ",
                             statusValues.Where(s => s != "None").Select(s => $"'{s}'"));
 
-                        return new Result<EngineeringSymbolDto>(
+                        return new Result<(string, string)>(
                             new ValidationException(new Dictionary<string, string[]>
                             {
                                 {nameof(statusDto.Status), new[] {$"Invalid value. Valid values are: {validValues}."}},
                             }));
                     }
 
-                    var symbol = (EngineeringSymbolDto) symbols.ToArray().First();
+                    //var symbol = (EngineeringSymbolDto) symbols.ToArray().First(); 
 
-                    var es = symbol.ToEngineeringSymbol();
+                    var statusDb = (string?)sObj.GetValue(EsProp.EditorStatusQName);
+
+                    if (!Enum.TryParse<EngineeringSymbolStatus>(statusDb, out var currentStatus))
+                    {
+                        return new Result<(string, string)>(new ValidationException("Failed to get existing status from db."));
+                    }
+
+                    if (currentStatus == EngineeringSymbolStatus.Issued)
+                    {
+                        return new Result<(string, string)>(
+                            new ValidationException("The symbol has already been issued."));
+                    }
+                    
+                    return (id, newStatus.ToString());
+
+                    /*var es = symbol.ToEngineeringSymbol();
 
                     if (es.Status == EngineeringSymbolStatus.Published)
                     {
@@ -238,13 +354,16 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                         };
                     }
 
-                    return symbol with {Status = status.ToString()};
+                    return symbol with {Status = status.ToString()};*/
                 }))
-            .Bind(_repo.ReplaceEngineeringSymbolAsync);*/
+            .Bind( value => _repo.UpdateSymbolStatusAsync(value.Item1, value.Item2))
+            //.Bind(_repo.PutEngineeringSymbolAsync)
+            .Map(s => true);
 
 
     public TryAsync<bool> DeleteSymbolAsync(string id)
-        => new Try<string>(() =>
+    {
+        return new Try<string>(() =>
             {
                 var idValidator = new EngineeringSymbolIdValidator();
 
@@ -258,4 +377,5 @@ public class EngineeringSymbolService : IEngineeringSymbolService
             })
             .ToAsync()
             .Bind(_repo.DeleteEngineeringSymbolAsync);
+    }
 }

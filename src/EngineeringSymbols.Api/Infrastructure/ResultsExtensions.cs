@@ -5,7 +5,7 @@ using System.Text;
 
 namespace EngineeringSymbols.Api.Infrastructure;
 
-static class ResultsExtensions
+internal static class ResultsExtensions
 {
     public static IResult Fuseki(this IResultExtensions resultExtensions, FusekiRawResponse response)
     {
@@ -16,12 +16,20 @@ static class ResultsExtensions
      public static IResult EngineeringSymbol(this IResultExtensions resultExtensions, JObject jObject)
      {
          ArgumentNullException.ThrowIfNull(resultExtensions);
-         return new EngineeringSymbolResult(jObject);
+
+         var settings = new JsonSerializerSettings
+         {
+             Formatting = Formatting.None,
+             NullValueHandling = NullValueHandling.Ignore,
+         };
+         
+         var content = JsonConvert.SerializeObject(jObject, settings);
+
+         return Results.Text(content, contentType: ContentTypes.JsonLd);
      }
 }
 
-
-class EngineeringSymbolResult : IResult
+internal class EngineeringSymbolResult : IResult
 {
     private readonly JObject _jObjectResponse;
     public EngineeringSymbolResult(JObject response)
@@ -31,11 +39,16 @@ class EngineeringSymbolResult : IResult
     
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        var content = _jObjectResponse.ToString(Formatting.None);
+        var content = JsonConvert.SerializeObject(_jObjectResponse, Formatting.None, 
+            new JsonSerializerSettings { 
+                NullValueHandling = NullValueHandling.Ignore
+            });
+        
+        //var content = _jObjectResponse.ToString(Formatting.None);
         httpContext.Response.StatusCode = StatusCodes.Status200OK;
         httpContext.Response.ContentType = ContentTypes.JsonLd;
         httpContext.Response.ContentLength = Encoding.UTF8.GetByteCount(content);
-        return httpContext.Response.WriteAsync(content);
+        return httpContext.Response.WriteAsync("lol");
     }
 }
 

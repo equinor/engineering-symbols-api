@@ -123,6 +123,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
         async () =>
         {
             var graph = $"{Ontology.SymbolIri}{symbol.Id}";
+            
             var turtleString = await SymbolGraphHelper.EngineeringSymbolToTurtleString(symbol);
             
             _logger.LogInformation("Put Graph:\n{SymbolGraphTurtle}", turtleString);
@@ -136,7 +137,24 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
             return symbol with {};
         };
-    
+
+    public TryAsync<bool> UpdateSymbolStatusAsync(string id, string status)
+        => async () =>
+        {
+            var query = SparqlQueries.UpdateEngineeringSymbolStatusQuery(id, status);
+            
+            _logger.LogInformation("Updating Status with query:\n{Query}", query);
+
+            var httpResponse = await _fuseki.UpdateAsync(query);
+
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                return await FusekiRequestErrorResult<bool>(httpResponse, sparqlQuery: query);
+            }
+
+            return true;
+        };
+
     public TryAsync<bool> DeleteEngineeringSymbolAsync(string id) =>
         SymbolExistsByIdAsync(id)
             .Bind(exists => new TryAsync<bool>(async () =>

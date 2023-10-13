@@ -5,7 +5,7 @@ namespace EngineeringSymbols.Tools;
 
 public static class ModelExtensions
 {
-    public static EngineeringSymbol ToInsertEntity(this EngineeringSymbolCreateDto dto)
+    public static EngineeringSymbol ToInsertEntity(this EngineeringSymbolPutDto dto)
     {
         return new EngineeringSymbol
         {
@@ -21,7 +21,7 @@ public static class ModelExtensions
             DateTimeCreated = DateTimeOffset.Now,
             DateTimeModified = DateTimeOffset.UnixEpoch,
             DateTimeIssued = DateTimeOffset.UnixEpoch,
-            UserOid = dto.UserOid,
+            UserIdentifier = dto.UserIdentifier,
             Creators = dto.Creators,
             Contributors = dto.Contributors,
             Shape = dto.Shape,
@@ -34,16 +34,17 @@ public static class ModelExtensions
         };
     }
     
-    public static EngineeringSymbolCreateDto ToCreateDto(this EngineeringSymbolSvgParsed sym)
+    public static EngineeringSymbolPutDto ToPutDto(this EngineeringSymbolSvgParsed sym)
     {
-        return new EngineeringSymbolCreateDto
+        return new EngineeringSymbolPutDto
         {
             Identifier = sym.Key,
+            IsRevisionOf = string.Empty,
             Label = string.Empty,
             Description = string.Empty,
             Sources = new List<string>(),
             Subjects = new List<string>(),
-            UserOid = string.Empty,
+            UserIdentifier = string.Empty,
             Creators = new List<User>(),
             Contributors = new List<User>(),
             Shape = new Shape(new List<ShapeSerialization>

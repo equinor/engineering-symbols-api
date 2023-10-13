@@ -4,12 +4,6 @@ namespace EngineeringSymbols.Tools.Entities;
 
 public record EngineeringSymbol
 {
-    // [JsonIgnore]
-    // public bool ShouldSerializeAsPublicVersion { get; init; } = true;
-    
-    /// <summary>
-    /// Symbol IRI
-    /// </summary>
     public required string Id { get; init; }
     
     public required string Identifier { get; init; }
@@ -17,9 +11,6 @@ public record EngineeringSymbol
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public required EngineeringSymbolStatus Status { get; init; }
     
-    /// <summary>
-    /// Version is an integer > 0, but stored as a string for future changes
-    /// </summary>
     public required string Version { get; init; }
     public required string? PreviousVersion { get; init; }
     public required string Label { get; init; }
@@ -29,8 +20,7 @@ public record EngineeringSymbol
     public required DateTimeOffset DateTimeCreated { get; init; }
     public required DateTimeOffset DateTimeModified { get; init; }
     public required DateTimeOffset DateTimeIssued { get; init; }
-    
-    public required string UserOid { get; init; }
+    public required string UserIdentifier { get; init; }
     public required List<User> Creators { get; init; }
     public required List<User> Contributors { get; init; }
     public required Shape Shape { get; init; }

@@ -42,16 +42,16 @@ public static class EndpointHelpers
 			return await stream.ReadToEndAsync();
 		};
 
-	public static TryAsync<EngineeringSymbolCreateDto> ParseSymbolCreateContent(string? contentType, string? content)
+	public static TryAsync<EngineeringSymbolPutDto> ParseSymbolCreateContent(string? contentType, string? content)
 		=> async () =>
 		{
 			if (content is null || contentType is null)
 			{
-				return new Result<EngineeringSymbolCreateDto>(
+				return new Result<EngineeringSymbolPutDto>(
 					new ValidationException("Failed to deserialize symbol content."));
 			}
 
-			Either<Exception, EngineeringSymbolCreateDto> parsedDto =
+			Either<Exception, EngineeringSymbolPutDto> parsedDto =
 				Left(new Exception("Failed to deserialize symbol content"));
 
 			switch (contentType)
@@ -60,7 +60,7 @@ public static class EndpointHelpers
 					{
 						try
 						{
-							var obj = JsonConvert.DeserializeObject<EngineeringSymbolCreateDto>(content);
+							var obj = JsonConvert.DeserializeObject<EngineeringSymbolPutDto>(content);
 
 							if (obj != null)
 							{
@@ -77,7 +77,7 @@ public static class EndpointHelpers
 					}
 				case ContentTypes.Svg:
 					parsedDto = SvgParser.FromString(content)
-						.Match<Either<Exception, EngineeringSymbolCreateDto>>(
+						.Match<Either<Exception, EngineeringSymbolPutDto>>(
 							Succ: result =>
 							{
 								if (result.ParseErrors.Count > 0)
@@ -88,7 +88,7 @@ public static class EndpointHelpers
 								if (result.EngineeringSymbolSvgParsed == null)
 									return new ValidationException("SVG parse error");
 
-								return result.EngineeringSymbolSvgParsed.ToCreateDto();
+								return result.EngineeringSymbolSvgParsed.ToPutDto();
 							},
 							Fail: exception => exception);
 					break;
@@ -98,8 +98,8 @@ public static class EndpointHelpers
 					break;
 			}
 
-			return parsedDto.Match<Result<EngineeringSymbolCreateDto>>(dto => dto,
-				ex => new Result<EngineeringSymbolCreateDto>(ex));
+			return parsedDto.Match<Result<EngineeringSymbolPutDto>>(dto => dto,
+				ex => new Result<EngineeringSymbolPutDto>(ex));
 		};
 
 	public static TryAsync<string> GetRequestBodyAsString(HttpRequest request)
@@ -132,16 +132,18 @@ public static class EndpointHelpers
 		};
 
 
-	public static TryAsync<EngineeringSymbolCreateDto> AddUserFromClaimsPrincipal(EngineeringSymbolCreateDto dto, ClaimsPrincipal claimsPrincipal)
+	public static TryAsync<EngineeringSymbolPutDto> AddUserFromClaimsPrincipal(EngineeringSymbolPutDto dto, ClaimsPrincipal claimsPrincipal)
 		=> async () =>
 		{
+			if (!string.IsNullOrEmpty(dto.UserIdentifier) && !string.IsNullOrWhiteSpace(dto.UserIdentifier)) return dto;
+			
 			var claims = claimsPrincipal.Claims.ToList();
 
 			 var oidString = claims.Find(claim => claim.Type == "http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
 			
 			 if (!Guid.TryParse(oidString, out var oid))
 			 {
-			 	return new Result<EngineeringSymbolCreateDto>(new ValidationException("Failed to determine user id (oid)."));
+			 	return new Result<EngineeringSymbolPutDto>(new ValidationException("Failed to determine user id (oid)."));
 			 }
 
 			// var roles = claims.Where(claim => claim.Type == ClaimTypes.Role)
@@ -152,17 +154,17 @@ public static class EndpointHelpers
 			// var creators = dto.Creators;
 			// creators.Add(new Tools.Entities.User(name,email));
 
-			return dto with {UserOid = oidString};
+			return dto with {UserIdentifier = oidString};
 		};
 	
-	public static TryAsync<EngineeringSymbolCreateDto> ValidateCreateDto(EngineeringSymbolCreateDto dto)
+	public static TryAsync<EngineeringSymbolPutDto> ValidatePutDto(EngineeringSymbolPutDto dto)
 		=> async () =>
 		{
 			var validationResult = new EngineeringSymbolCreateDtoValidator().Validate(dto);
 
 			return validationResult.IsValid
 				? dto
-				: new Result<EngineeringSymbolCreateDto>(
+				: new Result<EngineeringSymbolPutDto>(
 					new ValidationException(validationResult.ToDictionary()));
 		};
 
