@@ -127,20 +127,20 @@ public static class EngineeringSymbolFieldValidators
 	
 	
 	
-	public static IRuleBuilderOptions<T, DateTimeOffset> MustBeValidEngineeringSymbolDateCreated<T>(this IRuleBuilder<T, DateTimeOffset> ruleBuilder)
+	public static IRuleBuilderOptions<T, DateTime> MustBeValidEngineeringSymbolDateCreated<T>(this IRuleBuilder<T, DateTime> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull()
-			.Must(d => d != DateTimeOffset.UnixEpoch);
+			.Must(d => d != DateTime.UnixEpoch);
 	}
 
-	public static IRuleBuilderOptions<T, DateTimeOffset> MustBeValidEngineeringSymbolDateModified<T>(this IRuleBuilder<T, DateTimeOffset> ruleBuilder)
+	public static IRuleBuilderOptions<T, DateTime> MustBeValidEngineeringSymbolDateModified<T>(this IRuleBuilder<T, DateTime> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull();
 	}
 
-	public static IRuleBuilderOptions<T, DateTimeOffset> MustBeValidEngineeringSymbolDateIssued<T>(this IRuleBuilder<T, DateTimeOffset> ruleBuilder)
+	public static IRuleBuilderOptions<T, DateTime> MustBeValidEngineeringSymbolDateIssued<T>(this IRuleBuilder<T, DateTime> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull();

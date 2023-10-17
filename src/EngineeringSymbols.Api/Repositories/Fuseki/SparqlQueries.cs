@@ -106,7 +106,7 @@ public static class SparqlQueries
 	{
 		var onlyIssuedConstraint = onlyIssued
 			? $"""
-                    ?s2 {EsProp.EditorStatusQName} "Published" .
+                    ?s2 {EsProp.EditorStatusQName} "{EngineeringSymbolStatus.Issued}" .
             """
 			: "";
 
@@ -143,11 +143,17 @@ public static class SparqlQueries
 	{
 		var symbolGraph = $"{Ontology.IndividualPrefix}:{id}";
 
-		var dt = DateTimeOffset.Now.ToString("O");
+		var dt = DateTime.UtcNow.ToString("O");
 		
-		var issuedTriple = status == EngineeringSymbolStatus.Issued.ToString()
+		var issuedTripleDelete = status == EngineeringSymbolStatus.Issued.ToString()
 			? $"""
-			   {symbolGraph} {EsProp.DateIssuedQName} "{dt}"^^xsd:string .
+			   {symbolGraph} {EsProp.DateIssuedQName} ?o .
+			   """
+			: "";
+		
+		var issuedTripleInsert = status == EngineeringSymbolStatus.Issued.ToString()
+			? $"""
+			   {symbolGraph} {EsProp.DateIssuedQName} "{dt}"^^xsd:dateTime .
 			   """
 			: "";
         
@@ -161,10 +167,11 @@ public static class SparqlQueries
 		         WITH {{symbolGraph}}
 		         DELETE {
 		             {{symbolGraph}} {{EsProp.EditorStatusQName}} ?o .
+		             {{issuedTripleDelete}}
 		         }
 		         INSERT {
 		             {{symbolGraph}} {{EsProp.EditorStatusQName}} "{{status}}"^^xsd:string .
-		             {{issuedTriple}}
+		             {{issuedTripleInsert}}
 		         }
 		         WHERE { ?s ?p ?o }
 		         """;

@@ -145,15 +145,7 @@ public static class EndpointHelpers
 			 {
 			 	return new Result<EngineeringSymbolPutDto>(new ValidationException("Failed to determine user id (oid)."));
 			 }
-
-			// var roles = claims.Where(claim => claim.Type == ClaimTypes.Role)
-			// 	.Select(claim => claim.Value)
-			// 	.ToList();
-			// var name = claims.Find(c => c.Type == "name")?.Value;
-			// var email = claims.Find(c => c.Type == "preferred_username")?.Value;
-			// var creators = dto.Creators;
-			// creators.Add(new Tools.Entities.User(name,email));
-
+            
 			return dto with {UserIdentifier = oidString};
 		};
 	

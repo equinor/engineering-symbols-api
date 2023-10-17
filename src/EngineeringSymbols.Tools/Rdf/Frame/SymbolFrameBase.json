@@ -18,12 +18,6 @@
     "sym:connectorDirection": {
       "@type": "xsd:integer"
     },
-    "sym:drawColor": {
-      "@type": "xsd:string"
-    },
-    "sym:fillColor": {
-      "@type": "xsd:string"
-    },
     "sym:hasConnectionPoint": {
       "@type": "@id",
       "@container": "@set"

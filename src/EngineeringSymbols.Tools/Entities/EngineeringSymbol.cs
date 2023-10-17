@@ -17,9 +17,9 @@ public record EngineeringSymbol
     public required string Description { get; init; }
     public required List<string> Sources { get; init; }
     public required List<string> Subjects { get; init; }
-    public required DateTimeOffset DateTimeCreated { get; init; }
-    public required DateTimeOffset DateTimeModified { get; init; }
-    public required DateTimeOffset DateTimeIssued { get; init; }
+    public required DateTime DateTimeCreated { get; init; }
+    public required DateTime DateTimeModified { get; init; }
+    public required DateTime DateTimeIssued { get; init; }
     public required string UserIdentifier { get; init; }
     public required List<User> Creators { get; init; }
     public required List<User> Contributors { get; init; }

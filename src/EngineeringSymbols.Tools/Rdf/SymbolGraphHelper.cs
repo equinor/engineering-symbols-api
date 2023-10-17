@@ -75,7 +75,7 @@ public static class SymbolGraphHelper
         // PreviousVersion
         if (!string.IsNullOrEmpty(symbol.PreviousVersion))
         {
-            g.AssertTriple(s, g.CreateUriNode(EsProp.PreviousVersionQName), g.CreateUriNode(symbol.PreviousVersion));
+            g.AssertTriple(s, g.CreateUriNode(EsProp.PreviousVersionQName), g.CreateUriNode(new Uri(symbol.PreviousVersion)));
         }
         
         // Label

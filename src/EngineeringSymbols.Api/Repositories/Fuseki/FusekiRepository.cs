@@ -4,12 +4,7 @@ using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.Rdf;
 using EngineeringSymbols.Tools.Utils;
-using Newtonsoft.Json.Linq;
-using VDS.RDF.Parsing;
-using VDS.RDF.Writing;
-using StringWriter = System.IO.StringWriter;
-using  VDS.RDF.JsonLd;
-//using EngineeringSymbols.Tools.RdfParser;
+
 
 namespace EngineeringSymbols.Api.Repositories.Fuseki;
 
@@ -101,7 +96,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
             var httpResponse = await _fuseki.QueryAsync(query, "application/ld+json"); //"text/turtle"
 
             var stringContent = await httpResponse.Content.ReadAsStringAsync();
-            
+                     
             if (!httpResponse.IsSuccessStatusCode)
             {
                 return await FusekiRequestErrorResult<string>(httpResponse, stringContent, sparqlQuery: query);

@@ -69,7 +69,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
         return ResolveNewVersion(putDto)
             .Bind(symbol => !validationOnly
                 ? _repo.PutEngineeringSymbolAsync(symbol)
-                : async () => symbol with {Id = "", DateTimeCreated = DateTimeOffset.UnixEpoch});
+                : async () => symbol with {Id = "", DateTimeCreated = DateTime.UnixEpoch});
     }
 
     private TryAsync<EngineeringSymbolPutDto> ValidatePutDto(EngineeringSymbolPutDto putDto)
@@ -121,7 +121,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                 var res = new List<SymbolSlim>();
 
                 // Top level symbol graph
-                if (jObject.ContainsKey("@graph") && jObject.ContainsKey("@id"))
+                if (jObject.ContainsKey("@id"))
                     res.Add(ToSymbolSlim(jObject));
                 else if (jObject.TryGetValue("@graph", out var value))
                     res.AddRange(from g in value as JArray select ToSymbolSlim(g as JObject));
@@ -161,7 +161,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
             else if (!string.IsNullOrEmpty(putDto.IsRevisionOf))
             {
                 return new Result<EngineeringSymbol>(new ValidationException(
-                    $"Expected '{nameof(putDto.IsRevisionOf)}' to be null because there does not exist any symbol with '{nameof(putDto.Identifier)}' = '{putDto.Identifier}' in the database."));
+                    $"Expected '{nameof(putDto.IsRevisionOf)}' to be null because there does not exist any Issued symbols with '{nameof(putDto.Identifier)}' = '{putDto.Identifier}' in the database."));
             }
 
             return putDto.ToInsertEntity() with
@@ -211,18 +211,27 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                             new ValidationException(
                                 $"Failed to read/parse '{EsProp.VersionQName}' from existing state."));
 
-                    var currentPrevVersion = (string?) existing.GetValue(EsProp.PreviousVersionQName);
+                    var currentPrevVersionObj = (JObject?) existing.GetValue(EsProp.PreviousVersionQName);
+                    var currentPrevVersion = (string?)currentPrevVersionObj?.GetValue("@id");
+                    
+                    
                     // if (currentPrevVersion == null)
                     //     return new Result<EngineeringSymbol>(
                     //         new ValidationException(
                     //             $"Failed to read/parse '{EsProp.PreviousVersionQName}' from existing state."));
+                    
+                   
 
-                    if (!DateTimeOffset.TryParse((string?) existing.GetValue(EsProp.DateCreatedQName),
-                            CultureInfo.CurrentCulture, out var createdDate))
+                    var createdDateToken = existing.GetValue(EsProp.DateCreatedQName);
+                    
+                    if (createdDateToken == null)
+                    {
                         return new Result<EngineeringSymbol>(
                             new ValidationException(
                                 $"Failed to read/parse '{EsProp.DateCreatedQName}' from existing state."));
-
+                    }
+                    
+                    var createdDate = (DateTime)createdDateToken;
 
                     // These fields must be set by backend, other fields come from the putDto:  
                     //  - Id  
@@ -255,7 +264,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                             Id = id,
                             Status = currentStatus,
                             DateTimeCreated = createdDate,
-                            DateTimeModified = DateTimeOffset.Now
+                            DateTimeModified = DateTime.UtcNow
                         }).Try();
 
                     return putDto.ToInsertEntity() with
@@ -263,7 +272,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
                         Id = id,
                         Status = currentStatus,
                         DateTimeCreated = createdDate,
-                        DateTimeModified = DateTimeOffset.Now,
+                        DateTimeModified = DateTime.UtcNow,
                         Version = currentVersion,
                         PreviousVersion = currentPrevVersion
                     };
