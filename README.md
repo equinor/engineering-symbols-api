@@ -24,3 +24,6 @@ chmod +x run.sh && ./run.sh
 ```
 
 Make sure that `FusekiServers[0].DatasetUrl` in `EngineeringSymbols.Api/appsettings.Development.json` matches the settings in `run.sh`.
+
+---
+  Documentation for the engineering-symbols-api and its place in the "Symbol Editor" stack can be found in the [symbol-editor.md](https://github.com/equinor/spine-uvt-doc/blob/main/symbol-editor.md) file in the [spine-uvt-doc](https://github.com/equinor/spine-uvt-doc) repo.
