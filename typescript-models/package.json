@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "test": "pnpm tsx tests"
+  },
+  "devDependencies": {
+    "tsx": "^3.13.0"
+  }
+}

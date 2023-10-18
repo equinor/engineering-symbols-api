@@ -14,7 +14,6 @@
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "sym": "https://rdf.equinor.com/ontology/engineering-symbol/v1#",
     "esmde": "https://rdf.equinor.com/engineering-symbol-metadata-editor#",
-
     "sym:connectorDirection": {
       "@type": "xsd:integer"
     },
@@ -22,10 +21,20 @@
       "@type": "@id",
       "@container": "@set"
     },
-    "sym:hasSerialization": {},
-    "sym:hasShape": {
-      "@type": "@id",
+    "sym:width": {
+      "@type": "xsd:integer"
+    },
+    "sym:height": {
+      "@type": "xsd:integer"
+    },
+    "sym:hasSerialization": {
       "@container": "@set"
+    },
+    "foaf:depiction": {
+      "@container": "@set"
+    },
+    "sym:hasShape": {
+      "@type": "@id"
     },
     "sym:isConnectionPointOn": {
       "@type": "@id"
@@ -38,12 +47,6 @@
     },
     "sym:positionY": {
       "@type": "xsd:decimal"
-    },
-    "sym:width": {
-      "@type": "xsd:integer"
-    },
-    "sym:height": {
-      "@type": "xsd:integer"
     },
     "pav:createdBy": {
       "@type": "@id",
@@ -61,6 +64,12 @@
     },
     "dc:modified": {
       "@type": "xsd:dateTime"
+    },
+    "dc:source": {
+      "@container": "@set"
+    },
+    "dc:subject": {
+      "@container": "@set"
     }
   },
   "@type": "sym:Symbol"
