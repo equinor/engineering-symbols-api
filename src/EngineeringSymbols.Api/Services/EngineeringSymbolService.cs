@@ -1,10 +1,8 @@
-using System.Globalization;
 using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Tools;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
-using EngineeringSymbols.Tools.Rdf;
 using EngineeringSymbols.Tools.Validation;
 using Newtonsoft.Json.Linq;
 using VDS.RDF.JsonLd;

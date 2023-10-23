@@ -1,7 +1,5 @@
 using EngineeringSymbols.Api.Repositories.Fuseki;
 using EngineeringSymbols.Tools.Entities;
-using EngineeringSymbols.Tools.Models;
-using Newtonsoft.Json.Linq;
 
 namespace EngineeringSymbols.Api.Repositories;
 
