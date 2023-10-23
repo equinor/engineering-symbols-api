@@ -1,10 +1,9 @@
 # Handover of Engineering Symbol API
 Completion of all the items on the list below and reviewing of a pull request indicates a successful and complete handover.
 
-- [ ] Overall introduction of Engineering Symbol API has been given to remaining Dugtrio resources
-- [ ] Admin Role of Github repo transferred to remaining Dugtrio resources
-  - [ ] 1. remaining Dugtrio resources team promoted or added as Admin
-  - [ ] 2. Dugtrio demoted / removed from team access list
+- [x] Overall introduction of Engineering Symbol API has been given to remaining Dugtrio resources
+- [x] Admin Role of Github repo transferred to remaining Dugtrio resources
+  - [x] 1. remaining Dugtrio resources team promoted or added as Admin
 - [ ] Transfer ownership of Snyk to remaining Dugtrio resources
 - [ ] Transfer ownership of CI/CD pipelines to remaining Dugtrio resources
   - [ ] Ownership of [Engineering Symbols API](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/7584f051-6987-4c51-861d-77710537bd06/isMSAApp~/false) is transferred to remaining Dugtrio resources and Dugtrio is demoted / removed
