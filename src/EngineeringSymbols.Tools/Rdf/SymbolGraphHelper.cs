@@ -1,15 +1,11 @@
 using System.Globalization;
 using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
-using EngineeringSymbols.Tools.Utils;
-using Newtonsoft.Json.Linq;
 using VDS.RDF;
-using VDS.RDF.JsonLd;
 using VDS.RDF.Nodes;
 using VDS.RDF.Parsing;
 using VDS.RDF.Writing;
 using EsOntology = EngineeringSymbols.Tools.Constants.Ontology;
-using GraphFactory = VDS.RDF.Configuration.GraphFactory;
 using StringWriter = System.IO.StringWriter;
 
 namespace EngineeringSymbols.Tools.Rdf;
@@ -199,148 +195,5 @@ public static class SymbolGraphHelper
                 
         // Get the Turtle-formatted string
         return stringWriter.ToString();
-    }
-
-    public static async Task<string> EngineeringSymbolToTurtleStrin(EngineeringSymbol symbol)
-    {
-        var frame = await FileHelpers.GetJsonLdFrame();
-            
-        var aa = JToken.Parse("stringContent");
-
-        var bb = JToken.Parse(frame);
-
-        var a = JsonLdProcessor.Frame(aa, bb, new JsonLdProcessorOptions());
-        return "";
-    }
-    
-    /// <summary>
-    /// This method only parse values and do not validate
-    /// </summary>
-    /// <param name="obj"></param>
-    /// <returns></returns>
-    public static Try<List<EngineeringSymbol>> ToEngineeringSymbols(JObject obj)
-    {
-        return () =>
-        {
-            var symbols = new List<EngineeringSymbol>();
-            
-            if (obj.ContainsKey("@id"))
-            {
-                // We have a single symbol/graph
-                symbols.Add(JObjectSymbolGraphToEngineeringSymbol(obj));
-            }
-            else if (obj.ContainsKey("@graph"))
-            {
-                 if (obj["@graph"] is not JArray symbolGraphs)
-                 {
-                     throw new Exception("Expected '@graph' field to be of type JsonArray");
-                 }
-
-                symbols.AddRange(
-                    from symbolGraph in symbolGraphs 
-                    where symbolGraph != null
-                    select JObjectSymbolGraphToEngineeringSymbol(symbolGraph as JObject));
-            }
-            
-            return symbols;
-        };
-    }
-
-    public static EngineeringSymbol JObjectSymbolGraphToEngineeringSymbol(JObject graph)
-    {
-        /*{
-  "@id": "https://rdf.equinor.com/engineering-symbols/4d193516-dbaf-4829-afd9-e5f327bc2dc6",
-  "@type": "sym:Symbol",
-  "dc:contributor": {
-    "foaf:mbox": "arnm@equinor.com",
-    "foaf:name": "Arne M."
-  },
-  "dc:created": "2023-11-10T09:28:24+01:00",
-  "dc:creator": {
-    "foaf:mbox": "loba@equinor.com",
-    "foaf:name": "Lorentz F. Barstad"
-  },
-  "dc:description": "A chocolate pumping device!",
-  "dc:identifier": "PP007A",
-  "dc:issued": "1970-01-01T01:00:00+01:00",
-  "dc:modified": "2023-10-13T10:43:45.56349+02:00",
-  "pav:version": "1",
-  "rdfs:label": "Pump PP007A",
-  "esmde:id": "4d193516-dbaf-4829-afd9-e5f327bc2dc6",
-  "esmde:oid": "d5327a96-0771-4c0c-9334-bd14a0d3cb09",
-  "esmde:status": "Draft",
-  "https://rdf.equinor.com/ontology/engineering-symbol/v1#drawColor": "black",
-  "https://rdf.equinor.com/ontology/engineering-symbol/v1#fillColor": "#000",
-  "sym:hasCenterOfRotation": {
-    "@type": "sym:CenterOfRotation",
-    "sym:positionX": "48",
-    "sym:positionY": "40.5"
-  },
-  "sym:hasConnectionPoint": [
-    {
-      "@type": "sym:ConnectionPoint",
-      "dc:identifier": "gNrwVKPlFQ",
-      "sym:connectorDirection": "90",
-      "sym:positionX": "87",
-      "sym:positionY": "13.5"
-    },
-    {
-      "@type": "sym:ConnectionPoint",
-      "dc:identifier": "gNrwVKKSISD",
-      "sym:connectorDirection": "180",
-      "sym:positionX": "89.1",
-      "sym:positionY": "10.5"
-    },
-    {
-      "@type": "sym:ConnectionPoint",
-      "dc:identifier": "jCGoSOYbuj",
-      "sym:connectorDirection": "270",
-      "sym:positionX": "3.1",
-      "sym:positionY": "-5"
-    }
-  ],
-  "sym:hasShape": [
-    {
-      "@type": "sym:Shape",
-      "foaf:depiction": "https://www.italianfoodtech.com/files/2017/06/OMAC.jpg",
-      "sym:hasSerialization": {
-        "@value": "M52 40.5C52 42.7091 50.2091 44.5 48 44.5C45.7909 44.5 44 42.7091 44 40.5C44 38.2909 45.7909 36.5 48 36.5C50.2091 36.5 52 38.2909 52 40.5ZM51 40.5C51 38.8431 49.6569 37.5 48 37.5C46.3431 37.5 45 38.8431 45 40.5C45 42.1569 46.3431 43.5 48 43.5C49.6569 43.5 51 42.1569 51 40.5ZM88 20.5H76.7266C80.6809 26.1692 83 33.0638 83 40.5C83 50.9622 78.4096 60.3522 71.1329 66.7659L83 90.5H13L24.8671 66.7659C17.5904 60.3522 13 50.9622 13 40.5C13 21.17 28.67 5.5 48 5.5H88V20.5ZM48 74.5C66.7777 74.5 82 59.2777 82 40.5C82 33.0245 79.5874 26.1124 75.4984 20.5C75.2521 20.1619 74.9997 19.8285 74.7413 19.5H86.8571V6.5H49.1429V6.51885C48.7634 6.50631 48.3825 6.5 48 6.5C29.2223 6.5 14 21.7223 14 40.5C14 59.2777 29.2223 74.5 48 74.5ZM25.6501 67.4359L14.618 89.5H81.382L70.3499 67.4359C64.2874 72.4719 56.4973 75.5 48 75.5C39.5027 75.5 31.7126 72.4719 25.6501 67.4359Z",
-        "@type": "sym:svg-path-data"
-      }
-    }
-  ],
-  "sym:height": "96",
-  "sym:width": "96",
-  "pav:previousVersion": null,
-  "dc:source": null,
-  "dc:subject": null,*/
-        
-        var id = graph.ContainsKey("");
-        
-        return new EngineeringSymbol
-        {
-            Id = null,
-            Identifier = null,
-            Status = EngineeringSymbolStatus.None,
-            Version = null,
-            PreviousVersion = null,
-            Label = null,
-            Description = null,
-            Sources = null,
-            Subjects = null,
-            DateTimeCreated = default,
-            DateTimeModified = default,
-            DateTimeIssued = default,
-            UserIdentifier = null,
-            Creators = null,
-            Contributors = null,
-            Shape = null,
-            Width = 0,
-            Height = 0,
-            DrawColor = null,
-            FillColor = null,
-            CenterOfRotation = null,
-            ConnectionPoints = null
-        };
     }
 }

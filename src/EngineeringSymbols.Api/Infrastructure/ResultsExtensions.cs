@@ -29,29 +29,6 @@ internal static class ResultsExtensions
      }
 }
 
-internal class EngineeringSymbolResult : IResult
-{
-    private readonly JObject _jObjectResponse;
-    public EngineeringSymbolResult(JObject response)
-    {
-        _jObjectResponse = response;
-    }
-    
-    public Task ExecuteAsync(HttpContext httpContext)
-    {
-        var content = JsonConvert.SerializeObject(_jObjectResponse, Formatting.None, 
-            new JsonSerializerSettings { 
-                NullValueHandling = NullValueHandling.Ignore
-            });
-        
-        //var content = _jObjectResponse.ToString(Formatting.None);
-        httpContext.Response.StatusCode = StatusCodes.Status200OK;
-        httpContext.Response.ContentType = ContentTypes.JsonLd;
-        httpContext.Response.ContentLength = Encoding.UTF8.GetByteCount(content);
-        return httpContext.Response.WriteAsync("lol");
-    }
-}
-
 class FusekiResult : IResult
 {
     private readonly FusekiRawResponse _response;
