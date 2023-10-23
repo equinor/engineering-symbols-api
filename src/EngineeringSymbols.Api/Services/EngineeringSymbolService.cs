@@ -169,11 +169,6 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 			.Bind(AddFraming(publicVersion: false))
 			.Bind(existing => new TryAsync<EngineeringSymbol>(async () =>
 				{
-					/*
-                     * TODO: It hurts a bit to parse these fields in this method, should make
-                     * TODO: a method to parse a JObject to an EngineeringSymbol
-                     * */
-
 					if (!existing.ContainsKey("@id"))
 						return new Result<EngineeringSymbol>(
 							new ValidationException("Expected root level '@id' field."));
