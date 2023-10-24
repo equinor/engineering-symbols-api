@@ -31,6 +31,9 @@ jobs:
       - name: Create Api Artifact
         run: dotnet publish EngineeringSymbols.Api/EngineeringSymbols.Api.csproj --no-restore --no-build --configuration Release --output ${{ github.workspace }}/out/api
 
+      - name: Copy Json-LD frames
+        run: cp -a 'EngineeringSymbols.Tools/Rdf/Frame/.' '${{ github.workspace }}/out/api/frames'
+
       - name: Copy Azure-scripts
         run: cp -a 'azure-config/.' '${{ github.workspace }}/out/azure'
         working-directory: ./
