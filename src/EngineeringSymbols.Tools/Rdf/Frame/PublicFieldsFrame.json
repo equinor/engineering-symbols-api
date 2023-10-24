@@ -1,0 +1,46 @@
+{
+  "dc:identifier": {},
+  "rdfs:label": {},
+  "dc:description": {},
+  "dc:created": {},
+  "dc:modified": {},
+  "dc:issued": {},
+  "pav:version": {},
+  "pav:previousVersion": {},
+  "dc:contributor": {
+    "foaf:mbox": {},
+    "foaf:name": {}
+  },
+  "dc:creator": {
+    "foaf:mbox": {},
+    "foaf:name": {}
+  },
+  "sym:height": {},
+  "sym:width": {},
+  "sym:hasCenterOfRotation": {
+    "@type": {},
+    "sym:positionX": {},
+    "sym:positionY": {}
+  },
+  "sym:hasConnectionPoint": 
+    {
+      "@type": {},
+      "dc:identifier": {},
+      "sym:connectorDirection": {},
+      "sym:positionX": {},
+      "sym:positionY": {}
+    },
+  "sym:hasShape": {
+      "@type": {},
+      "foaf:depiction": {},
+      "sym:hasSerialization": {
+        "@value": {},
+        "@type": {}
+      }
+    }
+  ,
+  "sym:drawColor": {},
+  "sym:fillColor": {},
+  "dc:source": {},
+  "dc:subject": {}
+}

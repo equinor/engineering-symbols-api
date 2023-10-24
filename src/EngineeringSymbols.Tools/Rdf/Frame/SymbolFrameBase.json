@@ -1,0 +1,76 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "dc": "http://purl.org/dc/terms/",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "pav": "http://purl.org/pav/",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "vann": "http://purl.org/vocab/vann/",
+    "vs": "http://www.w3.org/2003/06/sw-vocab-status/ns#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "sym": "https://rdf.equinor.com/ontology/engineering-symbol/v1#",
+    "esmde": "https://rdf.equinor.com/engineering-symbol-metadata-editor#",
+    "sym:connectorDirection": {
+      "@type": "xsd:integer"
+    },
+    "sym:hasConnectionPoint": {
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "sym:width": {
+      "@type": "xsd:integer"
+    },
+    "sym:height": {
+      "@type": "xsd:integer"
+    },
+    "sym:hasSerialization": {
+      "@container": "@set"
+    },
+    "foaf:depiction": {
+      "@container": "@set"
+    },
+    "sym:hasShape": {
+      "@type": "@id"
+    },
+    "sym:isConnectionPointOn": {
+      "@type": "@id"
+    },
+    "sym:isPointOn": {
+      "@type": "@id"
+    },
+    "sym:positionX": {
+      "@type": "xsd:decimal"
+    },
+    "sym:positionY": {
+      "@type": "xsd:decimal"
+    },
+    "pav:createdBy": {
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "pav:contributedBy": {
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "dc:issued": {
+      "@type": "xsd:dateTime"
+    },
+    "dc:created": {
+      "@type": "xsd:dateTime"
+    },
+    "dc:modified": {
+      "@type": "xsd:dateTime"
+    },
+    "dc:source": {
+      "@container": "@set"
+    },
+    "dc:subject": {
+      "@container": "@set"
+    }
+  },
+  "@type": "sym:Symbol"
+}

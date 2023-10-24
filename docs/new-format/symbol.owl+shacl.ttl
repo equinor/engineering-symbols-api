@@ -1,0 +1,311 @@
+@prefix dc:   <http://purl.org/dc/terms/> .
+@prefix ex:   <http://example.com#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix imf:  <http://ns.imfid.org/imf#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix pav:  <http://purl.org/pav/> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix vs:   <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+@prefix sym:  <http://example.equinor.com/symbol#> .
+
+sym:SymbolOntology a owl:Ontology ;
+    dc:title "Symbol Ontology" ;
+
+    vann:preferredNamespacePrefix "sym" ;
+    #TODO vann:preferredNamespaceUri
+    #owl:priorVersion 
+    #owl:versionIRI 
+    owl:versionInfo "0.1.0-SNAPSHOT" ;
+    # doap:repository
+
+    dc:creator "Martin G. Skjæveland" ;
+    dc:contributor "Arne Måge", "Lorentz Fjellanger Barstad" ;
+
+    dc:created "2023-09-19" ;
+    #dc:issued "2023-09-19"^^xsd:dateTime ;
+    dc:modified "2023-09-26" ;
+
+    dc:abstract "The Symbol Ontology is designed to be used for representing typically standardized engineering symbols that are used in technical drawings, diagrams, schematics, and blueprints, as well as for documentation and communication in engineering disciplines such as mechanical, electrical, civil, and chemical engineering." ;
+    #dc:description "" ;
+    #skos:changeNote    
+.
+
+sym:svg-path-data a rdfs:Datatype ;
+  skos:definition "" ;
+  rdfs:seeAlso "https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths" ;
+.
+
+sym:Symbol a owl:Class , sh:NodeShape , rdfs:Class ;
+  skos:prefLabel "Symbol" ;
+  skos:definition "A symbol is a graphical representation of an entity. A symbol has exactly one shape, which can be represented in multiple ways." ;
+  # skos:changeNote
+#  skos:example """
+#@prefix dc:   <http://purl.org/dc/terms/> .
+#@prefix ex:   <http://example.com#> .
+#@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+#@prefix imf:  <http://ns.imfid.org/imf#> .
+#@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+#@prefix pav:  <http://purl.org/pav/> .
+#@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+#@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+#@prefix sh:   <http://www.w3.org/ns/shacl#> .
+#@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+#@prefix vann: <http://purl.org/vocab/vann/> .
+#@prefix vs:   <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+#@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+#
+#@prefix sym:  <http://example.equinor.com/symbol#> .
+#
+#ex:39e78cf4-d722-4ceb-89a4-7412175164aa
+#    a sym:Symbol ;
+#
+#    rdfs:label "Pump PP007A";
+#
+#    dc:identifier "PP007A" ;
+#    dc:description "Pump symbol as defined in XXX" ;
+#
+#    #dc:source  # 
+#    #dc:subject
+#
+#    dc:created "2023-09-19T00:00:00"^^xsd:dateTime ;
+#    dc:creator [ foaf:name "Kari Normann" ; foaf:mbox "kari.normann@mail.com" ] ;
+#
+#    dc:modified "2023-09-19T00:00:00"^^xsd:dateTime ;
+#    dc:issued "2023-09-19T00:00:00"^^xsd:dateTime ;
+#
+#    pav:version "0.1.0" ;
+#    # pav:previousVersion 
+#   
+#    sym:hasShape [ sym:hasSerialization "M52 40.5C52 42.7091 50.2091 44.5 48 44.5C45.7909 44.5 44 42.7091 44 40.5C44 38.2909 45.7909 36.5 48 36.5C50.2091 36.5 52 38.2909 52 40.5ZM51 40.5C51 38.8431 49.6569 37.5 48 37.5C46.3431 37.5 45 38.8431 45 40.5C45 42.1569 46.3431 43.5 48 43.5C49.6569 43.5 51 42.1569 51 40.5ZM88 20.5H76.7266C80.6809 26.1692 83 33.0638 83 40.5C83 50.9622 78.4096 60.3522 71.1329 66.7659L83 90.5H13L24.8671 66.7659C17.5904 60.3522 13 50.9622 13 40.5C13 21.17 28.67 5.5 48 5.5H88V20.5ZM48 74.5C66.7777 74.5 82 59.2777 82 40.5C82 33.0245 79.5874 26.1124 75.4984 20.5C75.2521 20.1619 74.9997 19.8285 74.7413 19.5H86.8571V6.5H49.1429V6.51885C48.7634 6.50631 48.3825 6.5 48 6.5C29.2223 6.5 14 21.7223 14 40.5C14 59.2777 29.2223 74.5 48 74.5ZM25.6501 67.4359L14.618 89.5H81.382L70.3499 67.4359C64.2874 72.4719 56.4973 75.5 48 75.5C39.5027 75.5 31.7126 72.4719 25.6501 67.4359Z"^^sym:svg-path-data ] ;
+#
+#    sym:height 96 ; 
+#    sym:width 96 ;
+#
+#    sym:drawColor "#FF0000" ;
+#    sym:fillColor "#00FF00" ;
+#
+#    sym:hasConnectionPoint 
+#      [ dc:identifier "1" ; # this must be unique within the points of a symbol
+#        sym:connectorDirection 90 ;
+#        sym:positionX 87 ;
+#        sym:positionY 13 
+#      ],
+#      [ dc:identifier "2" ; 
+#        sym:connectorDirection 180 ;
+#        sym:positionX 82 ;
+#        sym:positionY 13 
+#      ]
+#    .
+#  
+#  """ ;
+  sh:order 1;
+  sh:property
+
+    # RDFS
+    [ sh:path rdfs:label ; sh:minCount 0; sh:nodeKind sh:Literal ;
+        sh:name "Label" ; sh:order 1.1 ;
+        sh:description "Human readable label of the symbol."] ,
+
+    # DC
+    [ sh:path dc:identifier ; sh:minCount 1 ; sh:maxCount 1 ; sh:nodeKind sh:IRIOrLiteral ;
+        sh:name "Identifier" ; sh:order 1.2 ;
+        sh:description "Identifier for the symbol that is stable over different versions of the symbol." ] ,
+
+    [ sh:path dc:description ; sh:minCount 1 ; sh:nodeKind sh:Literal ; sh:severity sh:Warning ;
+        sh:name "Description" ; sh:order 2.1 ;
+        sh:description "Human readable description of the symbol." ] ,
+
+    [ sh:path dc:source ; sh:minCount 0 ;
+        sh:name "Source" ; sh:order 3.2 ;
+        sh:description "Reference to the source of the symbol, if the symbol is taken from a diagram standard that can be referenced." ] ,
+
+    [ sh:path dc:subject ; sh:minCount 0 ;
+        sh:name "Subject" ; sh:order 3.1 ;
+        sh:description "Reference to the origin of the symbol, if the origin symbol can be referenced." ] ,
+
+    [ sh:path dc:created ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:dateTime ;
+        sh:name "Created date" ; sh:order 4.1 ;
+        sh:description "Timestamp for creation of symbol." ] ,
+
+    [ sh:path dc:modified ; sh:minCount 0 ; sh:datatype xsd:dateTime ;
+        sh:name "Modified date" ; sh:order 4.2 ;
+        sh:description "Timestamp for modification of symbol. Multiple values permitted." ] ,
+
+    [ sh:path dc:issued ; sh:maxCount 1 ; sh:datatype xsd:dateTime ;
+        sh:name "Issued date" ; sh:order 4.3 ;
+        sh:description "Timestamp for when the symbol is officially issued, i.e., its release timestamp." ] ,
+
+    [ sh:path dc:creator ; sh:minCount 0 ; sh:nodeKind sh:BlankNodeOrIRI ;
+        sh:name "Creator" ; sh:order 5.1 ;
+        sh:description "Creator(s) of the symbol." ] ,
+
+    [ sh:path dc:contributor ; sh:minCount 0 ; sh:nodeKind sh:BlankNodeOrIRI ;
+        sh:name "Contributor" ; sh:order 5.2 ;
+        sh:description "Contributor(s) to the creation or modification of the symbol." ] ,
+
+    # PAV
+    [ sh:path pav:version ; sh:minCount 1 ; sh:maxCount 1 ; sh:nodeKind sh:Literal ; sh:severity sh:Warning ;
+        sh:name "Version" ; sh:order 2.2 ;
+        sh:description "Version number indicating the version of the symbol." ] ,
+
+    [ sh:path pav:previousVersion ; sh:nodeKind sh:IRI ; 
+        sh:name "Previous version" ; sh:order 2.3 ;
+        sh:description "Reference to a previous version of the symbol." ] ,
+   
+    # SYM, these get their name and description from the ontology spec.
+    [ sh:path sym:hasShape ; sh:minCount 1 ; sh:maxCount 1 ; sh:node sym:Shape ; sh:order 6.1 ] ,
+    [ sh:path sym:height ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:order 6.2 ] ,
+    [ sh:path sym:width ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:order 6.3 ] ,
+    [ sh:path sym:drawColor ; sh:maxCount 1 ; sh:order 6.4 ] ,
+    [ sh:path sym:fillColor ; sh:maxCount 1 ; sh:order 6.5 ] ,
+    [ sh:path sym:hasConnectionPoint ; sh:minCount 0 ; sh:node sym:ConnectionPoint ; sh:order 6.6 ;
+      sh:description "The symbol's connection points." ]
+.
+
+
+sym:Point a owl:Class ;
+  skos:prefLabel "Point" ;
+  skos:definition "A point is a position in a coordinate system. A point has no extension." ;
+  # skos:changeNote
+.
+
+sym:ConnectionPoint a owl:Class , sh:NodeShape , rdfs:Class ;
+  sh:targetObjectsOf sym:hasConnectionPoint ;
+  rdfs:subClassOf sym:Point ;
+  skos:prefLabel "Connection Point" ;
+  skos:definition "A connection point is a point that acts as a point of connection for edges and arrows pointing to/from the point." ;
+  sh:order 3;
+  # skos:changeNote
+
+  sh:property
+    [ sh:path dc:identifier ; sh:minCount 1 ; sh:maxCount 1 ; sh:nodeKind sh:IRIOrLiteral ;
+      sh:name "Identifier" ; sh:order 1.1 ;
+      sh:description "Unique identifier for connection points in the context of a symbol." ] ,
+
+    [ sh:path sym:connectorDirection ; sh:minCount 1 ; sh:datatype xsd:integer ; sh:order 2.3  ] ,
+    [ sh:path sym:positionX ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:order 2.1 ] ,
+    [ sh:path sym:positionY ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:order 2.2  ] ,
+    [ sh:path [ sh:inversePath sym:hasConnectionPoint ] ; sh:minCount 1 ; sh:maxCount 1 ; sh:node sym:Symbol ;
+      sh:description "The symbol to which the connction point belongs." ; sh:order 1.2 ] 
+.
+
+
+sym:Shape a owl:Class , sh:NodeShape , rdfs:Class ;
+  skos:prefLabel "Shape" ;
+  skos:definition "A shape is a description of a graphical form. A symbol has exactly one shape, but the shape can have multiple serialisations." ;
+  sh:order 2;
+  # skos:changeNote
+
+  sh:targetObjectsOf sym:hasShape ;
+  sh:property
+    [ sh:path sym:hasSerialization ; sh:minCount 0; sh:nodeKind sh:Literal ; sh:order 1.1 ;
+      sh:name "Serialization" ; 
+      sh:description "A (textual) serialization of the symbol." ] ,
+    [ sh:path foaf:depiction ; sh:minCount 0; sh:nodeKind sh:IRI ; sh:order 1.2 ;
+      sh:name "Depiction" ; 
+      sh:description "An depiction or image of the symbol." ] 
+
+.
+
+sym:hasConnectionPoint a owl:ObjectProperty ;
+  skos:prefLabel "has connection point" ;
+  rdfs:domain sym:Symbol ;
+  rdfs:range sym:ConnectionPoint .
+
+sym:isConnectionPointOn a owl:ObjectProperty ;
+  owl:inverseOf sym:hasConnectionPoint ;
+  rdfs:subPropertyOf sym:isPointOn .
+
+sym:isPointOn a owl:ObjectProperty , owl:FunctionalProperty ;
+  rdfs:domain sym:Point ;
+  rdfs:range sym:Symbol .
+  
+sym:hasShape a owl:ObjectProperty ;
+  skos:prefLabel "has shape" ;
+  rdfs:domain sym:Symbol ;
+  rdfs:range sym:Shape .
+
+sym:hasSerialization a owl:DatatypeProperty ;
+  skos:prefLabel "has serialization" ;
+  rdfs:domain sym:Shape .
+
+sym:fillColor a owl:DatatypeProperty ;
+  skos:prefLabel "Fill color" ;
+  skos:definition "A suggested color for filling the area contained by the shape of a symbol." ;
+  rdfs:domain sym:Symbol .
+
+sym:drawColor a owl:DatatypeProperty ;
+  skos:prefLabel "Draw color" ;
+  skos:definition  "A suggested color for drawing the shape of a symbol." ;
+  rdfs:domain sym:Symbol .
+
+sym:connectorDirection a owl:DatatypeProperty ;
+  skos:prefLabel "Connector Direction" ;
+  skos:definition "In degrees (usually in the range 0--359, and typically a factor of 90) the direction an inwards or outwards connector or edge can be connected to a connection point." ; 
+  rdfs:domain sym:ConnectionPoint ;
+  rdfs:range xsd:integer .
+
+sym:positionX a owl:DatatypeProperty ;
+  skos:prefLabel "X position" ;
+  skos:definition "The X position of the connection point in px units relative to its symbol's (0,0) point." ;
+  rdfs:domain sym:Point ;
+  rdfs:range xsd:integer ;
+  rdfs:seeAlso <https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Positions#what_are_pixels> .
+
+sym:positionY a owl:DatatypeProperty ;
+  skos:prefLabel "Y position" ;
+  skos:definition "The Y position of the connection point in px units relative to its symbol's (0,0) point." ;
+  rdfs:domain sym:Point ;
+  rdfs:range xsd:integer .
+
+sym:height a owl:DatatypeProperty ;
+  skos:prefLabel "Height" ;
+  skos:definition "The height of the symbol in px units." ;
+  rdfs:domain sym:Symbol ;
+  rdfs:range xsd:integer .
+
+sym:width a owl:DatatypeProperty ;
+  skos:prefLabel "Width" ;
+  skos:definition "The width of the symbol in px units." ;
+  rdfs:domain sym:Symbol ;
+  rdfs:range xsd:integer .
+
+sym:SymbolVocabularyShape a sh:NodeShape ;
+    sh:message "Unrecognised Symbol vocabulary element. Check spelling." ;
+    sh:name "Symbol vocabulary element." ;
+    rdfs:comment "This shape ensures that the namespace of the Symbol ontology is only used for terms that are defined in the ontology. This helps avoid introducing undefined terms and typos." ;
+    sh:sparql [ a sh:SPARQLConstraint ;
+            sh:select """
+	      SELECT DISTINCT ?value 
+	      WHERE { { ?value ?p ?o }
+	        UNION { ?s ?value ?o }
+	        UNION { ?s ?p ?value }
+	      FILTER (isIRI(?value) 
+	        && STRSTARTS(STR(?value), 'http://example.equinor.com/symbol#'))
+	      FILTER (?value NOT IN (
+<http://example.equinor.com/symbol#ConnectionPoint>,
+<http://example.equinor.com/symbol#Point>,
+<http://example.equinor.com/symbol#Shape>,
+<http://example.equinor.com/symbol#Symbol>,
+<http://example.equinor.com/symbol#SymbolOntology>,
+<http://example.equinor.com/symbol#connectorDirection>,
+<http://example.equinor.com/symbol#drawColor>,
+<http://example.equinor.com/symbol#fillColor>,
+<http://example.equinor.com/symbol#hasConnectionPoint>,
+<http://example.equinor.com/symbol#hasSerialization>,
+<http://example.equinor.com/symbol#hasShape>,
+<http://example.equinor.com/symbol#isConnectionPointOn>,
+<http://example.equinor.com/symbol#isPointOn>,
+<http://example.equinor.com/symbol#positionX>,
+<http://example.equinor.com/symbol#positionY>,
+<http://example.equinor.com/symbol#height>,
+<http://example.equinor.com/symbol#width>,
+<http://example.equinor.com/symbol#svg-path-data>
+)) }""" ] ;
+    sh:targetNode <http://shipshape.dyreriket.xyz/std-vocabulary-elements#ANY_NODE> .

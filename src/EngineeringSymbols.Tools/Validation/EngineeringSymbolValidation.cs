@@ -13,7 +13,12 @@ public static class EngineeringSymbolValidation
             || wl.Contains(c));
     }
     
-    public static Validation<ValidationError, EngineeringSymbol> Validate(this EngineeringSymbolDto symbol)
+    public static bool ContainsOnlyLatinLetters(string value)
+    {
+        return value.All(c => c is >= 'A' and <= 'Z' or >= 'a' and <= 'z');
+    }
+    
+    /*public static Validation<ValidationError, EngineeringSymbol> Validate(this EngineeringSymbolDto symbol)
     {
         var validator = new EngineeringSymbolDtoValidator();
 
@@ -29,9 +34,9 @@ public static class EngineeringSymbolValidation
             .ToSeq();
         
         return Fail<ValidationError, EngineeringSymbol>(errors);
-    }
+    }*/
     
-    public static Validation<ValidationError, EngineeringSymbolCreateDto> Validate(this EngineeringSymbolCreateDto symbol)
+    public static Validation<ValidationError, EngineeringSymbolPutDto> Validate(this EngineeringSymbolPutDto symbol)
     {
         var validator = new EngineeringSymbolCreateDtoValidator();
 
@@ -39,13 +44,13 @@ public static class EngineeringSymbolValidation
 
         if (result.IsValid)
         {
-            return Success<ValidationError, EngineeringSymbolCreateDto>(symbol);
+            return Success<ValidationError, EngineeringSymbolPutDto>(symbol);
         }
         
         var errors = result.Errors.
             Select(e => new ValidationError(e.PropertyName, e.ErrorMessage))
             .ToSeq();
         
-        return Fail<ValidationError, EngineeringSymbolCreateDto>(errors);
+        return Fail<ValidationError, EngineeringSymbolPutDto>(errors);
     }
 }

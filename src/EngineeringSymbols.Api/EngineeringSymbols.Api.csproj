@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.2" />
-    <PackageReference Include="dotNetRDF" Version="3.0.0" />
+    <PackageReference Include="dotNetRDF" Version="3.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.5" />
     <PackageReference Include="Microsoft.Identity.Web" Version="2.11.0" />
     <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="2.11.0" />
@@ -21,6 +21,25 @@
   <ItemGroup>
     <ProjectReference Include="..\EngineeringSymbols.Tools\EngineeringSymbols.Tools.csproj" />
   </ItemGroup>
+  
 
+  <Target Name="CopySymbolFrames" AfterTargets="Build">
+    <Message Text="Executing CopySymbolFrames task" Importance="High" />
 
+    <!-- Gather only .json files -->
+    <ItemGroup>
+      <MySourceFiles Include="$(SolutionDir)\EngineeringSymbols.Tools\Rdf\Frame\**\*.json" />
+    </ItemGroup>
+
+    <!-- Ensure the destination directory exists -->
+    <MakeDir Directories="$(OutDir)/frames"
+             Condition="!Exists('$(OutDir)/frames')" />
+
+    <!-- Copy the .json files -->
+    <Copy SourceFiles="@(MySourceFiles)"
+          DestinationFolder="$(OutDir)/frames/%(RecursiveDir)" />
+
+    <Message Text="Copied Symbol *.json framing files to dist dir" Importance="High" />
+  </Target>
+  
 </Project>

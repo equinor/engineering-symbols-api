@@ -3,6 +3,7 @@ using EngineeringSymbols.Api.Infrastructure.Auth;
 using EngineeringSymbols.Api.Repositories;
 using EngineeringSymbols.Api.Repositories.Fuseki;
 using EngineeringSymbols.Tools;
+using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -28,24 +29,26 @@ public static class EndpointsInfrastructure
         anonymous.MapGet("/", async (IEngineeringSymbolService symbolService, bool? onlyLatestVersion)
                 => await symbolService
                     .GetSymbolsAsync(onlyLatestVersion ?? true, publicVersion: true)
-                    .Match(TypedResults.Ok, OnFail(app.Logger)))
+                    .Match(Results.Extensions.EngineeringSymbol, OnFail(app.Logger)))
             .WithTags(SymbolTagsPublic)
             .WithMetadata(new SwaggerOperationAttribute("Get all published Engineering Symbols",
                 "Get all published Engineering Symbols. If query parameter 'allVersions' is missing or 'false' only the latest version of a symbol is returned, otherwise all versions of every symbol is returned. Only published symbols will be returned for anonymous requests."))
-            .Produces<List<EngineeringSymbolPublicDto>>()
+            .Produces<string>(contentType: ContentTypes.JsonLd)
+            .Produces<string>(StatusCodes.Status400BadRequest, contentType: ContentTypes.Json)
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
 
 
-        anonymous.MapGet("/{idOrKey}",
-                async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrKey)
+        anonymous.MapGet("/{idOrIdentifier}",
+                async (IEngineeringSymbolService symbolService, ClaimsPrincipal user, string idOrIdentifier)
                     => await symbolService
-                        .GetSymbolByIdOrKeyAsync(idOrKey, publicVersion: true)
-                        .Match(TypedResults.Ok, OnFail(app.Logger)))
+                        .GetSymbolByIdOrIdentifierAsync(idOrIdentifier, publicVersion: true)
+                        .Match(Results.Extensions.EngineeringSymbol, OnFail(app.Logger)))
             .WithTags(SymbolTagsPublic)
-            .WithMetadata(new SwaggerOperationAttribute("Get a published Engineering Symbol by Id or Key",
-                "Get a published Engineering Symbol by Id or Key. All versions are returned if Key is specified. Only published symbols will be returned for anonymous requests."))
-            .Produces<List<EngineeringSymbolPublicDto>>()
+            .WithMetadata(new SwaggerOperationAttribute("Get a published Engineering Symbol by Id or Identifier",
+                "Get a published Engineering Symbol by Id or Identifier. All versions are returned if Identifier is specified. Only published symbols will be returned for anonymous requests."))
+            .Produces<string>(contentType: ContentTypes.JsonLd)
+            .Produces<string>(StatusCodes.Status400BadRequest, contentType: ContentTypes.Json)
             .RequireRateLimiting(RateLimiterPolicy.Fixed)
             .AllowAnonymous();
 
@@ -55,23 +58,24 @@ public static class EndpointsInfrastructure
         management.MapGet("/", async (IEngineeringSymbolService symbolService, bool? onlyLatestVersion)
                 => await symbolService
                     .GetSymbolsAsync(onlyLatestVersion ?? true, publicVersion: false)
-                    .Match(TypedResults.Ok, OnFail(app.Logger)))
+                    .Match(Results.Extensions.EngineeringSymbol, OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Get all Engineering Symbols",
                 "Get all Engineering Symbols. If query parameter 'allVersions' is missing or 'false' only the latest version of a symbol is returned, otherwise all versions of every symbol is returned."))
-            .Produces<List<EngineeringSymbolDto>>()
+            .Produces<string>(contentType: ContentTypes.JsonLd)
+            .Produces<string>(StatusCodes.Status400BadRequest, contentType: ContentTypes.Json)
             .RequireAuthorization(Policy.ContributorOrAdmin);
-
-
-        management.MapGet("/{idOrKey}",
-                async (IEngineeringSymbolService symbolService, ClaimsPrincipal claimsPrincipal, string idOrKey)
+        
+        management.MapGet("/{idOrIdentifier}",
+                async (IEngineeringSymbolService symbolService, ClaimsPrincipal claimsPrincipal, string idOrIdentifier)
                     => await symbolService
-                        .GetSymbolByIdOrKeyAsync(idOrKey, publicVersion: false)
-                        .Match(TypedResults.Ok, OnFail(app.Logger)))
+                        .GetSymbolByIdOrIdentifierAsync(idOrIdentifier, publicVersion: false)
+                        .Match(Results.Extensions.EngineeringSymbol, OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
-            .WithMetadata(new SwaggerOperationAttribute("Get an Engineering Symbol by Id or Key",
-                "Get an Engineering Symbol by Id or Key. All versions are returned if Key is specified."))
-            .Produces<List<EngineeringSymbolDto>>()
+            .WithMetadata(new SwaggerOperationAttribute("Get an Engineering Symbol by Id or Identifier",
+                "Get an Engineering Symbol by Id or Identifier. All versions are returned if Identifier is specified."))
+            .Produces<string>(contentType: ContentTypes.JsonLd)
+            .Produces<string>(StatusCodes.Status400BadRequest, contentType: ContentTypes.Json)
             .RequireAuthorization(Policy.ContributorOrAdmin);
 
 
@@ -79,16 +83,16 @@ public static class EndpointsInfrastructure
                 (CreateEngineeringSymbolHandler)(async (symbolService, request, claimsPrincipal, validationOnly) =>
                     await GetSymbolCreateContentFromRequest(request)
                         .Bind(content => ParseSymbolCreateContent(request.ContentType, content))
-                        .Bind(dto => GetUserInformation(claimsPrincipal)
-                            .Bind(user => ValidateCreateDto(dto with { Owner = user.ObjectIdentifier.ToString() })))
+                        .Bind(dto => AddUserFromClaimsPrincipal(dto, claimsPrincipal))
+                        .Bind(ValidatePutDto)
                         .Bind(dto => symbolService.CreateSymbolAsync(dto, validationOnly ?? false))
                         .Match(
-                            Succ: symbol => validationOnly is true ? TypedResults.Ok(symbol.ToCreateDto()) : TypedResults.Created(symbol.Id, symbol),
+                            Succ: symbol => validationOnly is true ? TypedResults.Ok(symbol) : TypedResults.Created(symbol.Id, symbol),
                             Fail: OnFail(app.Logger))
                 ))
             .Accepts<string>(ContentTypes.Svg, ContentTypes.Json)
-            .Produces<EngineeringSymbolCreateDto>(StatusCodes.Status200OK)
-            .Produces<EngineeringSymbolDto>(StatusCodes.Status201Created)
+            .Produces<EngineeringSymbolPutDto>(StatusCodes.Status200OK)
+            .Produces<EngineeringSymbol>(StatusCodes.Status201Created)
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Create an Engineering Symbol revision",
                 "Create Engineering Symbol revision. If query parameter 'validationOnly' is true, only a validation of the SVG file or JSON symbol object is performed, nothing will be stored in the database."))
@@ -96,12 +100,11 @@ public static class EndpointsInfrastructure
 
 
         management.MapPut("/{id}",
-                async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolCreateDto createDto) =>
-                    await ValidateCreateDto(createDto)
-                    .Bind(dto => symbolService.UpdateSymbolAsync(id, dto))
-                    .Match(
-                        Succ: success => success ? TypedResults.Ok() : TypedResults.Problem("Updated failed"),
-                        Fail: OnFail(app.Logger)))
+                async (IEngineeringSymbolService symbolService, ClaimsPrincipal claimsPrincipal, string id, EngineeringSymbolPutDto putDto) =>
+                    await ValidatePutDto(putDto)
+                        .Bind(dto => AddUserFromClaimsPrincipal(dto, claimsPrincipal))
+                        .Bind(dto => symbolService.UpdateSymbolAsync(id, dto))
+                        .Match(Succ: TypedResults.Ok, Fail: OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute(
                 "Update (replace) an Engineering Symbol revision by Id (Only when Status='Draft')",

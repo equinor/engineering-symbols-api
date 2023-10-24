@@ -1,17 +1,32 @@
 using EngineeringSymbols.Api.Repositories.Fuseki;
-
-namespace EngineeringSymbols.Api.Infrastructure;
-using System.Net.Mime;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Text;
 
-static class ResultsExtensions
+namespace EngineeringSymbols.Api.Infrastructure;
+
+internal static class ResultsExtensions
 {
     public static IResult Fuseki(this IResultExtensions resultExtensions, FusekiRawResponse response)
     {
         ArgumentNullException.ThrowIfNull(resultExtensions);
-
         return new FusekiResult(response);
     }
+    
+     public static IResult EngineeringSymbol(this IResultExtensions resultExtensions, JObject jObject)
+     {
+         ArgumentNullException.ThrowIfNull(resultExtensions);
+
+         var settings = new JsonSerializerSettings
+         {
+             Formatting = Formatting.None,
+             NullValueHandling = NullValueHandling.Ignore,
+         };
+         
+         var content = JsonConvert.SerializeObject(jObject, settings);
+
+         return Results.Text(content, contentType: ContentTypes.JsonLd);
+     }
 }
 
 class FusekiResult : IResult

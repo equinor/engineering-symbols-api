@@ -1,0 +1,120 @@
+{
+    "@graph": [
+        {
+            "@id": "http://example.com#39e78cf4-d722-4ceb-89a4-7412175164aa",
+            "@type": "sym:Symbol",
+            "sym:drawColor": "#FF0000",
+            "sym:fillColor": "#00FF00",
+            "sym:hasConnectionPoint": [
+                {
+                    "sym:connectorDirection": 90,
+                    "sym:positionX": 87,
+                    "sym:positionY": 13,
+                    "dc:identifier": "1"
+                },
+                {
+                    "sym:connectorDirection": 180,
+                    "sym:positionX": 82,
+                    "sym:positionY": 13,
+                    "dc:identifier": "2"
+                }
+            ],
+            "sym:hasShape": [
+                {
+                    "sym:hasSerialization": {
+                        "@type": "sym:svg-path-data",
+                        "@value": "M52 40.5C52 42.7091 50.2091 44.5 48 44.5C45.7909 44.5 44 42.7091 44 40.5C44 38.2909 45.7909 36.5 48 36.5C50.2091 36.5 52 38.2909 52 40.5ZM51 40.5C51 38.8431 49.6569 37.5 48 37.5C46.3431 37.5 45 38.8431 45 40.5C45 42.1569 46.3431 43.5 48 43.5C49.6569 43.5 51 42.1569 51 40.5ZM88 20.5H76.7266C80.6809 26.1692 83 33.0638 83 40.5C83 50.9622 78.4096 60.3522 71.1329 66.7659L83 90.5H13L24.8671 66.7659C17.5904 60.3522 13 50.9622 13 40.5C13 21.17 28.67 5.5 48 5.5H88V20.5ZM48 74.5C66.7777 74.5 82 59.2777 82 40.5C82 33.0245 79.5874 26.1124 75.4984 20.5C75.2521 20.1619 74.9997 19.8285 74.7413 19.5H86.8571V6.5H49.1429V6.51885C48.7634 6.50631 48.3825 6.5 48 6.5C29.2223 6.5 14 21.7223 14 40.5C14 59.2777 29.2223 74.5 48 74.5ZM25.6501 67.4359L14.618 89.5H81.382L70.3499 67.4359C64.2874 72.4719 56.4973 75.5 48 75.5C39.5027 75.5 31.7126 72.4719 25.6501 67.4359Z"
+                    }
+                }
+            ],
+            "sym:height": 96,
+            "sym:width": 96,
+            "dc:created": {
+                "@type": "xsd:dateTime",
+                "@value": "2023-09-19T00:00:00"
+            },
+            "dcterms:creator": {
+                "foaf:mbox": "kari.normann@mail.com",
+                "foaf:name": "Kari Normann"
+            },
+            "dc:description": "Pump symbol as defined in XXX",
+            "dc:identifier": "PP007A",
+            "dc:issued": {
+                "@type": "xsd:dateTime",
+                "@value": "2023-09-19T00:00:00"
+            },
+            "dc:modified": {
+                "@type": "xsd:dateTime",
+                "@value": "2023-09-19T00:00:00"
+            },
+            "pav:version": "0.1.0",
+            "rdfs:label": "Pump PP007A"
+        }
+    ],
+    "@context": [
+        "http://jsonld-context.dyreriket.xyz/rdfs.json",
+        "http://jsonld-context.dyreriket.xyz/sh.json",
+        "http://jsonld-context.dyreriket.xyz/pav.json",
+        "http://jsonld-context.dyreriket.xyz/skos.json",
+        {
+            "@version": 1.1,
+            "dc": "http://purl.org/dc/terms/",
+            "foaf": "http://xmlns.com/foaf/0.1/",
+            "owl": "http://www.w3.org/2002/07/owl#",
+            "pav": "http://purl.org/pav/",
+            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+            "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+            "sh": "http://www.w3.org/ns/shacl#",
+            "skos": "http://www.w3.org/2004/02/skos/core#",
+            "vann": "http://purl.org/vocab/vann/",
+            "vs": "http://www.w3.org/2003/06/sw-vocab-status/ns#",
+            "xsd": "http://www.w3.org/2001/XMLSchema#",
+            "sym": "http://example.equinor.com/symbol#",
+            "sym:connectorDirection": {
+                "@type": "xsd:integer"
+            },
+            "sym:drawColor": {
+                "@type": "xsd:string"
+            },
+            "sym:fillColor": {
+                "@type": "xsd:string"
+            },
+            "sym:hasConnectionPoint": {
+                "@type": "@id",
+                "@container": "@set"
+            },
+            "sym:hasSerialization": {
+            },
+            "sym:hasShape": {
+                "@type": "@id",
+                "@container": "@set"
+            },
+            "sym:height": {
+                "@type": "xsd:integer"
+            },
+            "sym:isConnectionPointOn": {
+                "@type": "@id"
+            },
+            "sym:isPointOn": {
+                "@type": "@id"
+            },
+            "sym:positionX": {
+                "@type": "xsd:integer"
+            },
+            "sym:positionY": {
+                "@type": "xsd:integer"
+            },
+            "sym:width": {
+                "@type": "xsd:integer"
+            },
+            "pav:createdBy": {
+                "@type": "@id",
+                "@container": "@set"
+            },
+            "pav:contributedBy": {
+                "@type": "@id",
+                "@container": "@set"
+            }
+        }
+    ]
+}

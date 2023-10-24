@@ -4,8 +4,7 @@ public enum EngineeringSymbolStatus
 {
     None,
     Draft,
-    ReadyForReview,
     Review,
-    Published,
+    Issued,
     Rejected,
 }

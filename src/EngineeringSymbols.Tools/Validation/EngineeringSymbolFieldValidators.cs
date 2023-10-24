@@ -1,12 +1,16 @@
+using EngineeringSymbols.Tools.Entities;
 using FluentValidation;
+using ICSharpCode.SharpZipLib.Core;
+using VDS.RDF.Ontology;
+using Ontology = EngineeringSymbols.Tools.Constants.Ontology;
 
 namespace EngineeringSymbols.Tools.Validation;
 
 public static class EngineeringSymbolFieldValidators
 {
-	public static readonly char[] TextWhiteList = { '-', '_', '.', ',', '!', '?' };
+	public static readonly char[] TextWhiteList = { '-', '_', '.', ',', '!', '?', ' ' };
 
-	public const int BaseSvgSize = 24;
+	public const int BaseSvgSize = 1;
 
 	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolId<T>(this IRuleBuilder<T, string> ruleBuilder)
 	{
@@ -15,7 +19,7 @@ public static class EngineeringSymbolFieldValidators
 			.WithMessage("Is not a valid Engineering Symbol Id");
 	}
 
-	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolKey<T>(this IRuleBuilder<T, string> ruleBuilder)
+	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolIdentifier<T>(this IRuleBuilder<T, string> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull()
@@ -24,7 +28,33 @@ public static class EngineeringSymbolFieldValidators
 			.Must(s => !EngineeringSymbolValidation.ContainsIllegalChars(s, new[] { '-', '_' }));
 	}
 
-	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolStatus<T>(this IRuleBuilder<T, string> ruleBuilder)
+    
+	public static IRuleBuilderOptions<T, string?> MustBeValidSymbolIri<T>(this IRuleBuilder<T, string?> ruleBuilder)
+	{
+		return ruleBuilder
+			.Must(value =>
+			{
+				if (string.IsNullOrEmpty(value)) return false;
+				if (!value.StartsWith(Ontology.SymbolIri)) return false;
+
+				var id = value.Split('/').Last();
+				
+				if (!Guid.TryParse(id, out _)) return false;
+				
+				return true;
+			}).WithMessage($"Value is not a valid Engineering Symbol IRI. Expected format: '{Ontology.SymbolIri}<GUID>'");
+	}
+	
+	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolVersion<T>(this IRuleBuilder<T, string> ruleBuilder)
+	{
+		return ruleBuilder
+			.NotNull()
+			.NotEmpty()
+			.Must(s => int.TryParse(s, out _))
+			.WithMessage($"'version' is invalid. Expected an integer > 0 on string form.");
+	}
+    
+	/*public static IRuleBuilderOptions<T, EngineeringSymbolStatus> MustBeValidEngineeringSymbolStatus<T>(this IRuleBuilder<T, EngineeringSymbolStatus> ruleBuilder)
 	{
 		return ruleBuilder
 			.Must(status => Enum.TryParse<EngineeringSymbolStatus>(status, out _))
@@ -37,31 +67,80 @@ public static class EngineeringSymbolFieldValidators
 			.NotNull()
 			.Must(v => Guid.TryParse(v, out _))
 			.WithMessage("Not a valid Guid");
-	}
+	}*/
 
+	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolLabel<T>(this IRuleBuilder<T, string> ruleBuilder)
+	{
+		return ruleBuilder
+			.NotNull()
+			.MaximumLength(250)
+			.Must(s =>
+			{
+				Console.WriteLine($"STRING LABEL: {s}");
+				return !EngineeringSymbolValidation.ContainsIllegalChars(s, TextWhiteList);
+			})
+			.WithMessage("Invalid characters");
+	}
+	
 	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolDescription<T>(this IRuleBuilder<T, string> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull()
 			.MaximumLength(250)
 			.Must(s => !EngineeringSymbolValidation.ContainsIllegalChars(s, TextWhiteList))
-			.WithMessage("Invalid value.");
+			.WithMessage("Invalid characters");
 	}
 
-	public static IRuleBuilderOptions<T, DateTimeOffset> MustBeValidEngineeringSymbolDateCreated<T>(this IRuleBuilder<T, DateTimeOffset> ruleBuilder)
+	
+	public static IRuleBuilderOptionsConditions<T, List<string>?> MustBeValidEngineeringSymbolSources<T>(this IRuleBuilder<T, List<string>?> ruleBuilder)
+	{
+		return ruleBuilder.Custom((list, context) =>
+		{
+			
+		});
+	}
+	
+	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolSource<T>(this IRuleBuilder<T, string> ruleBuilder)
+	{
+		return ruleBuilder.NotNull().NotEmpty().MaximumLength(250);
+	}
+	
+	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolSubject<T>(this IRuleBuilder<T, string> ruleBuilder)
+	{
+		return ruleBuilder.NotNull().NotEmpty().MaximumLength(250);
+	}
+	
+	public static IRuleBuilderOptions<T, User> MustBeValidEngineeringSymbolUser<T>(this IRuleBuilder<T, User> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull()
-			.Must(d => d != DateTimeOffset.UnixEpoch);
+			.Must(u => !string.IsNullOrEmpty(u.Name))
+			.WithMessage("User 'name' cannot be null or empty");
+	}
+	
+	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolColor<T>(this IRuleBuilder<T, string> ruleBuilder)
+	{
+		return ruleBuilder
+			.NotEmpty()
+			.MaximumLength(50);
+	}
+	
+	
+	
+	public static IRuleBuilderOptions<T, DateTime> MustBeValidEngineeringSymbolDateCreated<T>(this IRuleBuilder<T, DateTime> ruleBuilder)
+	{
+		return ruleBuilder
+			.NotNull()
+			.Must(d => d != DateTime.UnixEpoch);
 	}
 
-	public static IRuleBuilderOptions<T, DateTimeOffset> MustBeValidEngineeringSymbolDateUpdated<T>(this IRuleBuilder<T, DateTimeOffset> ruleBuilder)
+	public static IRuleBuilderOptions<T, DateTime> MustBeValidEngineeringSymbolDateModified<T>(this IRuleBuilder<T, DateTime> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull();
 	}
 
-	public static IRuleBuilderOptions<T, DateTimeOffset> MustBeValidEngineeringSymbolDatePublished<T>(this IRuleBuilder<T, DateTimeOffset> ruleBuilder)
+	public static IRuleBuilderOptions<T, DateTime> MustBeValidEngineeringSymbolDateIssued<T>(this IRuleBuilder<T, DateTime> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull();
@@ -74,7 +153,7 @@ public static class EngineeringSymbolFieldValidators
 			.NotEmpty();
 	}
 
-	public static IRuleBuilderOptions<T, double> MustBeValidEngineeringSymbolWidth<T>(this IRuleBuilder<T, double> ruleBuilder)
+	public static IRuleBuilderOptions<T, int> MustBeValidEngineeringSymbolWidth<T>(this IRuleBuilder<T, int> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull()
@@ -84,7 +163,7 @@ public static class EngineeringSymbolFieldValidators
 			.WithMessage($"'width' is not a multiple of {BaseSvgSize}");
 	}
 
-	public static IRuleBuilderOptions<T, double> MustBeValidEngineeringSymbolHeight<T>(this IRuleBuilder<T, double> ruleBuilder)
+	public static IRuleBuilderOptions<T, int> MustBeValidEngineeringSymbolHeight<T>(this IRuleBuilder<T, int> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull()
@@ -95,11 +174,11 @@ public static class EngineeringSymbolFieldValidators
 	}
 
 
-	public static IRuleBuilderOptions<T, List<EngineeringSymbolConnectorDto>> MustBeValidEngineeringSymbolConnectorList<T>(this IRuleBuilder<T, List<EngineeringSymbolConnectorDto>> ruleBuilder)
+	public static IRuleBuilderOptions<T, List<ConnectionPoint>> MustBeValidEngineeringSymbolConnectionPointsList<T>(this IRuleBuilder<T, List<ConnectionPoint>> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull()
-			.WithMessage("'connectors' array must not be null");
+			.WithMessage("'connectionPoints' array must not be null");
 	}
 
 	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolConnectorId<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -110,6 +189,12 @@ public static class EngineeringSymbolFieldValidators
 	}
 
 	public static IRuleBuilderOptions<T, Point> MustBeValidEngineeringSymbolConnectorPoint<T>(this IRuleBuilder<T, Point> ruleBuilder)
+	{
+		return ruleBuilder
+			.NotNull();
+	}
+	
+	public static IRuleBuilderOptions<T, Point> MustBeValidEngineeringSymbolCenterOfRotation<T>(this IRuleBuilder<T, Point> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull();
