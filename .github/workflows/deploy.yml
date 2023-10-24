@@ -28,18 +28,18 @@ jobs:
         with:
           name: ${{ inputs.artifact }}
 
-      # - name: Azure Login
-      #   uses: Azure/login@v1.4.6
-      #   with:
-      #     client-id: ${{ vars.AZURE_CLIENT_ID_GH_ACTIONS_SP }}
-      #     tenant-id: ${{ vars.AZURE_TENANT_ID }}
-      #     allow-no-subscriptions: true
+      - name: Azure Login
+        uses: Azure/login@v1.4.6
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_GH_ACTIONS_SP }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
 
-      - name: Setup Azure Resources
-        working-directory: azure
-        run: |
-          chmod +x runMainBicep.sh
-          ./runMainBicep.sh -e ${{ inputs.env }} -b ${{ inputs.build-id }}
+      # - name: Setup Azure Resources
+      #   working-directory: azure
+      #   run: |
+      #     chmod +x runMainBicep.sh
+      #     ./runMainBicep.sh -e ${{ inputs.env }} -b ${{ inputs.build-id }}
 
       - name: Inject ENV specific settings into appsettings.json
         uses: microsoft/variable-substitution@v1
