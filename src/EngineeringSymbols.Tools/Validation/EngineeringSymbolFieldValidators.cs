@@ -10,7 +10,7 @@ public static class EngineeringSymbolFieldValidators
 {
 	public static readonly char[] TextWhiteList = { '-', '_', '.', ',', '!', '?', ' ' };
 
-	public const int BaseSvgSize = 12;
+	public const int BaseSvgSize = 1;
 
 	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolId<T>(this IRuleBuilder<T, string> ruleBuilder)
 	{
