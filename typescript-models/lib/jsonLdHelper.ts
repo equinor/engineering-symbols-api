@@ -17,71 +17,118 @@ export function jsonLdResponseToDto(response: object): EngineeringSymbolDto[] {
 }
 
 function jsonLdSymbolToDto(obj: object): EngineeringSymbolDto {
-  const id = obj["@id"].split("/").pop();
+  const iri = valueOrDefault<string>(obj, ["@id"]);
+  const id = iri.split("/").pop();
+
+  if (!id) throw new Error("jsonLdSymbolToDto: id is null or undefined");
 
   const result: EngineeringSymbolDto = {
     id: id,
-    iri: obj["@id"],
-    version: obj["pav:version"],
+    iri: iri,
+    version: valueOrDefault<string>(obj, ["pav:version"]),
     previousVersion: null,
     previousVersionIri: null,
-    dateTimeCreated: obj["dc:created"],
-    dateTimeModified: obj["dc:modified"],
-    dateTimeIssued: obj["dc:issued"],
+    dateTimeCreated: valueOrDefault<string>(obj, ["dc:created"]),
+    dateTimeModified: valueOrDefault<string>(obj, ["dc:modified"]),
+    dateTimeIssued: valueOrDefault<string>(obj, ["dc:issued"]),
 
-    identifier: obj["dc:identifier"],
-    label: obj["rdfs:label"],
-    description: obj["dc:description"],
-    sources: obj["dc:source"],
-    subjects: obj["dc:subject"],
-    creators: toArray(obj["dc:creator"], (o) => ({
-      name: o["foaf:name"],
-      email: o["foaf:mbox"],
-    })),
-    contributors: toArray(obj["dc:contributor"], (o) => ({
-      name: o["foaf:name"],
-      email: o["foaf:mbox"],
-    })),
+    identifier: valueOrDefault<string>(obj, ["dc:identifier"]),
+    label: valueOrDefault<string>(obj, ["rdfs:label"]),
+    description: valueOrDefault<string>(obj, ["dc:description"]),
+    sources: valueOrDefault<string[]>(obj, ["dc:source"], []),
+    subjects: valueOrDefault<string[]>(obj, ["dc:subject"], []),
+    creators: toArray(
+      valueOrDefault<object[]>(obj, ["dc:creator"], []),
+      (o) => ({
+        name: valueOrDefault<string>(o, ["foaf:name"]),
+        email: valueOrDefault<string>(o, ["foaf:mbox"]),
+      })
+    ),
+    contributors: toArray(
+      valueOrDefault<object[]>(obj, ["dc:contributor"], []),
+      (o) => ({
+        name: valueOrDefault<string>(o, ["foaf:name"]),
+        email: valueOrDefault<string>(o, ["foaf:mbox"]),
+      })
+    ),
     shape: {
-      serializations: (obj["sym:hasShape"]["sym:hasSerialization"] as []).map(
-        (o) => ({ type: o["@type"], value: o["@value"] })
+      serializations: valueOrDefault<object[]>(obj, [
+        "sym:hasShape",
+        "sym:hasSerialization",
+      ]).map((o) => ({
+        type: shapeSerializationTypeMapper(
+          valueOrDefault<string>(o, ["@type"])
+        ),
+        value: valueOrDefault<string>(o, ["@value"]),
+      })),
+      depictions: valueOrDefault<string[]>(
+        obj,
+        ["sym:hasShape", "foaf:depiction"],
+        []
       ),
-      depictions: obj["sym:hasShape"]["foaf:depiction"] as [],
     },
-    width: parseInt(obj["sym:width"]),
-    height: parseInt(obj["sym:height"]),
-    drawColor: obj["sym:drawColor"],
-    fillColor: obj["sym:fillColor"],
+    width: parseInt(valueOrDefault<string>(obj, ["sym:width"])),
+    height: parseInt(valueOrDefault<string>(obj, ["sym:height"])),
+    drawColor: valueOrDefault<string>(obj, ["sym:drawColor"], null),
+    fillColor: valueOrDefault<string>(obj, ["sym:fillColor"], null),
     centerOfRotation: {
-      x: parseFloat(obj["sym:hasCenterOfRotation"]["sym:positionX"]),
-      y: parseFloat(obj["sym:hasCenterOfRotation"]["sym:positionY"]),
+      x: parseFloat(
+        valueOrDefault<string>(obj, [
+          "sym:hasCenterOfRotation",
+          "sym:positionX",
+        ])
+      ),
+      y: parseFloat(
+        valueOrDefault<string>(obj, [
+          "sym:hasCenterOfRotation",
+          "sym:positionY",
+        ])
+      ),
     },
-    connectionPoints: toArray(obj["sym:hasConnectionPoint"], (o) => ({
-      identifier: o["dc:identifier"],
-      position: {
-        x: parseFloat(o["sym:positionX"]),
-        y: parseFloat(o["sym:positionY"]),
-      },
-      direction: parseFloat(o["sym:connectorDirection"]),
-    })),
+    connectionPoints: toArray(
+      valueOrDefault<object[]>(obj, ["sym:hasConnectionPoint"], []),
+      (o) => ({
+        identifier: valueOrDefault<string>(o, ["dc:identifier"]),
+        position: {
+          x: parseFloat(valueOrDefault<string>(o, ["sym:positionX"])),
+          y: parseFloat(valueOrDefault<string>(o, ["sym:positionY"])),
+        },
+        direction: parseFloat(
+          valueOrDefault<string>(o, ["sym:connectorDirection"])
+        ),
+      })
+    ),
   };
 
-  if (obj["esmde:status"]) {
-    result.status = obj["esmde:status"];
+  const status = valueOrDefault<string>(obj, ["esmde:status"], undefined, true);
+
+  if (status) {
+    result.status = status;
   }
 
-  if (obj["esmde:oid"]) {
-    result.userIdentifier = obj["esmde:oid"];
+  const oid = valueOrDefault<string>(obj, ["esmde:oid"], undefined, true);
+
+  if (oid) {
+    result.userIdentifier = oid;
   }
 
-  if (
-    obj["pav:previousVersion"] &&
-    "@id" in obj["pav:previousVersion"] &&
-    obj["pav:previousVersion"]["@id"]
-  ) {
-    const iri = obj["pav:previousVersion"]["@id"];
-    result.previousVersion = iri.split("/").pop();
-    result.previousVersionIri = iri;
+  const previousVersionIri = valueOrDefault<string>(
+    obj,
+    ["pav:previousVersion", "@id"],
+    undefined,
+    true
+  );
+
+  if (previousVersionIri) {
+    result.previousVersionIri = previousVersionIri;
+    const versionGuid = previousVersionIri.split("/").pop();
+
+    if (!versionGuid) {
+      throw new Error(
+        "jsonLdSymbolToDto: previousVersionIri is not a valid IRI with a guid"
+      );
+    }
+    result.previousVersion = versionGuid;
   }
 
   return result;
@@ -89,4 +136,44 @@ function jsonLdSymbolToDto(obj: object): EngineeringSymbolDto {
 
 function toArray<T>(obj: object, fn: (o: object) => T): T[] {
   return Array.isArray(obj) ? obj.map(fn) : [fn(obj)];
+}
+
+function valueOrDefault<T>(
+  obj: object,
+  path: string[],
+  useDefault?: T | null,
+  defaultIsUndefined = false
+): T {
+  let current = obj;
+  let result = undefined;
+
+  for (const key of path) {
+    if (current && key in current) {
+      current = current[key as keyof typeof current];
+      result = current;
+    }
+  }
+
+  if (result === undefined) {
+    if (useDefault !== undefined) {
+      return useDefault!;
+    }
+
+    if (defaultIsUndefined) {
+      return undefined!;
+    }
+    throw new Error("Did not find value for path: " + path.join("."));
+  }
+
+  return result as T;
+}
+
+function shapeSerializationTypeMapper(type: string) {
+  switch (type) {
+    case "sym:svg-path-data":
+      return "svgPathData";
+
+    default:
+      return "svgPathData";
+  }
 }

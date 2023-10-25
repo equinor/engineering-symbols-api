@@ -4,5 +4,8 @@
   },
   "devDependencies": {
     "tsx": "^3.13.0"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
   }
 }

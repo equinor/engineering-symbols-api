@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+dependencies:
+  zod:
+    specifier: ^3.22.4
+    version: 3.22.4
+
 devDependencies:
   tsx:
     specifier: ^3.13.0
@@ -283,3 +288,7 @@ packages:
     optionalDependencies:
       fsevents: 2.3.3
     dev: true
+
+  /zod@3.22.4:
+    resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
+    dev: false
