@@ -1,189 +1,66 @@
 {
   "@graph": [
     {
-      "@id": "https://rdf.equinor.com/engineering-symbols/0de5b6bd-b619-484c-a8c8-4a18dff5c0a4",
+      "@id": "https://rdf.equinor.com/engineering-symbols/64c45858-b1cd-49e3-aa25-49bedbea8c63",
       "@type": "sym:Symbol",
-      "dc:contributor": {
-        "foaf:mbox": "arnm@equinor.com",
-        "foaf:name": "Arne M."
-      },
-      "dc:created": "2023-10-17T17:35:57.207647Z",
-      "dc:creator": [
-        {
-          "foaf:mbox": "loba@equinor.com",
-          "foaf:name": "Lorentz F. Barstad"
-        },
-        {
-          "foaf:mbox": "kent@equinor.com",
-          "foaf:name": "Lorentz Kent"
-        }
-      ],
-      "dc:description": "A chocolate pumping device",
-      "dc:identifier": "PP007A",
-      "dc:issued": "1970-01-01T00:00:00Z",
-      "dc:modified": "2023-10-17T17:59:21.247994Z",
-      "dc:source": ["sds"],
-      "dc:subject": ["sub2", "sub1"],
-      "pav:previousVersion": {
-        "@id": "https://rdf.equinor.com/engineering-symbols/736959a8-2b65-4a46-b52f-ed5d23267fe1",
-        "@type": "sym:Symbol"
-      },
-      "pav:version": "2",
-      "rdfs:label": "Pump PP007A",
-      "esmde:id": "0de5b6bd-b619-484c-a8c8-4a18dff5c0a4",
-      "esmde:oid": "d5327a96-0771-4c0c-9334-bd14a0d3cb09",
-      "esmde:status": "Draft",
-      "sym:drawColor": "black",
-      "sym:fillColor": "red",
-      "sym:hasCenterOfRotation": {
-        "@type": "sym:CenterOfRotation",
-        "sym:positionX": "48",
-        "sym:positionY": "40.5"
-      },
-      "sym:hasConnectionPoint": [
-        {
-          "@type": "sym:ConnectionPoint",
-          "dc:identifier": "gNdggVKPlFQ",
-          "sym:connectorDirection": "91",
-          "sym:positionX": "87",
-          "sym:positionY": "13.5"
-        },
-        {
-          "@type": "sym:ConnectionPoint",
-          "dc:identifier": "gNrwVKPlFQ",
-          "sym:connectorDirection": "90",
-          "sym:positionX": "87",
-          "sym:positionY": "13.5"
-        },
-        {
-          "@type": "sym:ConnectionPoint",
-          "dc:identifier": "jCGoSOYbuj",
-          "sym:connectorDirection": "270",
-          "sym:positionX": "3.1",
-          "sym:positionY": "-5"
-        }
-      ],
-      "sym:hasShape": {
-        "@type": "sym:Shape",
-        "foaf:depiction": [
-          "https://www.italianfoodtech.com/files/2017/06/OMAC.jpg"
-        ],
-        "sym:hasSerialization": [
-          {
-            "@value": "M52 40.5C52 42.7091 50.2091 44.5 48 44.5C45.7909 44.5 44 42.7091 44 40.5C44 38.2909 45.7909 36.5 48 36.5C50.2091 36.5 52 38.2909 52 40.5ZM51 40.5C51 38.8431 49.6569 37.5 48 37.5C46.3431 37.5 45 38.8431 45 40.5C45 42.1569 46.3431 43.5 48 43.5C49.6569 43.5 51 42.1569 51 40.5ZM88 20.5H76.7266C80.6809 26.1692 83 33.0638 83 40.5C83 50.9622 78.4096 60.3522 71.1329 66.7659L83 90.5H13L24.8671 66.7659C17.5904 60.3522 13 50.9622 13 40.5C13 21.17 28.67 5.5 48 5.5H88V20.5ZM48 74.5C66.7777 74.5 82 59.2777 82 40.5C82 33.0245 79.5874 26.1124 75.4984 20.5C75.2521 20.1619 74.9997 19.8285 74.7413 19.5H86.8571V6.5H49.1429V6.51885C48.7634 6.50631 48.3825 6.5 48 6.5C29.2223 6.5 14 21.7223 14 40.5C14 59.2777 29.2223 74.5 48 74.5ZM25.6501 67.4359L14.618 89.5H81.382L70.3499 67.4359C64.2874 72.4719 56.4973 75.5 48 75.5C39.5027 75.5 31.7126 72.4719 25.6501 67.4359Z",
-            "@type": "sym:svg-path-data"
-          }
-        ]
-      },
-      "sym:height": "96",
-      "sym:width": "96"
-    },
-    {
-      "@id": "https://rdf.equinor.com/engineering-symbols/728c43c8-cc82-480f-a0bd-ae0e1372f988",
-      "@type": "sym:Symbol",
-      "dc:contributor": {
-        "foaf:mbox": "arnm@equinor.com",
-        "foaf:name": "Arne M."
-      },
-      "dc:created": "2023-10-17T17:59:40.720302Z",
-      "dc:creator": [
-        {
-          "foaf:mbox": "loba@equinor.com",
-          "foaf:name": "Lorentz F. Barstad"
-        },
-        {
-          "foaf:mbox": "kent@equinor.com",
-          "foaf:name": "Lorentz Kent"
-        }
-      ],
-      "dc:description": "A chocolate pumping device",
-      "dc:identifier": "PP007A",
+      "dc:created": "2023-10-24T12:38:45.579358Z",
+      "dc:description": "",
+      "dc:identifier": "PV003B",
       "dc:issued": "1970-01-01T00:00:00Z",
       "dc:modified": "1970-01-01T00:00:00Z",
-      "dc:source": ["sds"],
-      "dc:subject": ["sub1", "sub2"],
-      "pav:previousVersion": {
-        "@id": "https://rdf.equinor.com/engineering-symbols/736959a8-2b65-4a46-b52f-ed5d23267fe1",
-        "@type": "sym:Symbol"
-      },
-      "pav:version": "2",
-      "rdfs:label": "Pump PP007A",
-      "esmde:id": "728c43c8-cc82-480f-a0bd-ae0e1372f988",
+      "pav:version": "1",
+      "rdfs:label": "",
+      "esmde:id": "64c45858-b1cd-49e3-aa25-49bedbea8c63",
       "esmde:oid": "d5327a96-0771-4c0c-9334-bd14a0d3cb09",
       "esmde:status": "Draft",
-      "sym:drawColor": "black",
-      "sym:fillColor": "#000",
       "sym:hasCenterOfRotation": {
         "@type": "sym:CenterOfRotation",
-        "sym:positionX": "48",
-        "sym:positionY": "40.5"
+        "sym:positionX": "24",
+        "sym:positionY": "24"
       },
-      "sym:hasConnectionPoint": [
-        {
-          "@type": "sym:ConnectionPoint",
-          "dc:identifier": "gNrwVKPlFQ",
-          "sym:connectorDirection": "90",
-          "sym:positionX": "87",
-          "sym:positionY": "13.5"
-        },
-        {
-          "@type": "sym:ConnectionPoint",
-          "dc:identifier": "jCGoSOYbuj",
-          "sym:connectorDirection": "270",
-          "sym:positionX": "3.1",
-          "sym:positionY": "-5"
-        },
-        {
-          "@type": "sym:ConnectionPoint",
-          "dc:identifier": "gNdggVKPlFQ",
-          "sym:connectorDirection": "90",
-          "sym:positionX": "87",
-          "sym:positionY": "13.5"
-        }
-      ],
       "sym:hasShape": {
         "@type": "sym:Shape",
-        "foaf:depiction": [
-          "https://www.italianfoodtech.com/files/2017/06/OMAC.jpg"
-        ],
         "sym:hasSerialization": [
           {
-            "@value": "M52 40.5C52 42.7091 50.2091 44.5 48 44.5C45.7909 44.5 44 42.7091 44 40.5C44 38.2909 45.7909 36.5 48 36.5C50.2091 36.5 52 38.2909 52 40.5ZM51 40.5C51 38.8431 49.6569 37.5 48 37.5C46.3431 37.5 45 38.8431 45 40.5C45 42.1569 46.3431 43.5 48 43.5C49.6569 43.5 51 42.1569 51 40.5ZM88 20.5H76.7266C80.6809 26.1692 83 33.0638 83 40.5C83 50.9622 78.4096 60.3522 71.1329 66.7659L83 90.5H13L24.8671 66.7659C17.5904 60.3522 13 50.9622 13 40.5C13 21.17 28.67 5.5 48 5.5H88V20.5ZM48 74.5C66.7777 74.5 82 59.2777 82 40.5C82 33.0245 79.5874 26.1124 75.4984 20.5C75.2521 20.1619 74.9997 19.8285 74.7413 19.5H86.8571V6.5H49.1429V6.51885C48.7634 6.50631 48.3825 6.5 48 6.5C29.2223 6.5 14 21.7223 14 40.5C14 59.2777 29.2223 74.5 48 74.5ZM25.6501 67.4359L14.618 89.5H81.382L70.3499 67.4359C64.2874 72.4719 56.4973 75.5 48 75.5C39.5027 75.5 31.7126 72.4719 25.6501 67.4359Z",
+            "@value": "M23.6667 27.8333L14 8.49999H34L24.3333 27.8333L43 18.5V38.5L24 29L5 38.5V18.5L23.6667 27.8333ZM32.382 9.49999L15.618 9.49999L24 26.2639L32.382 9.49999ZM25.2361 28.5L42 36.882V20.118L25.2361 28.5ZM22.7639 28.5L6 20.118V36.882L22.7639 28.5Z",
             "@type": "sym:svg-path-data"
           }
-        ]
+        ],
+        "foaf:depiction": []
       },
-      "sym:height": "96",
-      "sym:width": "96"
+      "sym:height": "48",
+      "sym:width": "48",
+      "pav:previousVersion": null,
+      "dc:contributor": null,
+      "dc:creator": null,
+      "sym:hasConnectionPoint": [],
+      "sym:drawColor": null,
+      "sym:fillColor": null,
+      "dc:source": [],
+      "dc:subject": []
     },
     {
-      "@id": "https://rdf.equinor.com/engineering-symbols/736959a8-2b65-4a46-b52f-ed5d23267fe1",
+      "@id": "https://rdf.equinor.com/engineering-symbols/510fa22e-a8c9-47a0-b1e3-04944d98b73b",
       "@type": "sym:Symbol",
       "dc:contributor": {
         "foaf:mbox": "arnm@equinor.com",
         "foaf:name": "Arne M."
       },
-      "dc:created": "2023-10-17T17:30:24.014218Z",
-      "dc:creator": [
-        {
-          "foaf:mbox": "kent@equinor.com",
-          "foaf:name": "Lorentz Kent"
-        },
-        {
-          "foaf:mbox": "loba@equinor.com",
-          "foaf:name": "Lorentz F. Barstad"
-        }
-      ],
+      "dc:created": "2023-10-24T12:53:43.658352Z",
+      "dc:creator": {
+        "foaf:mbox": "loba@equinor.com",
+        "foaf:name": "Lorentz F. Barstad"
+      },
       "dc:description": "A chocolate pumping device",
       "dc:identifier": "PP007A",
-      "dc:issued": "2023-10-17T17:35:48.885328Z",
+      "dc:issued": "2023-10-24T12:54:12.0732194Z",
       "dc:modified": "1970-01-01T00:00:00Z",
       "pav:version": "1",
       "rdfs:label": "Pump PP007A",
-      "esmde:id": "736959a8-2b65-4a46-b52f-ed5d23267fe1",
+      "esmde:id": "510fa22e-a8c9-47a0-b1e3-04944d98b73b",
       "esmde:oid": "d5327a96-0771-4c0c-9334-bd14a0d3cb09",
       "esmde:status": "Issued",
-      "sym:drawColor": "black",
+      "sym:drawColor": "#000",
       "sym:fillColor": "#000",
       "sym:hasCenterOfRotation": {
         "@type": "sym:CenterOfRotation",
@@ -193,13 +70,6 @@
       "sym:hasConnectionPoint": [
         {
           "@type": "sym:ConnectionPoint",
-          "dc:identifier": "jCGoSOYbuj",
-          "sym:connectorDirection": "270",
-          "sym:positionX": "3.1",
-          "sym:positionY": "-5"
-        },
-        {
-          "@type": "sym:ConnectionPoint",
           "dc:identifier": "gNrwVKPlFQ",
           "sym:connectorDirection": "90",
           "sym:positionX": "87",
@@ -207,10 +77,10 @@
         },
         {
           "@type": "sym:ConnectionPoint",
-          "dc:identifier": "gNdggVKPlFQ",
-          "sym:connectorDirection": "90",
-          "sym:positionX": "87",
-          "sym:positionY": "13.5"
+          "dc:identifier": "jCGoSOYbuj",
+          "sym:connectorDirection": "270",
+          "sym:positionX": "3.1",
+          "sym:positionY": "-5"
         }
       ],
       "sym:hasShape": {
@@ -230,59 +100,6 @@
       "pav:previousVersion": null,
       "dc:source": [],
       "dc:subject": []
-    },
-    {
-      "@id": "https://rdf.equinor.com/engineering-symbols/70d32d1f-a236-4457-84d5-40a0ce9aa4d1",
-      "@type": "sym:Symbol",
-      "dc:contributor": {
-        "foaf:mbox": "arnm@equinor.com",
-        "foaf:name": "Arne M."
-      },
-      "dc:created": "2023-10-18T09:29:14.837026Z",
-      "dc:creator": [
-        {
-          "foaf:mbox": "kent@equinor.com",
-          "foaf:name": "Lorentz Kent"
-        },
-        {
-          "foaf:mbox": "loba@equinor.com",
-          "foaf:name": "Lorentz F. Barstad"
-        }
-      ],
-      "dc:description": "A chocolate pumping device",
-      "dc:identifier": "PP007A_alt",
-      "dc:issued": "1970-01-01T00:00:00Z",
-      "dc:modified": "1970-01-01T00:00:00Z",
-      "dc:source": ["sds"],
-      "dc:subject": ["sub2", "sub1"],
-      "pav:version": "1",
-      "rdfs:label": "Pump PP007A",
-      "esmde:id": "70d32d1f-a236-4457-84d5-40a0ce9aa4d1",
-      "esmde:oid": "d5327a96-0771-4c0c-9334-bd14a0d3cb09",
-      "esmde:status": "Draft",
-      "sym:drawColor": "black",
-      "sym:fillColor": "#000",
-      "sym:hasCenterOfRotation": {
-        "@type": "sym:CenterOfRotation",
-        "sym:positionX": "48",
-        "sym:positionY": "40.5"
-      },
-      "sym:hasShape": {
-        "@type": "sym:Shape",
-        "foaf:depiction": [
-          "https://www.italianfoodtech.com/files/2017/06/OMAC.jpg"
-        ],
-        "sym:hasSerialization": [
-          {
-            "@value": "M52 40.5C52 42.7091 50.2091 44.5 48 44.5C45.7909 44.5 44 42.7091 44 40.5C44 38.2909 45.7909 36.5 48 36.5C50.2091 36.5 52 38.2909 52 40.5ZM51 40.5C51 38.8431 49.6569 37.5 48 37.5C46.3431 37.5 45 38.8431 45 40.5C45 42.1569 46.3431 43.5 48 43.5C49.6569 43.5 51 42.1569 51 40.5ZM88 20.5H76.7266C80.6809 26.1692 83 33.0638 83 40.5C83 50.9622 78.4096 60.3522 71.1329 66.7659L83 90.5H13L24.8671 66.7659C17.5904 60.3522 13 50.9622 13 40.5C13 21.17 28.67 5.5 48 5.5H88V20.5ZM48 74.5C66.7777 74.5 82 59.2777 82 40.5C82 33.0245 79.5874 26.1124 75.4984 20.5C75.2521 20.1619 74.9997 19.8285 74.7413 19.5H86.8571V6.5H49.1429V6.51885C48.7634 6.50631 48.3825 6.5 48 6.5C29.2223 6.5 14 21.7223 14 40.5C14 59.2777 29.2223 74.5 48 74.5ZM25.6501 67.4359L14.618 89.5H81.382L70.3499 67.4359C64.2874 72.4719 56.4973 75.5 48 75.5C39.5027 75.5 31.7126 72.4719 25.6501 67.4359Z",
-            "@type": "sym:svg-path-data"
-          }
-        ]
-      },
-      "sym:height": "96",
-      "sym:width": "96",
-      "pav:previousVersion": null,
-      "sym:hasConnectionPoint": []
     }
   ],
   "@context": {

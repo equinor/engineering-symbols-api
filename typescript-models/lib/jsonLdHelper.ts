@@ -155,13 +155,14 @@ function valueOrDefault<T>(
   }
 
   if (result === undefined) {
-    if (useDefault !== undefined) {
+    if (useDefault !== "undefined") {
       return useDefault!;
     }
 
     if (defaultIsUndefined) {
       return undefined!;
     }
+
     throw new Error("Did not find value for path: " + path.join("."));
   }
 
