@@ -13,7 +13,6 @@ export type EngineeringSymbolDto = {
 /** Model for CREATING and UPDATING a symbol */
 export type EngineeringSymbolPutDto = {
   identifier: string;
-  isRevisionOf?: string;
   label: string;
   description: string;
   sources: string[] | null;
