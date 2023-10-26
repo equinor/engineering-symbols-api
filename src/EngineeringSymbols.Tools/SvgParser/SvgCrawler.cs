@@ -89,12 +89,15 @@ internal static class SvgCrawler
 			// Assume that all versions has the "key" property
 			if (el.Name.NamespaceName != Ontology.EngSymOntologyIri) continue;
 
-			switch (el.Name.LocalName)
-			{
-				case "key":
-					ctx.ExtractedData.Key = el.Value;
-					break;
-			}
+			// Note: We do not extract the key/identifier from the SVG files anymore. But leaves this
+			// code as an example of how to extract metadata.
+			
+			// switch (el.Name.LocalName)
+			// {
+			// 	case "key":
+			// 		ctx.ExtractedData.Key = el.Value;
+			// 		break;
+			// }
 		}
 	}
 

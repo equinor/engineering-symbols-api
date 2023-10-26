@@ -7,7 +7,11 @@ namespace EngineeringSymbols.Tools.Entities;
 /// </summary>
 /// <param name="Serializations">A (textual) serialization of the symbol.</param>
 /// <param name="Depictions">Depictions or images of the symbol (IRIs)</param>
-public record Shape(List<ShapeSerialization> Serializations, List<string> Depictions);
+public record Shape
+{
+    public List<ShapeSerialization> Serializations { get; init; }
+    public List<string> Depictions { get; init; } = new();
+}
 
 public record ShapeSerialization
 {

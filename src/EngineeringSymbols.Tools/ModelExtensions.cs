@@ -38,7 +38,7 @@ public static class ModelExtensions
 	{
 		return new EngineeringSymbolPutDto
 		{
-			Identifier = sym.Key ?? StringHelpers.GetRandomIdentifier(),
+			Identifier = StringHelpers.GetRandomIdentifier(),
 			IsRevisionOf = string.Empty,
 			Label = string.Empty,
 			Description = string.Empty,
@@ -47,14 +47,18 @@ public static class ModelExtensions
 			UserIdentifier = string.Empty,
 			Creators = new List<User>(),
 			Contributors = new List<User>(),
-			Shape = new Shape(new List<ShapeSerialization>
+			Shape = new Shape
+			{
+				Serializations = new List<ShapeSerialization>
 			{
 				new ()
 				{
 					Type = ShapeSerializationType.SvgPathData,
 					Value = StringHelpers.RemoveAllWhitespaceExceptSingleSpace(sym.Geometry)
 				}
-			}, new List<string>()),
+			},
+				Depictions = new List<string>()
+			},
 			Width = sym.Width,
 			Height = sym.Height,
 			DrawColor = null,

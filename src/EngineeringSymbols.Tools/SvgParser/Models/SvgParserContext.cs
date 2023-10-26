@@ -26,7 +26,6 @@ internal class SvgParserContext
         return new SvgParserResult(
             new EngineeringSymbolSvgParsed
             {
-                Key = ExtractedData.Key!, // We validate extracted data before calling this method
                 Geometry = string.Join("", ExtractedData.PathData),
                 Width = ExtractedData.Width,
                 Height = ExtractedData.Height,

@@ -97,7 +97,7 @@ public static class EndpointHelpers
 						"Failed to deserialize symbol content. Invalid Content-Type");
 					break;
 			}
-
+			
 			return parsedDto.Match<Result<EngineeringSymbolPutDto>>(dto => dto,
 				ex => new Result<EngineeringSymbolPutDto>(ex));
 		};
