@@ -24,7 +24,7 @@ public record EngineeringSymbolPutDto
     /// <summary>
     /// IRI
     /// </summary>
-    public string? IsRevisionOf { get; init; }
+    //public string? IsRevisionOf { get; init; }
     public required string Label { get; init; }
     public required string Description { get; init; }
     /// <summary>

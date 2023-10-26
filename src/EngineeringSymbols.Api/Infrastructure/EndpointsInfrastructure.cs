@@ -116,7 +116,7 @@ public static class EndpointsInfrastructure
                 async (IEngineeringSymbolService symbolService, string id, EngineeringSymbolStatusDto statusDto)
                     => await symbolService.UpdateSymbolStatusAsync(id, statusDto)
                         .Match(
-                            Succ: success => success ? TypedResults.Ok() : TypedResults.Problem("Updated failed"),
+                            Succ: _ => TypedResults.Ok(),
                             Fail: OnFail(app.Logger)))
             .WithTags(SymbolTagsManagement)
             .WithMetadata(new SwaggerOperationAttribute("Set the Status of an Engineering Symbol revision",

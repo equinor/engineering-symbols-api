@@ -10,6 +10,6 @@ public interface IEngineeringSymbolService
 	TryAsync<JObject> GetSymbolByIdOrIdentifierAsync(string idOrKey, bool publicVersion);
 	TryAsync<EngineeringSymbol> CreateSymbolAsync(EngineeringSymbolPutDto putDto, bool validationOnly);
 	TryAsync<EngineeringSymbol> UpdateSymbolAsync(string id, EngineeringSymbolPutDto putDto);
-	TryAsync<bool> UpdateSymbolStatusAsync(string id, EngineeringSymbolStatusDto statusDto);
-	TryAsync<bool> DeleteSymbolAsync(string id);
+	TryAsync<Unit> UpdateSymbolStatusAsync(string id, EngineeringSymbolStatusDto statusDto);
+	TryAsync<Unit> DeleteSymbolAsync(string id);
 }

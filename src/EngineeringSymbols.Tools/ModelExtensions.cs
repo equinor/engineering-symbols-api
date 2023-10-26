@@ -12,7 +12,7 @@ public static class ModelExtensions
 			Id = Guid.NewGuid().ToString(),
 			Status = EngineeringSymbolStatus.Draft,
 			Identifier = dto.Identifier,
-			Version = "1",
+			Version = "SET_WHEN_ISSUED",
 			PreviousVersion = null,
 			Label = dto.Label,
 			Description = dto.Description,
@@ -39,7 +39,6 @@ public static class ModelExtensions
 		return new EngineeringSymbolPutDto
 		{
 			Identifier = StringHelpers.GetRandomIdentifier(),
-			IsRevisionOf = string.Empty,
 			Label = string.Empty,
 			Description = string.Empty,
 			Sources = new List<string>(),

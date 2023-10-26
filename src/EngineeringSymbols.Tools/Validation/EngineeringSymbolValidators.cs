@@ -89,10 +89,6 @@ public class EngineeringSymbolCreateDtoValidator : AbstractValidator<Engineering
         RuleFor(symbol => symbol.Identifier)
             .MustBeValidEngineeringSymbolIdentifier();
         
-        RuleFor(symbol => symbol.IsRevisionOf)
-            .MustBeValidSymbolIri()
-            .When(symbol => !string.IsNullOrEmpty(symbol.IsRevisionOf));
-        
         RuleFor(symbol => symbol.Label)
             .MustBeValidEngineeringSymbolLabel();
         

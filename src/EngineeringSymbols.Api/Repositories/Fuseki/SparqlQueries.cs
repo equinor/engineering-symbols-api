@@ -139,21 +139,30 @@ public static class SparqlQueries
                 """;
 	}
 
-	public static string UpdateEngineeringSymbolStatusQuery(string id, string status)
+	public static string UpdateEngineeringSymbolStatusQuery(SymbolStatusInfo statusInfo)
 	{
-		var symbolGraph = $"{Ontology.IndividualPrefix}:{id}";
+		var symbolGraph = $"{Ontology.IndividualPrefix}:{statusInfo.Id}";
 
 		var dt = DateTime.UtcNow.ToString("O");
 
-		var issuedTripleDelete = status == EngineeringSymbolStatus.Issued.ToString()
+		var issuedTripleDelete = statusInfo.Status == EngineeringSymbolStatus.Issued
 			? $"""
 			   {symbolGraph} {EsProp.DateIssuedQName} ?o .
+			   {symbolGraph} {EsProp.VersionQName} ?o .
+			   {symbolGraph} {EsProp.PreviousVersionQName} ?o .
 			   """
 			: "";
 
-		var issuedTripleInsert = status == EngineeringSymbolStatus.Issued.ToString()
+		var issuedTripleInsert = statusInfo.Status == EngineeringSymbolStatus.Issued
 			? $"""
 			   {symbolGraph} {EsProp.DateIssuedQName} "{dt}"^^xsd:dateTime .
+			   {symbolGraph} {EsProp.VersionQName} "{statusInfo.Version}"^^xsd:string .
+			   """
+			: "";
+		
+		var issuedTriplePrevVersionInsert = statusInfo.PreviousVersion != null
+			? $"""
+			   {symbolGraph} {EsProp.PreviousVersionQName} <{statusInfo.PreviousVersion}> .
 			   """
 			: "";
 
@@ -163,6 +172,7 @@ public static class SparqlQueries
 		         {{Ontology.SymbolPrefixDef}}
 		         {{Ontology.MetadataEditorPrefixDef}}
 		         {{Ontology.DcPrefixDef}}
+		         {{Ontology.PavPrefixDef}}
 
 		         WITH {{symbolGraph}}
 		         DELETE {
@@ -170,8 +180,9 @@ public static class SparqlQueries
 		             {{issuedTripleDelete}}
 		         }
 		         INSERT {
-		             {{symbolGraph}} {{EsProp.EditorStatusQName}} "{{status}}"^^xsd:string .
+		             {{symbolGraph}} {{EsProp.EditorStatusQName}} "{{statusInfo.Status.ToString()}}"^^xsd:string .
 		             {{issuedTripleInsert}}
+		             {{issuedTriplePrevVersionInsert}}
 		         }
 		         WHERE { ?s ?p ?o }
 		         """;
