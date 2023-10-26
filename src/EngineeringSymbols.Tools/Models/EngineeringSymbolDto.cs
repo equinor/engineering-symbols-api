@@ -43,8 +43,8 @@ public record EngineeringSymbolPutDto
     public required Shape Shape { get; init; }
     public required int Width { get; init; }
     public required int Height { get; init; }
-    public required string? DrawColor { get; init; }
-    public required string? FillColor { get; init; }
+    public string? DrawColor { get; init; }
+    public string? FillColor { get; init; }
     public required Point CenterOfRotation { get; init; }
     public required List<ConnectionPoint> ConnectionPoints { get; init; }
 }
