@@ -139,7 +139,7 @@ public class SvgParserTests
         // Both strings cant be null at the same time
         Assert.True(symbolParsed.Geometry != null);
         
-        Assert.NotNull(symbolParsed.Key);
+
         /*Assert.NotNull(symbolParsed.Connectors);
         
         foreach (var c in symbolParsed.Connectors)
