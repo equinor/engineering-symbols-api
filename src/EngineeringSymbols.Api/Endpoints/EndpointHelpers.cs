@@ -69,7 +69,6 @@ public static class EndpointHelpers
 						}
 						catch (Exception e)
 						{
-							Console.WriteLine(e);
 							parsedDto = new ValidationException($"Failed to deserialize JSON content.");
 						}
 

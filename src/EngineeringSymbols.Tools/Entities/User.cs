@@ -5,4 +5,8 @@ namespace EngineeringSymbols.Tools.Entities;
 /// </summary>
 /// <param name="Name"></param>
 /// <param name="Email"></param>
-public record User(string Name, string Email);
+public record User
+{
+    public string Name { get; init; }
+    public string Email { get; init; }
+}

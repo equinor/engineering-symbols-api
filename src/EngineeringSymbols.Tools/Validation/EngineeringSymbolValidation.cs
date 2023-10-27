@@ -18,24 +18,6 @@ public static class EngineeringSymbolValidation
         return value.All(c => c is >= 'A' and <= 'Z' or >= 'a' and <= 'z');
     }
     
-    /*public static Validation<ValidationError, EngineeringSymbol> Validate(this EngineeringSymbolDto symbol)
-    {
-        var validator = new EngineeringSymbolDtoValidator();
-
-        var result = validator.Validate(symbol);
-
-        if (result.IsValid)
-        {
-            return Success<ValidationError, EngineeringSymbol>(symbol.ToEngineeringSymbol());
-        }
-        
-        var errors = result.Errors.
-            Select(e => new ValidationError(e.PropertyName, e.ErrorMessage))
-            .ToSeq();
-        
-        return Fail<ValidationError, EngineeringSymbol>(errors);
-    }*/
-    
     public static Validation<ValidationError, EngineeringSymbolPutDto> Validate(this EngineeringSymbolPutDto symbol)
     {
         var validator = new EngineeringSymbolCreateDtoValidator();

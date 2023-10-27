@@ -25,7 +25,8 @@ public static class EngineeringSymbolFieldValidators
 			.NotNull()
 			.MinimumLength(4)
 			.MaximumLength(64)
-			.Must(s => !EngineeringSymbolValidation.ContainsIllegalChars(s, new[] { '-', '_' }));
+			.Must(s => !EngineeringSymbolValidation.ContainsIllegalChars(s, new[] { '-', '_' }))
+			.WithMessage("Illegal characters detected. Only letters, numbers, '-' and '_' is allowed.");
 	}
 
     
@@ -45,40 +46,13 @@ public static class EngineeringSymbolFieldValidators
 			}).WithMessage($"Value is not a valid Engineering Symbol IRI. Expected format: '{Ontology.SymbolIri}<GUID>'");
 	}
 	
-	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolVersion<T>(this IRuleBuilder<T, string> ruleBuilder)
-	{
-		return ruleBuilder
-			.NotNull()
-			.NotEmpty()
-			.Must(s => int.TryParse(s, out _))
-			.WithMessage($"'version' is invalid. Expected an integer > 0 on string form.");
-	}
     
-	/*public static IRuleBuilderOptions<T, EngineeringSymbolStatus> MustBeValidEngineeringSymbolStatus<T>(this IRuleBuilder<T, EngineeringSymbolStatus> ruleBuilder)
-	{
-		return ruleBuilder
-			.Must(status => Enum.TryParse<EngineeringSymbolStatus>(status, out _))
-			.WithMessage("Invalid Engineering Symbol Status");
-	}
-
-	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolOwner<T>(this IRuleBuilder<T, string> ruleBuilder)
-	{
-		return ruleBuilder
-			.NotNull()
-			.Must(v => Guid.TryParse(v, out _))
-			.WithMessage("Not a valid Guid");
-	}*/
-
 	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolLabel<T>(this IRuleBuilder<T, string> ruleBuilder)
 	{
 		return ruleBuilder
 			.NotNull()
 			.MaximumLength(250)
-			.Must(s =>
-			{
-				Console.WriteLine($"STRING LABEL: {s}");
-				return !EngineeringSymbolValidation.ContainsIllegalChars(s, TextWhiteList);
-			})
+			.Must(s => !EngineeringSymbolValidation.ContainsIllegalChars(s, TextWhiteList))
 			.WithMessage("Invalid characters");
 	}
 	
@@ -90,15 +64,7 @@ public static class EngineeringSymbolFieldValidators
 			.Must(s => !EngineeringSymbolValidation.ContainsIllegalChars(s, TextWhiteList))
 			.WithMessage("Invalid characters");
 	}
-
-	
-	public static IRuleBuilderOptionsConditions<T, List<string>?> MustBeValidEngineeringSymbolSources<T>(this IRuleBuilder<T, List<string>?> ruleBuilder)
-	{
-		return ruleBuilder.Custom((list, context) =>
-		{
-			
-		});
-	}
+    
 	
 	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolSource<T>(this IRuleBuilder<T, string> ruleBuilder)
 	{
@@ -115,7 +81,9 @@ public static class EngineeringSymbolFieldValidators
 		return ruleBuilder
 			.NotNull()
 			.Must(u => !string.IsNullOrEmpty(u.Name))
-			.WithMessage("User 'name' cannot be null or empty");
+			.WithMessage("User 'name' cannot be null or empty")
+			.Must(u => !string.IsNullOrEmpty(u.Email))
+			.WithMessage("User 'email' cannot be null or empty");
 	}
 	
 	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolColor<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -144,13 +112,6 @@ public static class EngineeringSymbolFieldValidators
 	{
 		return ruleBuilder
 			.NotNull();
-	}
-
-	public static IRuleBuilderOptions<T, string> MustBeValidEngineeringSymbolGeometry<T>(this IRuleBuilder<T, string> ruleBuilder)
-	{
-		return ruleBuilder
-			.NotNull()
-			.NotEmpty();
 	}
 
 	public static IRuleBuilderOptions<T, int> MustBeValidEngineeringSymbolWidth<T>(this IRuleBuilder<T, int> ruleBuilder)
@@ -185,7 +146,11 @@ public static class EngineeringSymbolFieldValidators
 	{
 		return ruleBuilder
 			.NotNull()
-			.NotEmpty();
+			.NotEmpty()
+			.MinimumLength(10)
+			.MaximumLength(32)
+			.Must(EngineeringSymbolValidation.ContainsOnlyLatinLetters)
+			.WithMessage("Illegal characters detected. Only latin letters allowed.");
 	}
 
 	public static IRuleBuilderOptions<T, Point> MustBeValidEngineeringSymbolConnectorPoint<T>(this IRuleBuilder<T, Point> ruleBuilder)

@@ -6,4 +6,9 @@ namespace EngineeringSymbols.Tools.Entities;
 /// <param name="Identifier"></param>
 /// <param name="Position"></param>
 /// <param name="Direction"></param>
-public record ConnectionPoint(string Identifier, Point Position, int Direction);
+public record ConnectionPoint
+{
+    public string Identifier { get; init; }
+    public Point Position { get; init; }
+    public  int Direction { get; init; }
+}

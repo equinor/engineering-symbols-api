@@ -1,84 +1,7 @@
 using EngineeringSymbols.Tools.Entities;
-using EngineeringSymbols.Tools.Validation;
 using FluentValidation;
 
 namespace EngineeringSymbols.Tools.Validation;
-
-public class EngineeringSymbolValidator : AbstractValidator<EngineeringSymbol>
-{
-    public EngineeringSymbolValidator()
-    {
-        RuleLevelCascadeMode = CascadeMode.Stop;
-
-        RuleFor(symbol => symbol.Id).MustBeValidEngineeringSymbolId();
-
-        RuleFor(symbol => symbol.Identifier)
-            .MustBeValidEngineeringSymbolIdentifier();
-
-        //RuleFor(symbol => symbol.Status).MustBeValidEngineeringSymbolStatus();
-        
-        RuleFor(symbol => symbol.Version).MustBeValidEngineeringSymbolVersion();
-        
-        RuleFor(symbol => symbol.PreviousVersion)
-            .MustBeValidSymbolIri()
-            .When(symbol => symbol.PreviousVersion != null);
-
-        RuleFor(symbol => symbol.Label).MustBeValidEngineeringSymbolLabel();
-        
-        RuleFor(symbol => symbol.Description)
-            .MustBeValidEngineeringSymbolDescription();
-
-        RuleForEach(symbol => symbol.Sources)
-            .MustBeValidEngineeringSymbolSource()
-            .When(symbol => symbol.Sources != null);
-        
-        RuleForEach(symbol => symbol.Subjects)
-            .MustBeValidEngineeringSymbolSubject()
-            .When(symbol => symbol.Subjects != null);
-        
-        RuleFor(symbol => symbol.DateTimeCreated).MustBeValidEngineeringSymbolDateCreated();
-
-        RuleFor(symbol => symbol.DateTimeModified).MustBeValidEngineeringSymbolDateModified();
-
-        RuleFor(symbol => symbol.DateTimeIssued).MustBeValidEngineeringSymbolDateIssued();
-        
-        RuleFor(symbol => symbol.Creators)
-            .NotNull()
-            //.NotEmpty()
-            .ForEach(s => s.MustBeValidEngineeringSymbolUser());
-
-        RuleFor(symbol => symbol.Contributors)
-            .NotNull()
-            .ForEach(s => s.MustBeValidEngineeringSymbolUser());
-
-        
-        RuleFor(symbol => symbol.Shape)
-            .NotNull()
-            .SetValidator(new EngineeringSymbolShapeValidator());
-
-        RuleFor(symbol => symbol.Width).MustBeValidEngineeringSymbolWidth();
-
-        RuleFor(symbol => symbol.Height).MustBeValidEngineeringSymbolHeight();
-
-        RuleFor(symbol => symbol.DrawColor)
-            .MustBeValidEngineeringSymbolColor()
-            .When(s => s.DrawColor != null);
-
-        RuleFor(symbol => symbol.FillColor)
-            .MustBeValidEngineeringSymbolColor()
-            .When(s => s.FillColor != null);
-        
-        RuleFor(symbol => symbol.CenterOfRotation)
-            .MustBeValidEngineeringSymbolCenterOfRotation();
-        
-        RuleFor(symbol => symbol.ConnectionPoints)
-            .MustBeValidEngineeringSymbolConnectionPointsList()
-            .ForEach(connectorRule =>
-            {
-                connectorRule.SetValidator(new EngineeringSymbolConnectionPointValidator());
-            });
-    }
-}
 
 public class EngineeringSymbolCreateDtoValidator : AbstractValidator<EngineeringSymbolPutDto>
 {
@@ -103,16 +26,15 @@ public class EngineeringSymbolCreateDtoValidator : AbstractValidator<Engineering
             .MustBeValidEngineeringSymbolSubject()
             .When(symbol => symbol.Subjects != null);
 
-        RuleFor(symbol => symbol.Creators)
-            .NotNull()
-            //.NotEmpty()
-            .ForEach(s => s.MustBeValidEngineeringSymbolUser());
         
-        RuleFor(symbol => symbol.Contributors)
-            .NotNull()
-            .ForEach(s => s.MustBeValidEngineeringSymbolUser());
-
-
+        RuleForEach(symbol => symbol.Creators)
+            .MustBeValidEngineeringSymbolUser()
+            .When(symbol => symbol.Creators != null);
+        
+        RuleForEach(symbol => symbol.Contributors)
+            .MustBeValidEngineeringSymbolUser()
+            .When(symbol => symbol.Contributors != null);
+        
         RuleFor(symbol => symbol.Shape)
             .NotNull()
             .SetValidator(new EngineeringSymbolShapeValidator());
@@ -193,7 +115,8 @@ public class EngineeringSymbolIdentifierValidator : AbstractValidator<string>
     public EngineeringSymbolIdentifierValidator()
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
-        RuleFor(key => key).MustBeValidEngineeringSymbolIdentifier();
+        RuleFor(key => key)
+            .MustBeValidEngineeringSymbolIdentifier();
     }
 }
 
