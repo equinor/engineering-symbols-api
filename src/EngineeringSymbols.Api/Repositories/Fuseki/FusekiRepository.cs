@@ -34,6 +34,8 @@ public class FusekiRepository : IEngineeringSymbolRepository
 		{
 			var query = SparqlQueries.GetAllSymbolsConstructQuery(onlyLatestVersion, onlyPublished);
 
+			_logger.LogDebug("Getting all symbols with query:\n{Query}", query);
+			
 			var httpResponse =
 				await _fuseki.QueryAsync(query, "application/ld+json"); //"application/sparql-results+json" "text/csv"
 
@@ -77,7 +79,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
 			var turtleString = await SymbolGraphHelper.EngineeringSymbolToTurtleString(symbol);
 
-			_logger.LogInformation("Put Graph:\n{SymbolGraphTurtle}", turtleString);
+			_logger.LogDebug("Put Graph:\n{SymbolGraphTurtle}", turtleString);
 
 			var httpResponse = await _fuseki.PutGraphAsync(graph, turtleString);
 
@@ -94,7 +96,7 @@ public class FusekiRepository : IEngineeringSymbolRepository
 		{
 			var query = SparqlQueries.UpdateEngineeringSymbolStatusQuery(statusInfo);
 
-			_logger.LogInformation("Updating Status with query:\n{Query}", query);
+			_logger.LogDebug("Updating Status with query:\n{Query}", query);
 
 			var httpResponse = await _fuseki.UpdateAsync(query);
 
@@ -117,6 +119,8 @@ public class FusekiRepository : IEngineeringSymbolRepository
 
 				var query = SparqlQueries.DeleteEngineeringSymbolByIdQuery(id);
 
+				_logger.LogDebug("Deleting symbol with query:\n{Query}", query);
+				
 				var httpResponse = await _fuseki.UpdateAsync(query);
 
 				return httpResponse.IsSuccessStatusCode

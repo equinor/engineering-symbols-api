@@ -10,22 +10,22 @@ public static class WebApplicationBuilderExtensions
     {
         builder.Logging.ClearProviders();
 
-        var logLevel = builder.Environment.IsProduction()
-            ? LogEventLevel.Error
-            : LogEventLevel.Information;
+        var configurationBuilder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile(path: "appsettings.json", optional: false,
+                reloadOnChange: builder.Environment.IsDevelopment());
 
+#if DEBUG
+        configurationBuilder.AddJsonFile($"appsettings.Development.json", true, reloadOnChange: true);
+#endif
+        
         var logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .MinimumLevel.Override("Microsoft", logLevel)
-            .MinimumLevel.Override("System", logLevel)
-            .WriteTo.Console(
-                outputTemplate: "[{Timestamp:O} {Level:u3}] {Message:lj}{NewLine}{Exception}",
-                theme: AnsiConsoleTheme.Code)
+            .ReadFrom.Configuration(configurationBuilder.Build())
             .CreateLogger();
 
         builder.Logging.AddSerilog(logger);
 
-        builder.Services.AddProblemDetails();
+
 
         return builder;
     }

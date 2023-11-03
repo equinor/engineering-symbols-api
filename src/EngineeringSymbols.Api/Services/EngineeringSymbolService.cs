@@ -108,14 +108,14 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 					if (!existing.ContainsKey("@id"))
 					{
 						return new Result<EngineeringSymbol>(
-							new ValidationException("Expected root level '@id' field."));
+							new RepositoryException("Expected root level '@id' field."));
 					}
                     
 					if (!Enum.TryParse<EngineeringSymbolStatus>((string?) existing.GetValue(EsProp.EditorStatusQName),
 						    out var currentStatus))
 					{
 						return new Result<EngineeringSymbol>(
-							new ValidationException(
+							new RepositoryException(
 								$"Failed to read/parse '{EsProp.EditorStatusQName}' from existing state."));
 					}
 
@@ -131,7 +131,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 					if (createdDateToken == null)
 					{
 						return new Result<EngineeringSymbol>(
-							new ValidationException(
+							new RepositoryException(
 								$"Failed to read/parse '{EsProp.DateCreatedQName}' from existing state."));
 					}
 
@@ -142,8 +142,6 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 					//  - Status => Dont update, just pass over (status is set by own endpoint)
 					//  - Dates...
                     
-					// "pav:version": "1",  
-					// "rdfs:label": "Pump PP007A",  
 					// "esmde:id": "4d193516-dbaf-4829-afd9-e5f327bc2dc6",  
 					// "esmde:oid": "d5327a96-0771-4c0c-9334-bd14a0d3cb09",  
 					// "esmde:status": "Draft",  
@@ -251,6 +249,14 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 				return new List<SymbolSlim>();
 			});
 
+
+			if (existsException != null)
+			{
+				_logger.Log(LogLevel.Error, existsException, "Failed to resolve ancestors");
+				return new Result<SymbolStatusInfo>(
+					new RepositoryException("Failed to resolve ancestors."));
+			}
+			
 			if (ancestors.Count == 0)
 			{
 				return statusInfo with { Version = "1", PreviousVersion = null };

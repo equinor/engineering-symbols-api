@@ -24,6 +24,8 @@ builder.Services.AddCustomSwaggerGen(builder.Configuration);
         
 builder.Services.AddCorsWithPolicyFromAppSettings(builder.Configuration, builder.Environment);
 
+builder.Services.AddProblemDetails();
+
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     //options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
