@@ -302,8 +302,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 
 					options.CustomizeHttpRequestMessage = message =>
 					{
-						message.Headers.Add("Accept", "Application/json");
-						message.Content = new StringContent(symString);
+						message.Content = new StringContent(symString, System.Text.Encoding.UTF8, "application/json-patch+json");
 					};
 				});
 				if (postres.IsSuccessStatusCode)
