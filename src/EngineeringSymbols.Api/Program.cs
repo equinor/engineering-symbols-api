@@ -14,14 +14,17 @@ builder.Configuration.AddKeyVault();
 builder.Services.AddRateLimiterFixed(builder.Configuration, builder.Environment);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration);
+    .AddMicrosoftIdentityWebApi(builder.Configuration)
+    .EnableTokenAcquisitionToCallDownstreamApi()
+    .AddDownstreamApi("CommonLib", builder.Configuration.GetSection("CommonLibApi"))
+    .AddInMemoryTokenCaches();
 
 builder.Services.AddRoleBasedAuthorization();
 builder.Services.AddFallbackAuthorization();
-        
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddCustomSwaggerGen(builder.Configuration);
-        
+
 builder.Services.AddCorsWithPolicyFromAppSettings(builder.Configuration, builder.Environment);
 
 builder.Services.AddProblemDetails();
