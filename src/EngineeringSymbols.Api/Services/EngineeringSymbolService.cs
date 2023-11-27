@@ -5,6 +5,7 @@ using EngineeringSymbols.Tools.Constants;
 using EngineeringSymbols.Tools.Entities;
 using EngineeringSymbols.Tools.Models;
 using EngineeringSymbols.Tools.Validation;
+using Microsoft.Identity.Abstractions;
 using Newtonsoft.Json.Linq;
 using VDS.RDF.JsonLd;
 
@@ -14,12 +15,16 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 {
 	private readonly IEngineeringSymbolRepository _repo;
 
+	private readonly IDownstreamApi _downstreamApi;
+
 	private readonly ILogger _logger;
 
-	public EngineeringSymbolService(IConfiguration config, IEngineeringSymbolRepository repo,
+	public EngineeringSymbolService(IConfiguration config,
+			IDownstreamApi downstreamApi, IEngineeringSymbolRepository repo,
 		ILoggerFactory loggerFactory)
 	{
 		_repo = repo;
+		_downstreamApi = downstreamApi;
 		_logger = loggerFactory.CreateLogger("EngineeringSymbolService");
 	}
 
@@ -86,19 +91,19 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 
 		if (obj[EsProp.PreviousVersionQName] is JObject jObj && jObj.ContainsKey("@id"))
 		{
-            isRevOf = (string)jObj["@id"];
+			isRevOf = (string)jObj["@id"];
 		}
-		
+
 		var dateIssued = (string)obj[EsProp.DateIssuedQName];
 
 		if (!DateTime.TryParse(dateIssued, CultureInfo.InvariantCulture, out var dateTimeParsed))
 		{
-            throw new RepositoryException("Failed to get existing DateTimeCreated from db.");
+			throw new RepositoryException("Failed to get existing DateTimeCreated from db.");
 		}
 
 		return new SymbolSlim(id, identifier, dateTimeParsed, version, isRevOf);
 	}
-    
+
 	public TryAsync<EngineeringSymbol> UpdateSymbolAsync(string id, EngineeringSymbolPutDto putDto)
 	{
 		return _repo.GetEngineeringSymbolByIdAsync(id, false)
@@ -110,9 +115,9 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 						return new Result<EngineeringSymbol>(
 							new RepositoryException("Expected root level '@id' field."));
 					}
-                    
-					if (!Enum.TryParse<EngineeringSymbolStatus>((string?) existing.GetValue(EsProp.EditorStatusQName),
-						    out var currentStatus))
+
+					if (!Enum.TryParse<EngineeringSymbolStatus>((string?)existing.GetValue(EsProp.EditorStatusQName),
+							out var currentStatus))
 					{
 						return new Result<EngineeringSymbol>(
 							new RepositoryException(
@@ -125,7 +130,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 							new ValidationException(
 								$"Cannot modify symbol because it has status '{EngineeringSymbolStatus.Issued}'."));
 					}
-					
+
 					var createdDateToken = existing.GetValue(EsProp.DateCreatedQName);
 
 					if (createdDateToken == null)
@@ -141,11 +146,11 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 					//  - Id  
 					//  - Status => Dont update, just pass over (status is set by own endpoint)
 					//  - Dates...
-                    
+
 					// "esmde:id": "4d193516-dbaf-4829-afd9-e5f327bc2dc6",  
 					// "esmde:oid": "d5327a96-0771-4c0c-9334-bd14a0d3cb09",  
 					// "esmde:status": "Draft",  
-                    
+
 					return putDto.ToInsertEntity() with
 					{
 						Id = id,
@@ -165,7 +170,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 				async () =>
 				{
 					if (!Enum.TryParse<EngineeringSymbolStatus>(statusDto.Status, out var newStatus) ||
-					    newStatus == EngineeringSymbolStatus.None)
+						newStatus == EngineeringSymbolStatus.None)
 					{
 						var statusValues = Enum.GetValues(typeof(EngineeringSymbolStatus))
 							.OfType<EngineeringSymbolStatus>()
@@ -181,7 +186,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 							}));
 					}
 
-					var statusDb = (string?) sObj.GetValue(EsProp.EditorStatusQName);
+					var statusDb = (string?)sObj.GetValue(EsProp.EditorStatusQName);
 
 					if (!Enum.TryParse<EngineeringSymbolStatus>(statusDb, out var currentStatus))
 					{
@@ -194,8 +199,8 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 						return new Result<SymbolStatusInfo>(
 							new ValidationException("The symbol has already been issued."));
 					}
-					
-					var identifier = (string?) sObj.GetValue(EsProp.IdentifierQName);
+
+					var identifier = (string?)sObj.GetValue(EsProp.IdentifierQName);
 
 					if (identifier == null)
 					{
@@ -208,7 +213,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 				}))
 			.Bind(ResolveIssuedVersionAsync)
 			.Bind(_repo.UpdateSymbolStatusAsync)
-			.Bind(_ => PublishToCommonLibAsync());
+			.Bind(_ => PublishToCommonLibAsync(id));
 
 	public TryAsync<SymbolStatusInfo> ResolveIssuedVersionAsync(SymbolStatusInfo statusInfo)
 	{
@@ -216,7 +221,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 		{
 			if (statusInfo.Status != EngineeringSymbolStatus.Issued)
 				return statusInfo;
-			
+
 			// Check if Identifier exists
 			var existsResult = await _repo.GetEngineeringSymbolByIdentifierAsync(statusInfo.Identifier, true)
 				.Bind(AddFraming(false))
@@ -239,13 +244,13 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 			}, exception =>
 			{
 				if (exception is not RepositoryException
-				    {
-					    RepositoryOperationError: RepositoryOperationError.EntityNotFound
-				    })
+					{
+						RepositoryOperationError: RepositoryOperationError.EntityNotFound
+					})
 				{
 					existsException = exception;
 				}
-                
+
 				return new List<SymbolSlim>();
 			});
 
@@ -256,7 +261,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 				return new Result<SymbolStatusInfo>(
 					new RepositoryException("Failed to resolve ancestors."));
 			}
-			
+
 			if (ancestors.Count == 0)
 			{
 				return statusInfo with { Version = "1", PreviousVersion = null };
@@ -264,31 +269,61 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 
 			var parent = ancestors.OrderByDescending(a => a.DateIssued).First();
 
-            if (!int.TryParse(parent.Version, out var prevVersion))
-            {
-	            return new Result<SymbolStatusInfo>(
-		            new RepositoryException("Failed to parse existing Version from db."));
-            }
+			if (!int.TryParse(parent.Version, out var prevVersion))
+			{
+				return new Result<SymbolStatusInfo>(
+					new RepositoryException("Failed to parse existing Version from db."));
+			}
 
-            var newVersion = prevVersion + 1;
+			var newVersion = prevVersion + 1;
 
 			return statusInfo with { Version = newVersion.ToString(), PreviousVersion = parent.Id };
 
 		};
 	}
-	
-	public TryAsync<Unit> PublishToCommonLibAsync()
+
+	public TryAsync<Unit> PublishToCommonLibAsync(string id)
 	{
 		return new TryAsync<Unit>(async () =>
 		{
+			var sym = await _repo.GetEngineeringSymbolByIdAsync(id, true).Try();
+			var symString = sym.Match(Succ: (s) => s, Fail: (exception) => "");
 
-			await Task.Delay(1000);
+			//The following string shenanigans is a silly hack. A proper rebasing of the URL's should be done asap when new maintainers have been identified.
+			symString = symString.Replace("https://rdf.equinor.com/engineering-symbols/", "http://example.equinor.com/symbol#");
 
+			try
+			{
+
+				var postres = await _downstreamApi.CallApiForAppAsync("CommonLib", options =>
+				{
+					options.HttpMethod = HttpMethod.Post;
+					options.RelativePath = $"/api/symbol/WriteEngineeringSymbol";
+
+					options.CustomizeHttpRequestMessage = message =>
+					{
+						message.Headers.Add("Accept", "Application/json");
+						message.Content = new StringContent(symString);
+					};
+				});
+				if (postres.IsSuccessStatusCode)
+				{
+					_logger.LogInformation("Symbol with id: {id} posted to CL with successCode: {postres.StatusCode}", id, postres.StatusCode);
+				}
+				else
+				{
+					_logger.LogError("Symbol with id: {id} NOT posted to CL with errorcode: {postres.StatusCode}", id, postres.StatusCode);
+				}
+			} catch(Exception ex){
+				_logger.LogError("Posting to CL failed. {ex.Message}", ex.Message);
+				return Unit.Default;
+			}
+			//We dont stop a run if this fails, return Unit.Default in all cases.
 			return Unit.Default;
 
 		});
 	}
-    
+
 	public TryAsync<Unit> DeleteSymbolAsync(string id)
 	{
 		return new Try<string>(() =>

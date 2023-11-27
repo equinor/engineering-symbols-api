@@ -95,6 +95,16 @@ resource Api 'Microsoft.Web/sites@2022-03-01' = {
             name: 'ApplicationInsights__ConnectionString'
             value: ApplicationInsights.properties.ConnectionString
           }
+          {
+            name: 'CommonLibApi__BaseUrl'
+            value: 'https://commonlibapitest.azurewebsites.net/'
+          }
+          {
+            name: 'CommonLibApi__Scopes'
+            value : [
+              'cf965a8b-9283-4849-a38b-b8d9c307c57d/.default'
+            ]
+          }
           { name: 'KeyVaultName'
             value: keyvaultName
           }
