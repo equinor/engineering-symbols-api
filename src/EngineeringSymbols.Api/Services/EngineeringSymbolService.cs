@@ -308,14 +308,14 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 				});
 				if (postres.IsSuccessStatusCode)
 				{
-					_logger.LogInformation("Symbol with id: {id} posted to CL with successCode: {postres.StatusCode}", id, postres.StatusCode);
+					_logger.LogInformation($"Symbol with id: {id} posted to CL with successCode: {postres.StatusCode}");
 				}
 				else
 				{
-					_logger.LogError("Symbol with id: {id} NOT posted to CL with errorcode: {postres.StatusCode}", id, postres.StatusCode);
+					_logger.LogError($"Symbol with id: {id} NOT posted to CL with errorcode: {postres.StatusCode}");
 				}
 			} catch(Exception ex){
-				_logger.LogError("Posting to CL failed. {ex.Message}", ex.Message);
+				_logger.LogError($"Posting to CL failed. {ex.Message}");
 				return Unit.Default;
 			}
 			//We dont stop a run if this fails, return Unit.Default in all cases.
