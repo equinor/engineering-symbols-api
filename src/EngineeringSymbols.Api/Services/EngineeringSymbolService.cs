@@ -290,7 +290,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 			var symString = sym.Match(Succ: (s) => s, Fail: (exception) => "");
 
 			//The following string shenanigans is a silly hack. A proper rebasing of the URL's should be done asap when new maintainers have been identified.
-			symString = symString.Replace("https://rdf.equinor.com/ontology/engineering-symbol/v1#", "http://example.equinor.com/symbol#");
+			symString = symString.Replace("https://rdf.equinor.com/ontology/engineering-symbol/v1#",  "http://example.equinor.com/symbol#");
 
 			try
 			{
