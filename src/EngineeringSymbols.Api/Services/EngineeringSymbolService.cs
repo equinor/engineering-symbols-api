@@ -213,7 +213,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 				}))
 			.Bind(ResolveIssuedVersionAsync)
 			.Bind(_repo.UpdateSymbolStatusAsync)
-			.Bind(_ => PublishToCommonLibAsync(id));
+			.Bind(_ => PublishToCommonLibAsync(id, statusDto));
 
 	public TryAsync<SymbolStatusInfo> ResolveIssuedVersionAsync(SymbolStatusInfo statusInfo)
 	{
@@ -282,42 +282,48 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 		};
 	}
 
-	public TryAsync<Unit> PublishToCommonLibAsync(string id)
+	public TryAsync<Unit> PublishToCommonLibAsync(string id, EngineeringSymbolStatusDto statusDto)
 	{
 		return new TryAsync<Unit>(async () =>
 		{
-			var sym = await _repo.GetEngineeringSymbolByIdAsync(id, true).Try();
-			var symString = sym.Match(Succ: (s) => s, Fail: (exception) => "");
-
-			//The following string shenanigans is a silly hack. A proper rebasing of the URL's should be done asap when new maintainers have been identified.
-			symString = symString.Replace("https://rdf.equinor.com/ontology/engineering-symbol/v1#",  "http://example.equinor.com/symbol#");
-
-			try
+			if (statusDto.Status == "Issued")
 			{
 
-				var postres = await _downstreamApi.CallApiForAppAsync("CommonLib", options =>
-				{
-					options.HttpMethod = HttpMethod.Post;
-					options.RelativePath = $"/api/symbol/WriteEngineeringSymbol";
+				var sym = await _repo.GetEngineeringSymbolByIdAsync(id, true).Try();
+				var symString = sym.Match(Succ: (s) => s, Fail: (exception) => "");
 
-					options.CustomizeHttpRequestMessage = message =>
+				//The following string shenanigans is a silly hack. A proper rebasing of the URL's should be done asap when new maintainers have been identified.
+				symString = symString.Replace("https://rdf.equinor.com/ontology/engineering-symbol/v1#", "http://example.equinor.com/symbol#");
+
+				try
+				{
+
+					var postres = await _downstreamApi.CallApiForAppAsync("CommonLib", options =>
 					{
-						message.Content = new StringContent(symString, System.Text.Encoding.UTF8, "application/json-patch+json");
-					};
-				});
-				if (postres.IsSuccessStatusCode)
-				{
-					_logger.LogInformation($"Symbol with id: {id} posted to CL with successCode: {postres.StatusCode}");
+						options.HttpMethod = HttpMethod.Post;
+						options.RelativePath = $"/api/symbol/WriteEngineeringSymbol";
+
+						options.CustomizeHttpRequestMessage = message =>
+						{
+							message.Content = new StringContent(symString, System.Text.Encoding.UTF8, "application/json-patch+json");
+						};
+					});
+					if (postres.IsSuccessStatusCode)
+					{
+						_logger.LogInformation($"Symbol with id: {id} posted to CL with successCode: {postres.StatusCode}");
+					}
+					else
+					{
+						_logger.LogError($"Symbol with id: {id} NOT posted to CL with errorcode: {postres.StatusCode}");
+					}
 				}
-				else
+				catch (Exception ex)
 				{
-					_logger.LogError($"Symbol with id: {id} NOT posted to CL with errorcode: {postres.StatusCode}");
+					_logger.LogError($"Posting to CL failed. {ex.Message}");
+					return Unit.Default;
 				}
-			} catch(Exception ex){
-				_logger.LogError($"Posting to CL failed. {ex.Message}");
-				return Unit.Default;
+				// We dont stop a run if this fails, return Unit.Default in all cases.
 			}
-			//We dont stop a run if this fails, return Unit.Default in all cases.
 			return Unit.Default;
 
 		});
