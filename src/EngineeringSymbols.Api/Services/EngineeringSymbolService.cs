@@ -300,7 +300,7 @@ public class EngineeringSymbolService : IEngineeringSymbolService
 
 					var postres = await _downstreamApi.CallApiForAppAsync("CommonLib", options =>
 					{
-						options.HttpMethod = HttpMethod.Post;
+						options.HttpMethod = "POST";
 						options.RelativePath = $"/api/symbol/WriteEngineeringSymbol";
 
 						options.CustomizeHttpRequestMessage = message =>
