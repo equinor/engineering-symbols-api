@@ -47,7 +47,7 @@ jobs:
           files: "**/appsettings.json"
         env:
           AzureAd.ClientId: ${{ vars.AZURE_CLIENT_ID_API }}
-          #KeyVaultName: "${{ inputs.env }}-engsym-vault"
+          KeyVaultName: "${{ inputs.env }}-engsym-vault"
           #ServiceBus.Topic: ${{ secrets.SERVICE_BUS_TOPIC }}
           ENV: ${{ inputs.env }}
 
