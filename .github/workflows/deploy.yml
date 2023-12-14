@@ -35,11 +35,11 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           allow-no-subscriptions: true
 
-      - name: Setup Azure Resources
-        working-directory: azure
-        run: |
-          chmod +x runMainBicep.sh
-          ./runMainBicep.sh -e ${{ inputs.env }} -b ${{ inputs.build-id }}
+      #- name: Setup Azure Resources
+      #  working-directory: azure
+      #  run: |
+      #    chmod +x runMainBicep.sh
+      #    ./runMainBicep.sh -e ${{ inputs.env }} -b ${{ inputs.build-id }}
 
       - name: Inject ENV specific settings into appsettings.json
         uses: microsoft/variable-substitution@v1
