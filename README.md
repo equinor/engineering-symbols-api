@@ -72,7 +72,10 @@ When re-deploying to a new resource group or re-deploying to an existing one aft
  - Add Common Library Base URL and Scopes needed for downstreamapi initialization to configuration. This is not done in the bicep scripts or github workflows now.
  - All deployment of new resources is done by the main.bicep script. It is currently not being called by any of the workflows, uncomment the relevant parts in the relevant workflow if needed.
    - With the exception of the keyvault, which has to be purged from a soft-delete state, all resources can be dropped and re-created.
-   - Dropping and recreating the storage account <env-variable>engsymmainfustore will DELETE the entire collection of symbols and if no backups exist all data will be PERMANENTLY LOST without any way to get it back.  
+   - Dropping and recreating the storage account <env-variable>engsymmainfustore will DELETE the entire collection of symbols and if no backups exist all data will be PERMANENTLY LOST without any way to get it back.
+ - Internally the Symbol Library uses a base of rdf.equinor.com to generate IRIS.
+   - When Symbols are exported to Common Library on status being set to "Issued" the url's are altered in the export to conform to the example.equinor.com scheme
+   - If and when the URL scheme needs to be changed the alterations should be effected in "EngineeringSymbolService.cs" in the "PublishToCommonLibAsync" Method, at the time of writing line 295-296.
 
 ---
   Documentation for the engineering-symbols-api and its place in the "Symbol Editor" stack can be found in the [symbol-editor.md](https://github.com/equinor/spine-uvt-doc/blob/main/symbol-editor.md) file in the [spine-uvt-doc](https://github.com/equinor/spine-uvt-doc) repo.
